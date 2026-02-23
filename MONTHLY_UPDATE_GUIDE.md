@@ -6,7 +6,7 @@ This guide documents how to update the Accor Executive Lounge hotel list on the 
 
 ## Source
 
-- **URL:** https://all.accor.com/loyalty-program/user/hotels-lounge/index.en.shtml
+- **URL:** https://all.accor.com/loyalty-program/user/hotels-lounge/index.en.shtm
 - **Tab:** "HOTELS WITH A LOUNGE" (first tab on the page)
 
 ## How the Accor Page Works
