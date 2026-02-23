@@ -1,0 +1,1027 @@
+{
+  "metadata": {
+    "extracted": "2026-02-22",
+    "source": "https://all.accor.com/loyalty-program/user/hotels-lounge/index.en.shtml",
+    "region": "asia",
+    "total": 203,
+    "format": "[country, city, hotel_name]"
+  },
+  "hotels": [
+    [
+      "azerbaijan",
+      "baku",
+      "Fairmont Baku Flame Towers"
+    ],
+    [
+      "cambodia",
+      "phnom-penh",
+      "Novotel Phnom Penh BKK1"
+    ],
+    [
+      "cambodia",
+      "phnom-penh",
+      "Sofitel Phnom Penh Phokeethra"
+    ],
+    [
+      "cambodia",
+      "siem-reap",
+      "Sofitel Angkor Phokeethra Golf & Spa Resort"
+    ],
+    [
+      "china",
+      "anshan",
+      "Pullman Anshan Time Square"
+    ],
+    [
+      "china",
+      "baotou",
+      "Pullman Baotou"
+    ],
+    [
+      "china",
+      "beijing",
+      "Fairmont Beijing"
+    ],
+    [
+      "china",
+      "beijing",
+      "Grand Mercure Beijing Central"
+    ],
+    [
+      "china",
+      "beijing",
+      "Grand Mercure Beijing Dongcheng"
+    ],
+    [
+      "china",
+      "beijing",
+      "Novotel Beijing Peace"
+    ],
+    [
+      "china",
+      "beijing",
+      "Novotel Beijing Xin Qiao"
+    ],
+    [
+      "china",
+      "beijing",
+      "Pullman Beijing South"
+    ],
+    [
+      "china",
+      "changbaishan",
+      "Pullman Changbaishan Resort"
+    ],
+    [
+      "china",
+      "changshu",
+      "Pullman Changshu Leeman"
+    ],
+    [
+      "china",
+      "chengdu",
+      "Fairmont Chengdu"
+    ],
+    [
+      "china",
+      "chengdu",
+      "MGallery Chengdu Yuanboyuan"
+    ],
+    [
+      "china",
+      "daqing",
+      "Novotel Daqing Haofang"
+    ],
+    [
+      "china",
+      "dongguan",
+      "Pullman Dongguan Changan"
+    ],
+    [
+      "china",
+      "enshi",
+      "Mövenpick Hotel Enshi"
+    ],
+    [
+      "china",
+      "foshan",
+      "Sofitel Foshan"
+    ],
+    [
+      "china",
+      "foshan",
+      "Swissôtel Foshan"
+    ],
+    [
+      "china",
+      "fuzhou",
+      "Pullman Fuzhou Tahoe"
+    ],
+    [
+      "china",
+      "guangzhou",
+      "Pullman Guangzhou Baiyun Airport"
+    ],
+    [
+      "china",
+      "guangzhou",
+      "Sofitel Guangzhou Sunrich"
+    ],
+    [
+      "china",
+      "guiyang",
+      "Novotel Guiyang Downtown"
+    ],
+    [
+      "china",
+      "guiyang",
+      "Pullman Guiyang"
+    ],
+    [
+      "china",
+      "guiyang",
+      "Sofitel Guiyang Hunter"
+    ],
+    [
+      "china",
+      "hangzhou",
+      "Sofitel Hangzhou Westlake"
+    ],
+    [
+      "china",
+      "harbin",
+      "Sofitel Harbin"
+    ],
+    [
+      "china",
+      "hefei",
+      "Pullman Hefei Sunac"
+    ],
+    [
+      "china",
+      "huizhou",
+      "Pullman Huizhou Kaisa Hotel"
+    ],
+    [
+      "china",
+      "jinan",
+      "Sofitel Jinan Silver Plaza"
+    ],
+    [
+      "china",
+      "kaifeng",
+      "Pullman Kaifeng Jianye"
+    ],
+    [
+      "china",
+      "kunming",
+      "Sofitel Kunming"
+    ],
+    [
+      "china",
+      "kunshan",
+      "Fairmont Yangcheng Lake"
+    ],
+    [
+      "china",
+      "kunshan",
+      "Swissôtel Kunshan"
+    ],
+    [
+      "china",
+      "lianyungang",
+      "Sofitel Lianyungang Suning"
+    ],
+    [
+      "china",
+      "linyi",
+      "Pullman Linyi Lushang"
+    ],
+    [
+      "china",
+      "nanjing",
+      "Novotel Nanjing Central Suning"
+    ],
+    [
+      "china",
+      "nanjing",
+      "Novotel Nanjing East Suning"
+    ],
+    [
+      "china",
+      "nanjing",
+      "Pullman Nanjing Lukou Airport"
+    ],
+    [
+      "china",
+      "nanjing",
+      "Sofitel Nanjing Galaxy Suning"
+    ],
+    [
+      "china",
+      "ningbo",
+      "Novotel Ningbo East"
+    ],
+    [
+      "china",
+      "ningbo",
+      "Sofitel Ningbo"
+    ],
+    [
+      "china",
+      "panjin",
+      "Pullman Panjin Oriental Ginza"
+    ],
+    [
+      "china",
+      "qingdao",
+      "Grand Mercure Qingdao Nanshan Resort"
+    ],
+    [
+      "china",
+      "rizhao",
+      "Novotel Rizhao Suning"
+    ],
+    [
+      "china",
+      "sanya",
+      "Fairmont Sanya Haitang Bay"
+    ],
+    [
+      "china",
+      "sanya",
+      "Pullman Oceanview Sanya Bay Resort & Spa"
+    ],
+    [
+      "china",
+      "sanya",
+      "Sofitel Sanya Leeman Resort"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Fairmont Peace Hotel"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Grand Mercure Shanghai Century Park"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Novotel Shanghai Atlantis"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Novotel Shanghai Clover"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Novotel Shanghai Hongqiao"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Pullman Shanghai Jing An"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Pullman Shanghai Qingpu Excellence"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Pullman Shanghai Skyway"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Pullman Shanghai South"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Sofitel Shanghai Hongqiao"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Sofitel Shanghai North Bund"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Sofitel Shanghai Sheshan Oriental"
+    ],
+    [
+      "china",
+      "shanghai",
+      "Swissôtel Grand Shanghai"
+    ],
+    [
+      "china",
+      "shenyang",
+      "Sofitel Shenyang Lido"
+    ],
+    [
+      "china",
+      "shenzhen",
+      "Grand Mercure Shenzhen Oriental Ginza"
+    ],
+    [
+      "china",
+      "shishi",
+      "Pullman Shishi Mattison"
+    ],
+    [
+      "china",
+      "suzhou",
+      "Novotel Suzhou SIP"
+    ],
+    [
+      "china",
+      "suzhou",
+      "Pullman Suzhou Zhonghui"
+    ],
+    [
+      "china",
+      "taiyuan",
+      "Pullman Taiyuan"
+    ],
+    [
+      "china",
+      "tangshan",
+      "Pullman Tangshan"
+    ],
+    [
+      "china",
+      "urumqi",
+      "Grand Mercure Urumqi Hualing"
+    ],
+    [
+      "china",
+      "weifang",
+      "Pullman Weifang"
+    ],
+    [
+      "china",
+      "wenzhou",
+      "Pullman Wenzhou"
+    ],
+    [
+      "china",
+      "wuhan",
+      "Fairmont Wuhan"
+    ],
+    [
+      "china",
+      "wuxi",
+      "Pullman Wuxi New Lake"
+    ],
+    [
+      "china",
+      "xi-ning",
+      "The Sebel Xi Ning"
+    ],
+    [
+      "china",
+      "xiamen",
+      "Pullman Xiamen Powerlong"
+    ],
+    [
+      "china",
+      "xian",
+      "Novotel Xi'an SCPG"
+    ],
+    [
+      "china",
+      "xian",
+      "Sofitel Xian on Renmin Square"
+    ],
+    [
+      "china",
+      "xining",
+      "Sofitel Xining"
+    ],
+    [
+      "china",
+      "zhangjiajie",
+      "Pullman Zhangjiajie"
+    ],
+    [
+      "china",
+      "zhengzhou",
+      "Novotel Zhengzhou Convention Centre"
+    ],
+    [
+      "china",
+      "zhengzhou",
+      "Sofitel Zhengzhou International"
+    ],
+    [
+      "china",
+      "zhoushan",
+      "Pullman Zhoushan Seaview"
+    ],
+    [
+      "hong-kong",
+      "hong-kong",
+      "Novotel Hong Kong Century"
+    ],
+    [
+      "hong-kong",
+      "hong-kong",
+      "Novotel Hong Kong Citygate"
+    ],
+    [
+      "hong-kong",
+      "hong-kong",
+      "The Park Lane Hong Kong - A Pullman Hotel"
+    ],
+    [
+      "india",
+      "ahmedabad",
+      "Novotel Ahmedabad"
+    ],
+    [
+      "india",
+      "andhra-pradesh",
+      "Novotel Vijayawada Varun"
+    ],
+    [
+      "india",
+      "andhra-pradesh",
+      "Novotel Visakhapatnam Varun Beach"
+    ],
+    [
+      "india",
+      "bengaluru",
+      "Novotel Bengaluru Outer Ring Road"
+    ],
+    [
+      "india",
+      "chennai",
+      "Novotel Chennai Chamiers Road"
+    ],
+    [
+      "india",
+      "guwahati",
+      "Novotel Guwahati GS Road"
+    ],
+    [
+      "india",
+      "hyderabad",
+      "Novotel Hyderabad Airport"
+    ],
+    [
+      "india",
+      "hyderabad",
+      "Novotel Hyderabad Convention Centre"
+    ],
+    [
+      "india",
+      "hyderabad",
+      "Novotel Hyderabad Conventions Center"
+    ],
+    [
+      "india",
+      "jaipur",
+      "Fairmont Jaipur"
+    ],
+    [
+      "india",
+      "kolkata",
+      "Novotel Kolkata - Hotel & Residences"
+    ],
+    [
+      "india",
+      "mumbai",
+      "Novotel Mumbai Juhu Beach"
+    ],
+    [
+      "india",
+      "mumbai",
+      "Sofitel Mumbai BKC"
+    ],
+    [
+      "india",
+      "new-delhi",
+      "Novotel New Delhi Aerocity"
+    ],
+    [
+      "india",
+      "new-delhi",
+      "Pullman New Delhi Aerocity"
+    ],
+    [
+      "india",
+      "vijayawada",
+      "Novotel Vijayawada Varun"
+    ],
+    [
+      "india",
+      "visakhapatnam",
+      "Novotel Visakhapatnam Varun Beach"
+    ],
+    [
+      "indonesia",
+      "bali",
+      "Novotel Bali Ngurah Rai Airport"
+    ],
+    [
+      "indonesia",
+      "bali",
+      "Sofitel Bali Nusa Dua Beach Resort"
+    ],
+    [
+      "indonesia",
+      "bandung",
+      "Grand Mercure Bandung Setiabudi"
+    ],
+    [
+      "indonesia",
+      "bandung",
+      "Pullman Bandung Grand Central"
+    ],
+    [
+      "indonesia",
+      "bangka",
+      "Novotel Bangka Hotel and Convention Centre"
+    ],
+    [
+      "indonesia",
+      "banjarmasin",
+      "Novotel Banjarmasin Airport"
+    ],
+    [
+      "indonesia",
+      "ikn---ibukota-nusantara",
+      "Swissôtel Nusantara"
+    ],
+    [
+      "indonesia",
+      "jakarta",
+      "Fairmont Jakarta"
+    ],
+    [
+      "indonesia",
+      "jakarta",
+      "Mercure Jakarta Gatot Subroto"
+    ],
+    [
+      "indonesia",
+      "jakarta",
+      "Novotel Jakarta Gajah Mada"
+    ],
+    [
+      "indonesia",
+      "jakarta",
+      "Novotel Jakarta Mangga Dua Square"
+    ],
+    [
+      "indonesia",
+      "jakarta",
+      "Pullman Jakarta Central Park"
+    ],
+    [
+      "indonesia",
+      "jakarta",
+      "Pullman Jakarta Indonesia Thamrin CBD"
+    ],
+    [
+      "indonesia",
+      "jakarta",
+      "Swissôtel Jakarta Pik Avenue"
+    ],
+    [
+      "indonesia",
+      "lampung",
+      "Grand Mercure Lampung"
+    ],
+    [
+      "indonesia",
+      "makassar",
+      "Novotel Makassar Grand Shayla"
+    ],
+    [
+      "indonesia",
+      "medan",
+      "Grand Mercure Maha Cipta Medan Angkasa"
+    ],
+    [
+      "indonesia",
+      "pekanbaru",
+      "Novotel Pekanbaru"
+    ],
+    [
+      "indonesia",
+      "semarang",
+      "Novotel Semarang"
+    ],
+    [
+      "indonesia",
+      "solo",
+      "Grand Mercure Solo Baru"
+    ],
+    [
+      "indonesia",
+      "solo",
+      "Novotel Solo"
+    ],
+    [
+      "indonesia",
+      "tangerang",
+      "Novotel Tangerang"
+    ],
+    [
+      "japan",
+      "naha",
+      "Novotel Okinawa Naha"
+    ],
+    [
+      "japan",
+      "nara",
+      "Novotel Nara"
+    ],
+    [
+      "japan",
+      "osaka",
+      "Swissotel Nankai Osaka"
+    ],
+    [
+      "japan",
+      "sapporo",
+      "Hôtel Sosei Sapporo MGallery"
+    ],
+    [
+      "japan",
+      "tokyo",
+      "Fairmont Tokyo"
+    ],
+    [
+      "japan",
+      "tokyo",
+      "Mercure Tokyo Hibiya"
+    ],
+    [
+      "japan",
+      "tokyo",
+      "Pullman Tokyo Tamachi"
+    ],
+    [
+      "macao",
+      "macau",
+      "Sofitel Macau at Ponte 16"
+    ],
+    [
+      "malaysia",
+      "klia",
+      "Mövenpick Hotel and Convention Centre KLIA"
+    ],
+    [
+      "malaysia",
+      "kuala-lumpur",
+      "Novotel Kuala Lumpur City Centre"
+    ],
+    [
+      "malaysia",
+      "kuala-lumpur",
+      "Pullman Kuala Lumpur City Centre - Hotel & Residences"
+    ],
+    [
+      "malaysia",
+      "kuala-lumpur",
+      "Pullman Kuala Lumpur City Centre Hotel & Residences"
+    ],
+    [
+      "malaysia",
+      "kuala-lumpur",
+      "Sofitel Kuala Lumpur Damansara"
+    ],
+    [
+      "malaysia",
+      "kuching",
+      "Pullman Kuching"
+    ],
+    [
+      "malaysia",
+      "miri",
+      "Pullman Miri Waterfront"
+    ],
+    [
+      "malaysia",
+      "sepang",
+      "Movenpick Hotel & Convention Centre KLIA"
+    ],
+    [
+      "myanmar",
+      "mandalay",
+      "Pullman Mandalay Mingalar"
+    ],
+    [
+      "myanmar",
+      "yangon",
+      "Novotel Yangon Max"
+    ],
+    [
+      "pakistan",
+      "islamabad",
+      "Movenpick Hotel Centaurus Islamabad"
+    ],
+    [
+      "pakistan",
+      "karachi",
+      "Mövenpick Hotel Karachi"
+    ],
+    [
+      "pakistan",
+      "karachi",
+      "Mövenpick Karachi"
+    ],
+    [
+      "philippines",
+      "clark",
+      "Swissôtel Clark"
+    ],
+    [
+      "philippines",
+      "makati",
+      "Fairmont Makati"
+    ],
+    [
+      "philippines",
+      "quezon-city",
+      "Novotel Manila Araneta Center"
+    ],
+    [
+      "singapore",
+      "singapore",
+      "Fairmont Singapore"
+    ],
+    [
+      "singapore",
+      "singapore",
+      "Grand Mercure Singapore Roxy"
+    ],
+    [
+      "singapore",
+      "singapore",
+      "Mercure Singapore Bugis"
+    ],
+    [
+      "singapore",
+      "singapore",
+      "Mercure Singapore On Stevens"
+    ],
+    [
+      "singapore",
+      "singapore",
+      "Novotel Singapore On Stevens"
+    ],
+    [
+      "singapore",
+      "singapore",
+      "Pullman Singapore Hill Street"
+    ],
+    [
+      "singapore",
+      "singapore",
+      "Pullman Singapore Orchard"
+    ],
+    [
+      "singapore",
+      "singapore",
+      "Sofitel Singapore City Centre"
+    ],
+    [
+      "singapore",
+      "singapore",
+      "Swissotel The Stamford"
+    ],
+    [
+      "south-korea",
+      "seoul",
+      "Fairmont Ambassador Seoul"
+    ],
+    [
+      "south-korea",
+      "seoul",
+      "Grand Mercure Ambassador Hotel and Residences Seoul Yongsan"
+    ],
+    [
+      "south-korea",
+      "seoul",
+      "Grand Mercure Imperial Palace Seoul Gangnam"
+    ],
+    [
+      "south-korea",
+      "seoul",
+      "Novotel Ambassador Seoul Dongdaemun Hotels & Residences"
+    ],
+    [
+      "south-korea",
+      "seoul",
+      "Novotel Ambassador Seoul Gangnam"
+    ],
+    [
+      "south-korea",
+      "seoul",
+      "Novotel Ambassador Seoul Yongsan - Seoul Dragon City"
+    ],
+    [
+      "south-korea",
+      "seoul",
+      "Novotel Suites Ambassador Seoul Yongsan"
+    ],
+    [
+      "south-korea",
+      "seoul",
+      "Sofitel Ambassador Seoul Hotel & Serviced Residences"
+    ],
+    [
+      "south-korea",
+      "seoul",
+      "The Ambassador Seoul - A Pullman Hotel"
+    ],
+    [
+      "south-korea",
+      "suwon",
+      "Novotel Ambassador Suwon"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Grand Mercure Bangkok Atrium"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Mercure Bangkok Makkasan"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Mercure Bangkok Sukhumvit 11"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Mövenpick BDMS Wellness Resort Bangkok"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Mövenpick BDMS Wellness Resort Bangkok"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Mövenpick Hotel Sukhumvit 15 Bangkok"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Novotel Bangkok Future Park Rangsit"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Novotel Bangkok Impact"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Novotel Bangkok Platinum Pratunam"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Novotel Bangkok Sukhumvit 20"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Pullman Bangkok Hotel G"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Pullman Bangkok King Power"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "SO/ Sofitel Bangkok"
+    ],
+    [
+      "thailand",
+      "bangkok",
+      "Sofitel Bangkok Sukhumvit"
+    ],
+    [
+      "thailand",
+      "chonburi",
+      "Novotel Marina Sriracha"
+    ],
+    [
+      "thailand",
+      "krabi",
+      "Grand Mercure Ao Nang Krabi"
+    ],
+    [
+      "thailand",
+      "krabi",
+      "Sofitel Krabi Phokeethra Golf & Spa Resort"
+    ],
+    [
+      "thailand",
+      "pattaya",
+      "Mövenpick Siam Hotel Na Jomtien Pattaya"
+    ],
+    [
+      "thailand",
+      "pattaya",
+      "Pullman Pattaya Hotel G"
+    ],
+    [
+      "thailand",
+      "phuket",
+      "Grand Mercure Phuket Patong"
+    ],
+    [
+      "thailand",
+      "phuket",
+      "Pullman Phuket Karon Beach"
+    ],
+    [
+      "vietnam",
+      "danang",
+      "Grand Mercure Danang"
+    ],
+    [
+      "vietnam",
+      "danang",
+      "Novotel Danang Premier Han River"
+    ],
+    [
+      "vietnam",
+      "ha-noi",
+      "Movenpick Hotel Hanoi Centre"
+    ],
+    [
+      "vietnam",
+      "hai-phong",
+      "Mercure Hai Phong"
+    ],
+    [
+      "vietnam",
+      "hai-phong",
+      "Pullman HaiPhong Grand Hotel"
+    ],
+    [
+      "vietnam",
+      "hanoi",
+      "Pullman Hanoi"
+    ],
+    [
+      "vietnam",
+      "hanoi",
+      "Sofitel Legend Metropole Hanoi"
+    ],
+    [
+      "vietnam",
+      "ho-chi-minh-city",
+      "Hotel des Arts Saigon - MGallery Collection"
+    ],
+    [
+      "vietnam",
+      "ho-chi-minh-city",
+      "Novotel Saigon Centre"
+    ],
+    [
+      "vietnam",
+      "ho-chi-minh-city",
+      "Pullman Saigon Centre"
+    ],
+    [
+      "vietnam",
+      "ho-chi-minh-city",
+      "Sofitel Saigon Plaza"
+    ],
+    [
+      "vietnam",
+      "phan-thiet",
+      "Mövenpick Resort Phan Thiet"
+    ],
+    [
+      "vietnam",
+      "vung-tau",
+      "Pullman Vung Tau"
+    ]
+  ]
+}
+2026-02.json
