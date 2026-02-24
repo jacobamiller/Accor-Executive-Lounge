@@ -305,6 +305,61 @@ javascript:void(function(){'use strict';function norm(n){return n.toLowerCase().
 
 ---
 
+## Backup Method: City-Search ID Resolution
+
+The primary extraction bookmarklet resolves ~83% of hotel IDs via the Accor catalog API. The remaining ~17% fail due to name mismatches between the lounge page and the API. Common mismatch patterns include:
+
+| Pattern | Lounge Page Name | Accor API/Website Name |
+|---------|-----------------|----------------------|
+| City name spacing | Pullman **HaiPhong** Grand Hotel | Pullman **Hai Phong** Grand Hotel |
+| Word order | Novotel **Hong Kong Century** | Novotel **Century Hong Kong** |
+| Abbreviation spacing | Novotel Phnom Penh **BKK1** | Novotel Phnom Penh **BKK 1** |
+| Apostrophe variants | Pullman Shanghai **Jing An** | Pullman Shanghai **Jing'an** |
+| Name differences | Fairmont La Marina Rabat **Salé Hotel And Residences** | Fairmont La Marina **Rabat-Salé** |
+
+### How to Resolve Unmatched Hotels
+
+For each hotel with a `null` hotel_id in the extracted JSON:
+
+1. **Search by city** on `all.accor.com/booking/en/accor/hotels/{city-slug}`
+2. **Wait for results to load**, then run this in the browser console:
+   ```javascript
+   document.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
+     const id = card.getAttribute('data-hotel-id');
+     const name = card.querySelector('h2')?.textContent?.trim();
+     console.log(id + ' | ' + name);
+   });
+   ```
+3. **Match by brand + city keywords** — e.g., for "Pullman HaiPhong Grand Hotel", look for a Pullman hotel in the Hai Phong results
+4. **Update the JSON** with the resolved hotel_id
+
+### Bookmarklet 4: "Resolve Unmatched Hotel IDs" (Backup)
+
+This bookmarklet automates the backup resolution process. Run it on any `all.accor.com/booking` search results page. It reads unmatched hotels from your clipboard (paste the JSON), searches each city, and attempts to match by brand keyword.
+
+**Usage:**
+1. Copy the unmatched hotels JSON to clipboard (filter the extraction JSON for entries where hotel_id is null)
+2. Navigate to `all.accor.com`
+3. Run the bookmarklet — it will search each city and try to resolve IDs
+4. Results are copied to clipboard
+
+Create a new bookmark and paste this as the URL:
+
+```
+javascript:void(function(){'use strict';async function run(){var bar=document.createElement('div');bar.id='bm-bar';bar.style.cssText='position:fixed;top:0;left:0;width:100%;z-index:99999;background:#c62828;color:#fff;padding:8px 16px;font:13px/1.4 sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3)';bar.innerHTML='<span id="bm-s">Paste unmatched hotels JSON, then click OK</span>';document.body.appendChild(bar);var clip=await navigator.clipboard.readText();var data;try{data=JSON.parse(clip)}catch(e){bar.querySelector('#bm-s').textContent='Clipboard does not contain valid JSON. Copy the extraction JSON first.';return}var unmatched=data.hotels?data.hotels.filter(function(h){return h[4]===null}):[];if(!unmatched.length){bar.querySelector('#bm-s').textContent='No unmatched hotels found in clipboard data.';return}var cities={};unmatched.forEach(function(h){var city=h[2];if(!cities[city])cities[city]=[];cities[city].push({name:h[3],idx:data.hotels.indexOf(h)})});var cityKeys=Object.keys(cities);var resolved=0;for(var ci=0;ci<cityKeys.length;ci++){var city=cityKeys[ci];var ch=cities[city];bar.querySelector('#bm-s').textContent='Searching '+city+' ('+ci+'/'+cityKeys.length+')... Resolved: '+resolved;var searchCity=city.replace(/-/g,' ');try{var resp=await fetch('/booking/en/accor/hotels/'+city);if(!resp.ok)continue;var html=await resp.text();var parser=new DOMParser();var doc=parser.parseFromString(html,'text/html');var cards=doc.querySelectorAll('div.result-list-item[data-hotel-id]');cards.forEach(function(card){var id=card.getAttribute('data-hotel-id');var name=(card.querySelector('h2')||{}).textContent||'';var normName=name.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();ch.forEach(function(h){var normH=h.name.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();var brand=(normH.split(' ')[0]||'').toLowerCase();if(normName.includes(brand)&&!data.hotels[h.idx][4]){var words=normH.split(' ').filter(function(w){return w.length>3});var matchCount=words.filter(function(w){return normName.includes(w)}).length;if(matchCount>=Math.ceil(words.length*0.5)){data.hotels[h.idx][4]=id;resolved++}}})})}catch(e){}}data.metadata.matched+=resolved;data.metadata.unmatched-=resolved;await navigator.clipboard.writeText(JSON.stringify(data,null,2));bar.querySelector('#bm-s').textContent='Done! Resolved '+resolved+' hotel IDs. Updated JSON copied to clipboard.';bar.style.cursor='pointer';bar.onclick=function(){bar.remove()}}run()}())
+```
+
+### Improving the Primary Bookmarklet Matching
+
+The primary extraction bookmarklet's `norm()` function can be improved to handle more name variants. Key improvements for future updates:
+
+1. **Remove all spaces before comparison** — catches "HaiPhong" vs "Hai Phong"
+2. **Sort words alphabetically** — catches word order differences like "Hong Kong Century" vs "Century Hong Kong"  
+3. **Try substring matching** — if normalized name A contains normalized name B (or vice versa), consider it a match
+4. **Brand-prefix matching** — extract the brand (Pullman, Sofitel, etc.) and match within same-brand hotels in the same city
+
+---
+
 ## Limitations and Notes
 
 - **Hotel IDs resolved via API:** The extraction bookmarklets use the Accor catalog API to fuzzy-match hotel names and resolve IDs. Approximately 83% of hotels are matched automatically. Hotels with `null` IDs need to be looked up manually — search for the hotel on all.accor.com and inspect the search result card's `data-hotel-id` attribute.
