@@ -87,6 +87,7 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   // Hong Kong (2 hotels)
   '6239', // Novotel Hong Kong Citygate
   '3562', // Novotel Century Hong Kong
+  '3562', // Novotel Century Hong Kong
   // India (16 hotels)
   '8173', // Novotel Ahmedabad
   'A0L1', // Novotel Vijayawada Varun
@@ -196,6 +197,7 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   'B4G6', // Movenpick Hotel Hanoi Centre
   '9183', // Mercure Hai Phong
   '7579', // Pullman Hanoi
+  'B4S6', // Pullman Hai Phong Grand Hotel
   'B4S6', // Pullman Hai Phong Grand Hotel
   'B4S6', // Pullman Hai Phong Grand Hotel
   '1555', // Sofitel Legend Metropole Hanoi
