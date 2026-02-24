@@ -1,1027 +1,322 @@
 {
   "metadata": {
-    "extracted": "2026-02-22",
+    "extracted": "2026-02-24",
     "source": "https://all.accor.com/loyalty-program/user/hotels-lounge/index.en.shtml",
-    "region": "asia",
-    "total": 203,
-    "format": "[country, city, hotel_name]"
+    "region": "all",
+    "total": 309,
+    "matched": 245,
+    "unmatched": 64,
+    "format": "[region, country, city, hotel_name, hotel_id, lounge_policy, min_age, policy_notes, stars, review_score, review_count, max_child_age, family_friendly, key_amenities]"
   },
   "hotels": [
-    [
-      "azerbaijan",
-      "baku",
-      "Fairmont Baku Flame Towers"
-    ],
-    [
-      "cambodia",
-      "phnom-penh",
-      "Novotel Phnom Penh BKK1"
-    ],
-    [
-      "cambodia",
-      "phnom-penh",
-      "Sofitel Phnom Penh Phokeethra"
-    ],
-    [
-      "cambodia",
-      "siem-reap",
-      "Sofitel Angkor Phokeethra Golf & Spa Resort"
-    ],
-    [
-      "china",
-      "anshan",
-      "Pullman Anshan Time Square"
-    ],
-    [
-      "china",
-      "baotou",
-      "Pullman Baotou"
-    ],
-    [
-      "china",
-      "beijing",
-      "Fairmont Beijing"
-    ],
-    [
-      "china",
-      "beijing",
-      "Grand Mercure Beijing Central"
-    ],
-    [
-      "china",
-      "beijing",
-      "Grand Mercure Beijing Dongcheng"
-    ],
-    [
-      "china",
-      "beijing",
-      "Novotel Beijing Peace"
-    ],
-    [
-      "china",
-      "beijing",
-      "Novotel Beijing Xin Qiao"
-    ],
-    [
-      "china",
-      "beijing",
-      "Pullman Beijing South"
-    ],
-    [
-      "china",
-      "changbaishan",
-      "Pullman Changbaishan Resort"
-    ],
-    [
-      "china",
-      "changshu",
-      "Pullman Changshu Leeman"
-    ],
-    [
-      "china",
-      "chengdu",
-      "Fairmont Chengdu"
-    ],
-    [
-      "china",
-      "chengdu",
-      "MGallery Chengdu Yuanboyuan"
-    ],
-    [
-      "china",
-      "daqing",
-      "Novotel Daqing Haofang"
-    ],
-    [
-      "china",
-      "dongguan",
-      "Pullman Dongguan Changan"
-    ],
-    [
-      "china",
-      "enshi",
-      "Mövenpick Hotel Enshi"
-    ],
-    [
-      "china",
-      "foshan",
-      "Sofitel Foshan"
-    ],
-    [
-      "china",
-      "foshan",
-      "Swissôtel Foshan"
-    ],
-    [
-      "china",
-      "fuzhou",
-      "Pullman Fuzhou Tahoe"
-    ],
-    [
-      "china",
-      "guangzhou",
-      "Pullman Guangzhou Baiyun Airport"
-    ],
-    [
-      "china",
-      "guangzhou",
-      "Sofitel Guangzhou Sunrich"
-    ],
-    [
-      "china",
-      "guiyang",
-      "Novotel Guiyang Downtown"
-    ],
-    [
-      "china",
-      "guiyang",
-      "Pullman Guiyang"
-    ],
-    [
-      "china",
-      "guiyang",
-      "Sofitel Guiyang Hunter"
-    ],
-    [
-      "china",
-      "hangzhou",
-      "Sofitel Hangzhou Westlake"
-    ],
-    [
-      "china",
-      "harbin",
-      "Sofitel Harbin"
-    ],
-    [
-      "china",
-      "hefei",
-      "Pullman Hefei Sunac"
-    ],
-    [
-      "china",
-      "huizhou",
-      "Pullman Huizhou Kaisa Hotel"
-    ],
-    [
-      "china",
-      "jinan",
-      "Sofitel Jinan Silver Plaza"
-    ],
-    [
-      "china",
-      "kaifeng",
-      "Pullman Kaifeng Jianye"
-    ],
-    [
-      "china",
-      "kunming",
-      "Sofitel Kunming"
-    ],
-    [
-      "china",
-      "kunshan",
-      "Fairmont Yangcheng Lake"
-    ],
-    [
-      "china",
-      "kunshan",
-      "Swissôtel Kunshan"
-    ],
-    [
-      "china",
-      "lianyungang",
-      "Sofitel Lianyungang Suning"
-    ],
-    [
-      "china",
-      "linyi",
-      "Pullman Linyi Lushang"
-    ],
-    [
-      "china",
-      "nanjing",
-      "Novotel Nanjing Central Suning"
-    ],
-    [
-      "china",
-      "nanjing",
-      "Novotel Nanjing East Suning"
-    ],
-    [
-      "china",
-      "nanjing",
-      "Pullman Nanjing Lukou Airport"
-    ],
-    [
-      "china",
-      "nanjing",
-      "Sofitel Nanjing Galaxy Suning"
-    ],
-    [
-      "china",
-      "ningbo",
-      "Novotel Ningbo East"
-    ],
-    [
-      "china",
-      "ningbo",
-      "Sofitel Ningbo"
-    ],
-    [
-      "china",
-      "panjin",
-      "Pullman Panjin Oriental Ginza"
-    ],
-    [
-      "china",
-      "qingdao",
-      "Grand Mercure Qingdao Nanshan Resort"
-    ],
-    [
-      "china",
-      "rizhao",
-      "Novotel Rizhao Suning"
-    ],
-    [
-      "china",
-      "sanya",
-      "Fairmont Sanya Haitang Bay"
-    ],
-    [
-      "china",
-      "sanya",
-      "Pullman Oceanview Sanya Bay Resort & Spa"
-    ],
-    [
-      "china",
-      "sanya",
-      "Sofitel Sanya Leeman Resort"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Fairmont Peace Hotel"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Grand Mercure Shanghai Century Park"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Novotel Shanghai Atlantis"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Novotel Shanghai Clover"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Novotel Shanghai Hongqiao"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Pullman Shanghai Jing An"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Pullman Shanghai Qingpu Excellence"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Pullman Shanghai Skyway"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Pullman Shanghai South"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Sofitel Shanghai Hongqiao"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Sofitel Shanghai North Bund"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Sofitel Shanghai Sheshan Oriental"
-    ],
-    [
-      "china",
-      "shanghai",
-      "Swissôtel Grand Shanghai"
-    ],
-    [
-      "china",
-      "shenyang",
-      "Sofitel Shenyang Lido"
-    ],
-    [
-      "china",
-      "shenzhen",
-      "Grand Mercure Shenzhen Oriental Ginza"
-    ],
-    [
-      "china",
-      "shishi",
-      "Pullman Shishi Mattison"
-    ],
-    [
-      "china",
-      "suzhou",
-      "Novotel Suzhou SIP"
-    ],
-    [
-      "china",
-      "suzhou",
-      "Pullman Suzhou Zhonghui"
-    ],
-    [
-      "china",
-      "taiyuan",
-      "Pullman Taiyuan"
-    ],
-    [
-      "china",
-      "tangshan",
-      "Pullman Tangshan"
-    ],
-    [
-      "china",
-      "urumqi",
-      "Grand Mercure Urumqi Hualing"
-    ],
-    [
-      "china",
-      "weifang",
-      "Pullman Weifang"
-    ],
-    [
-      "china",
-      "wenzhou",
-      "Pullman Wenzhou"
-    ],
-    [
-      "china",
-      "wuhan",
-      "Fairmont Wuhan"
-    ],
-    [
-      "china",
-      "wuxi",
-      "Pullman Wuxi New Lake"
-    ],
-    [
-      "china",
-      "xi-ning",
-      "The Sebel Xi Ning"
-    ],
-    [
-      "china",
-      "xiamen",
-      "Pullman Xiamen Powerlong"
-    ],
-    [
-      "china",
-      "xian",
-      "Novotel Xi'an SCPG"
-    ],
-    [
-      "china",
-      "xian",
-      "Sofitel Xian on Renmin Square"
-    ],
-    [
-      "china",
-      "xining",
-      "Sofitel Xining"
-    ],
-    [
-      "china",
-      "zhangjiajie",
-      "Pullman Zhangjiajie"
-    ],
-    [
-      "china",
-      "zhengzhou",
-      "Novotel Zhengzhou Convention Centre"
-    ],
-    [
-      "china",
-      "zhengzhou",
-      "Sofitel Zhengzhou International"
-    ],
-    [
-      "china",
-      "zhoushan",
-      "Pullman Zhoushan Seaview"
-    ],
-    [
-      "hong-kong",
-      "hong-kong",
-      "Novotel Hong Kong Century"
-    ],
-    [
-      "hong-kong",
-      "hong-kong",
-      "Novotel Hong Kong Citygate"
-    ],
-    [
-      "hong-kong",
-      "hong-kong",
-      "The Park Lane Hong Kong - A Pullman Hotel"
-    ],
-    [
-      "india",
-      "ahmedabad",
-      "Novotel Ahmedabad"
-    ],
-    [
-      "india",
-      "andhra-pradesh",
-      "Novotel Vijayawada Varun"
-    ],
-    [
-      "india",
-      "andhra-pradesh",
-      "Novotel Visakhapatnam Varun Beach"
-    ],
-    [
-      "india",
-      "bengaluru",
-      "Novotel Bengaluru Outer Ring Road"
-    ],
-    [
-      "india",
-      "chennai",
-      "Novotel Chennai Chamiers Road"
-    ],
-    [
-      "india",
-      "guwahati",
-      "Novotel Guwahati GS Road"
-    ],
-    [
-      "india",
-      "hyderabad",
-      "Novotel Hyderabad Airport"
-    ],
-    [
-      "india",
-      "hyderabad",
-      "Novotel Hyderabad Convention Centre"
-    ],
-    [
-      "india",
-      "hyderabad",
-      "Novotel Hyderabad Conventions Center"
-    ],
-    [
-      "india",
-      "jaipur",
-      "Fairmont Jaipur"
-    ],
-    [
-      "india",
-      "kolkata",
-      "Novotel Kolkata - Hotel & Residences"
-    ],
-    [
-      "india",
-      "mumbai",
-      "Novotel Mumbai Juhu Beach"
-    ],
-    [
-      "india",
-      "mumbai",
-      "Sofitel Mumbai BKC"
-    ],
-    [
-      "india",
-      "new-delhi",
-      "Novotel New Delhi Aerocity"
-    ],
-    [
-      "india",
-      "new-delhi",
-      "Pullman New Delhi Aerocity"
-    ],
-    [
-      "india",
-      "vijayawada",
-      "Novotel Vijayawada Varun"
-    ],
-    [
-      "india",
-      "visakhapatnam",
-      "Novotel Visakhapatnam Varun Beach"
-    ],
-    [
-      "indonesia",
-      "bali",
-      "Novotel Bali Ngurah Rai Airport"
-    ],
-    [
-      "indonesia",
-      "bali",
-      "Sofitel Bali Nusa Dua Beach Resort"
-    ],
-    [
-      "indonesia",
-      "bandung",
-      "Grand Mercure Bandung Setiabudi"
-    ],
-    [
-      "indonesia",
-      "bandung",
-      "Pullman Bandung Grand Central"
-    ],
-    [
-      "indonesia",
-      "bangka",
-      "Novotel Bangka Hotel and Convention Centre"
-    ],
-    [
-      "indonesia",
-      "banjarmasin",
-      "Novotel Banjarmasin Airport"
-    ],
-    [
-      "indonesia",
-      "ikn---ibukota-nusantara",
-      "Swissôtel Nusantara"
-    ],
-    [
-      "indonesia",
-      "jakarta",
-      "Fairmont Jakarta"
-    ],
-    [
-      "indonesia",
-      "jakarta",
-      "Mercure Jakarta Gatot Subroto"
-    ],
-    [
-      "indonesia",
-      "jakarta",
-      "Novotel Jakarta Gajah Mada"
-    ],
-    [
-      "indonesia",
-      "jakarta",
-      "Novotel Jakarta Mangga Dua Square"
-    ],
-    [
-      "indonesia",
-      "jakarta",
-      "Pullman Jakarta Central Park"
-    ],
-    [
-      "indonesia",
-      "jakarta",
-      "Pullman Jakarta Indonesia Thamrin CBD"
-    ],
-    [
-      "indonesia",
-      "jakarta",
-      "Swissôtel Jakarta Pik Avenue"
-    ],
-    [
-      "indonesia",
-      "lampung",
-      "Grand Mercure Lampung"
-    ],
-    [
-      "indonesia",
-      "makassar",
-      "Novotel Makassar Grand Shayla"
-    ],
-    [
-      "indonesia",
-      "medan",
-      "Grand Mercure Maha Cipta Medan Angkasa"
-    ],
-    [
-      "indonesia",
-      "pekanbaru",
-      "Novotel Pekanbaru"
-    ],
-    [
-      "indonesia",
-      "semarang",
-      "Novotel Semarang"
-    ],
-    [
-      "indonesia",
-      "solo",
-      "Grand Mercure Solo Baru"
-    ],
-    [
-      "indonesia",
-      "solo",
-      "Novotel Solo"
-    ],
-    [
-      "indonesia",
-      "tangerang",
-      "Novotel Tangerang"
-    ],
-    [
-      "japan",
-      "naha",
-      "Novotel Okinawa Naha"
-    ],
-    [
-      "japan",
-      "nara",
-      "Novotel Nara"
-    ],
-    [
-      "japan",
-      "osaka",
-      "Swissotel Nankai Osaka"
-    ],
-    [
-      "japan",
-      "sapporo",
-      "Hôtel Sosei Sapporo MGallery"
-    ],
-    [
-      "japan",
-      "tokyo",
-      "Fairmont Tokyo"
-    ],
-    [
-      "japan",
-      "tokyo",
-      "Mercure Tokyo Hibiya"
-    ],
-    [
-      "japan",
-      "tokyo",
-      "Pullman Tokyo Tamachi"
-    ],
-    [
-      "macao",
-      "macau",
-      "Sofitel Macau at Ponte 16"
-    ],
-    [
-      "malaysia",
-      "klia",
-      "Mövenpick Hotel and Convention Centre KLIA"
-    ],
-    [
-      "malaysia",
-      "kuala-lumpur",
-      "Novotel Kuala Lumpur City Centre"
-    ],
-    [
-      "malaysia",
-      "kuala-lumpur",
-      "Pullman Kuala Lumpur City Centre - Hotel & Residences"
-    ],
-    [
-      "malaysia",
-      "kuala-lumpur",
-      "Pullman Kuala Lumpur City Centre Hotel & Residences"
-    ],
-    [
-      "malaysia",
-      "kuala-lumpur",
-      "Sofitel Kuala Lumpur Damansara"
-    ],
-    [
-      "malaysia",
-      "kuching",
-      "Pullman Kuching"
-    ],
-    [
-      "malaysia",
-      "miri",
-      "Pullman Miri Waterfront"
-    ],
-    [
-      "malaysia",
-      "sepang",
-      "Movenpick Hotel & Convention Centre KLIA"
-    ],
-    [
-      "myanmar",
-      "mandalay",
-      "Pullman Mandalay Mingalar"
-    ],
-    [
-      "myanmar",
-      "yangon",
-      "Novotel Yangon Max"
-    ],
-    [
-      "pakistan",
-      "islamabad",
-      "Movenpick Hotel Centaurus Islamabad"
-    ],
-    [
-      "pakistan",
-      "karachi",
-      "Mövenpick Hotel Karachi"
-    ],
-    [
-      "pakistan",
-      "karachi",
-      "Mövenpick Karachi"
-    ],
-    [
-      "philippines",
-      "clark",
-      "Swissôtel Clark"
-    ],
-    [
-      "philippines",
-      "makati",
-      "Fairmont Makati"
-    ],
-    [
-      "philippines",
-      "quezon-city",
-      "Novotel Manila Araneta Center"
-    ],
-    [
-      "singapore",
-      "singapore",
-      "Fairmont Singapore"
-    ],
-    [
-      "singapore",
-      "singapore",
-      "Grand Mercure Singapore Roxy"
-    ],
-    [
-      "singapore",
-      "singapore",
-      "Mercure Singapore Bugis"
-    ],
-    [
-      "singapore",
-      "singapore",
-      "Mercure Singapore On Stevens"
-    ],
-    [
-      "singapore",
-      "singapore",
-      "Novotel Singapore On Stevens"
-    ],
-    [
-      "singapore",
-      "singapore",
-      "Pullman Singapore Hill Street"
-    ],
-    [
-      "singapore",
-      "singapore",
-      "Pullman Singapore Orchard"
-    ],
-    [
-      "singapore",
-      "singapore",
-      "Sofitel Singapore City Centre"
-    ],
-    [
-      "singapore",
-      "singapore",
-      "Swissotel The Stamford"
-    ],
-    [
-      "south-korea",
-      "seoul",
-      "Fairmont Ambassador Seoul"
-    ],
-    [
-      "south-korea",
-      "seoul",
-      "Grand Mercure Ambassador Hotel and Residences Seoul Yongsan"
-    ],
-    [
-      "south-korea",
-      "seoul",
-      "Grand Mercure Imperial Palace Seoul Gangnam"
-    ],
-    [
-      "south-korea",
-      "seoul",
-      "Novotel Ambassador Seoul Dongdaemun Hotels & Residences"
-    ],
-    [
-      "south-korea",
-      "seoul",
-      "Novotel Ambassador Seoul Gangnam"
-    ],
-    [
-      "south-korea",
-      "seoul",
-      "Novotel Ambassador Seoul Yongsan - Seoul Dragon City"
-    ],
-    [
-      "south-korea",
-      "seoul",
-      "Novotel Suites Ambassador Seoul Yongsan"
-    ],
-    [
-      "south-korea",
-      "seoul",
-      "Sofitel Ambassador Seoul Hotel & Serviced Residences"
-    ],
-    [
-      "south-korea",
-      "seoul",
-      "The Ambassador Seoul - A Pullman Hotel"
-    ],
-    [
-      "south-korea",
-      "suwon",
-      "Novotel Ambassador Suwon"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Grand Mercure Bangkok Atrium"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Mercure Bangkok Makkasan"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Mercure Bangkok Sukhumvit 11"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Mövenpick BDMS Wellness Resort Bangkok"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Mövenpick BDMS Wellness Resort Bangkok"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Mövenpick Hotel Sukhumvit 15 Bangkok"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Novotel Bangkok Future Park Rangsit"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Novotel Bangkok Impact"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Novotel Bangkok Platinum Pratunam"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Novotel Bangkok Sukhumvit 20"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Pullman Bangkok Hotel G"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Pullman Bangkok King Power"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "SO/ Sofitel Bangkok"
-    ],
-    [
-      "thailand",
-      "bangkok",
-      "Sofitel Bangkok Sukhumvit"
-    ],
-    [
-      "thailand",
-      "chonburi",
-      "Novotel Marina Sriracha"
-    ],
-    [
-      "thailand",
-      "krabi",
-      "Grand Mercure Ao Nang Krabi"
-    ],
-    [
-      "thailand",
-      "krabi",
-      "Sofitel Krabi Phokeethra Golf & Spa Resort"
-    ],
-    [
-      "thailand",
-      "pattaya",
-      "Mövenpick Siam Hotel Na Jomtien Pattaya"
-    ],
-    [
-      "thailand",
-      "pattaya",
-      "Pullman Pattaya Hotel G"
-    ],
-    [
-      "thailand",
-      "phuket",
-      "Grand Mercure Phuket Patong"
-    ],
-    [
-      "thailand",
-      "phuket",
-      "Pullman Phuket Karon Beach"
-    ],
-    [
-      "vietnam",
-      "danang",
-      "Grand Mercure Danang"
-    ],
-    [
-      "vietnam",
-      "danang",
-      "Novotel Danang Premier Han River"
-    ],
-    [
-      "vietnam",
-      "ha-noi",
-      "Movenpick Hotel Hanoi Centre"
-    ],
-    [
-      "vietnam",
-      "hai-phong",
-      "Mercure Hai Phong"
-    ],
-    [
-      "vietnam",
-      "hai-phong",
-      "Pullman HaiPhong Grand Hotel"
-    ],
-    [
-      "vietnam",
-      "hanoi",
-      "Pullman Hanoi"
-    ],
-    [
-      "vietnam",
-      "hanoi",
-      "Sofitel Legend Metropole Hanoi"
-    ],
-    [
-      "vietnam",
-      "ho-chi-minh-city",
-      "Hotel des Arts Saigon - MGallery Collection"
-    ],
-    [
-      "vietnam",
-      "ho-chi-minh-city",
-      "Novotel Saigon Centre"
-    ],
-    [
-      "vietnam",
-      "ho-chi-minh-city",
-      "Pullman Saigon Centre"
-    ],
-    [
-      "vietnam",
-      "ho-chi-minh-city",
-      "Sofitel Saigon Plaza"
-    ],
-    [
-      "vietnam",
-      "phan-thiet",
-      "Mövenpick Resort Phan Thiet"
-    ],
-    [
-      "vietnam",
-      "vung-tau",
-      "Pullman Vung Tau"
-    ]
+    ["africa","ghana","accra","Mövenpick Ambassador Hotel Accra","B4P0","Children under 12 must be accompanied by an adult.","Any","<12 need adult","5","4.5/5","1527","7","yes","fitness, restaurant, bar, child_facilities"],
+    ["africa","ivory-coast","abidjan","Mövenpick Hotel Abidjan","B4X4","Children under 16 years are not permitted in the Lounge","16+","—","5","4.6/5","657","6","yes","bar, fitness, child_facilities, restaurant"],
+    ["africa","ivory-coast","abidjan","Novotel Abidjan Marcory","B1I4","Children under 16 years are not permitted in the Lounge","16+","—","5","4.5/5","217","15","yes","restaurant, bar, child_facilities, pool"],
+    ["africa","kenya","nairobi","Movenpick Hotel & Residences Nairobi",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["africa","morocco","rabat","Fairmont La Marina Rabat Salé Hotel And Residences",null,"Children and pets are welcome.\nComplimentary breakfast and afternoon snacks.\nComplimentary coffee, tea and honour bar all day long.\nComplimentary local wines and beers are available for from 6:00 PM to 8:00 PM.","Any","Fees",null,null,null,null,null,null],
+    ["asia","azerbaijan","baku","Fairmont Baku Flame Towers","A593","Children are welcome.\nComplimentary 2-hour beverage service during dinner, featuring a selection of local wines and beers.","0+","—","5","4.5/5","267","17","yes","bar, restaurant"],
+    ["asia","cambodia","phnom-penh","Novotel Phnom Penh BKK1",null,"Child policy: no minimum age if with adult., except for happy hour. Kid and under age of 21 guests are not allowed for happy hour.","0+","Time limits",null,null,null,null,null,null],
+    ["asia","cambodia","phnom-penh","Sofitel Phnom Penh Phokeethra","6526","Child policy: no minimum age if with adult.","0+","—","5","4.8/5","597","11","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","cambodia","siem-reap","Sofitel Angkor Phokeethra Golf & Spa Resort","3123","Child policy: no minimum age if with adult.","0+","—","5","4.9/5","690","11","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["asia","china","anshan","Pullman Anshan Time Square","8276","Child policy: no minimum age if with adult.","0+","—","5",null,null,"11","","restaurant, pool, bar, spa"],
+    ["asia","china","baotou","Pullman Baotou",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","beijing","Fairmont Beijing","A5F9","Children are welcome.\nEnjoy complimentary food and beveragwe offerings, including:\n• Breakfast\n• Afternoon tea\n• Evening cocktail","0+","Time limits","5","4.4/5","115","18","","fitness, bar, restaurant"],
+    ["asia","china","beijing","Grand Mercure Beijing Central","6684","Child policy: no minimum age if with adult.","0+","—","4","4.7/5","64","15","yes","restaurant, bar, pool, fitness"],
+    ["asia","china","beijing","Grand Mercure Beijing Dongcheng",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","beijing","Novotel Beijing Peace",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","beijing","Novotel Beijing Xin Qiao",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","beijing","Pullman Beijing South","7025","Child policy: no minimum age if with adult.","0+","—","5","4.1/5","18","11","","restaurant, fitness, bar, child_facilities, pool"],
+    ["asia","china","changbaishan","Pullman Changbaishan Resort",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","changshu","Pullman Changshu Leeman","8968","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","379","11","yes","restaurant, pool, bar, child_facilities, spa, fitness"],
+    ["asia","china","chengdu","Fairmont Chengdu","A820","Children are welcome. Food and beverages are complimentary.","0+","—","5","4.8/5","214","18","","restaurant, bar, child_facilities, pool, fitness"],
+    ["asia","china","chengdu","MGallery Chengdu Yuanboyuan",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","daqing","Novotel Daqing Haofang","8900","Child policy: no minimum age if with adult.","0+","—","4",null,null,"15","","restaurant, pool, bar, spa, fitness"],
+    ["asia","china","dongguan","Pullman Dongguan Changan","7483","Child policy: no minimum age if with adult.","0+","—","5",null,null,"11","","restaurant, pool, bar, child_facilities, fitness"],
+    ["asia","china","enshi","Mövenpick Hotel Enshi",null,"During day: no limitation for children. After 18:00pm: 13 years and older.","13+","—",null,null,null,null,null,null],
+    ["asia","china","foshan","Sofitel Foshan","8719","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","120","11","yes","fitness, restaurant, bar, pool"],
+    ["asia","china","foshan","Swissôtel Foshan","A5B2","Child policy: no minimum age if with adult.","0+","—","5","4.5/5","155","18","","restaurant, pool, bar, spa"],
+    ["asia","china","fuzhou","Pullman Fuzhou Tahoe","9806","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","7","11","","restaurant, fitness, bar, spa"],
+    ["asia","china","guangzhou","Pullman Guangzhou Baiyun Airport","B2W3","Child policy: no minimum age if with adult.","0+","—","5","4.5/5","182","11","yes","bar, fitness, restaurant, pool"],
+    ["asia","china","guangzhou","Sofitel Guangzhou Sunrich","6318","Child policy: no minimum age if with adult.","0+","—","5","4.3/5","1310","11","yes","restaurant, pool, bar, child_facilities, fitness"],
+    ["asia","china","guiyang","Novotel Guiyang Downtown","8032","Child policy: no minimum age if with adult.","0+","—","4","4.3/5","74","15","yes","restaurant, bar, child_facilities, fitness"],
+    ["asia","china","guiyang","Pullman Guiyang","8275","Child policy: no minimum age if with adult.","0+","—",null,"4.6/5","86","11","yes","fitness, restaurant, bar, child_facilities"],
+    ["asia","china","guiyang","Sofitel Guiyang Hunter","8873","Child policy: no minimum age if with adult.","0+","—","5","5/5","1873","11","yes","fitness, restaurant, bar, pool"],
+    ["asia","china","hangzhou","Sofitel Hangzhou Westlake","5554","Child policy: no minimum age if with adult.","0+","—","5","4.8/5","111","11","","restaurant, pool, bar, spa"],
+    ["asia","china","harbin","Sofitel Harbin","6824","Child policy: no minimum age if with adult.","0+","—","5","4.8/5","30","11","yes","restaurant, pool, bar, child_facilities, spa, fitness"],
+    ["asia","china","hefei","Pullman Hefei Sunac","9871","Child policy: no minimum age if with adult.","0+","—","5",null,null,"11","","restaurant, pool, bar, child_facilities"],
+    ["asia","china","huizhou","Pullman Huizhou Kaisa Hotel","8163","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","203","11","yes","bar, restaurant, pool, spa"],
+    ["asia","china","jinan","Sofitel Jinan Silver Plaza",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","kaifeng","Pullman Kaifeng Jianye","8509","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","87","11","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["asia","china","kunming","Sofitel Kunming","8529","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","522","11","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","china","kunshan","Fairmont Yangcheng Lake","A5G2","Enjoy complimentary food and non-alcoholic offerings, including:\nExclusive breakfast\nAfternoon Tea\nHors d'oeuvres & evening cocktails\n\nComplimentary tea, coffee and soft drinks are offered during lounge operation.","Any","Time limits; Fees","5","4.5/5","90","17","yes","fitness, bar, restaurant, pool, child_facilities"],
+    ["asia","china","kunshan","Swissôtel Kunshan",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","lianyungang","Sofitel Lianyungang Suning","8102","Child policy: no minimum age if with adult.","0+","—","5","4.8/5","112","11","yes","restaurant, pool"],
+    ["asia","china","linyi","Pullman Linyi Lushang","7468","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","52","11","yes","restaurant, pool, bar, child_facilities, fitness"],
+    ["asia","china","nanjing","Novotel Nanjing Central Suning","7870","Child policy: no minimum age if with adult.","0+","—","4",null,null,"15","","restaurant, child_facilities"],
+    ["asia","china","nanjing","Novotel Nanjing East Suning","7548","Child policy: no minimum age if with adult.","0+","—","4",null,null,"15","","restaurant, bar, child_facilities, fitness"],
+    ["asia","china","nanjing","Pullman Nanjing Lukou Airport","8737","Child policy: no minimum age if with adult.","0+","—","5","4.8/5","312","11","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","china","nanjing","Sofitel Nanjing Galaxy Suning","6179","Child policy: no minimum age if with adult.","0+","—","5","4/5","207","11","","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["asia","china","ningbo","Novotel Ningbo East","8310","Child policy: no minimum age if with adult.","0+","—","4","4.5/5","267","15","yes","restaurant, bar, fitness"],
+    ["asia","china","ningbo","Sofitel Ningbo",null,"Child policy: 12 years old and above.","12+","—",null,null,null,null,null,null],
+    ["asia","china","panjin","Pullman Panjin Oriental Ginza",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","qingdao","Grand Mercure Qingdao Nanshan Resort",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","rizhao","Novotel Rizhao Suning","9531","Child policy: no minimum age if with adult.","0+","—","4",null,null,"15","","restaurant, pool, bar, child_facilities, fitness"],
+    ["asia","china","sanya","Fairmont Sanya Haitang Bay","B851","Children are welcome. Food and beverages are complimentary.","0+","—","5","4.4/5","172","12","yes","restaurant, pool, bar, child_facilities"],
+    ["asia","china","sanya","Pullman Oceanview Sanya Bay Resort & Spa","7126","Child policy: 3 years old and above.","3+","—","5","4.8/5","161","11","yes","restaurant, pool, bar, child_facilities, fitness"],
+    ["asia","china","sanya","Sofitel Sanya Leeman Resort","8167","Child policy: no minimum age if with adult.","0+","—","5","4.2/5","212","11","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["asia","china","shanghai","Fairmont Peace Hotel","A5G7","Children are welcome. Food and beverages are complimentary.","0+","—","5","5/5","164","11","","restaurant, fitness, bar, pool, spa"],
+    ["asia","china","shanghai","Grand Mercure Shanghai Century Park","C4L4","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","7","16","","restaurant, bar, pool"],
+    ["asia","china","shanghai","Novotel Shanghai Atlantis","3019","Child policy: no minimum age if with adult.","0+","—","4","4.3/5","620","15","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","china","shanghai","Novotel Shanghai Clover","A3P3","Child policy: no minimum age if with adult.","0+","—","4",null,null,"15","","restaurant, pool, bar, child_facilities"],
+    ["asia","china","shanghai","Novotel Shanghai Hongqiao","9229","Child policy: no minimum age if with adult.","0+","—","4",null,null,"15","","restaurant, pool, bar, child_facilities, fitness"],
+    ["asia","china","shanghai","Pullman Shanghai Jing An",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","shanghai","Pullman Shanghai Qingpu Excellence","9307","Child policy: no minimum age if with adult.","0+","—","5","4.5/5","248","11","yes","fitness, restaurant, spa, bar, pool"],
+    ["asia","china","shanghai","Pullman Shanghai Skyway",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","shanghai","Pullman Shanghai South",null,"Child policy: 4 years old and above.","4+","—",null,null,null,null,null,null],
+    ["asia","china","shanghai","Sofitel Shanghai Hongqiao","9933","Child policy: no minimum age if with adult.","0+","—","5","4.5/5","191","11","yes","restaurant, pool, bar, fitness"],
+    ["asia","china","shanghai","Sofitel Shanghai North Bund","B9G8","Child policy: no minimum age if with adult.","0+","—","5",null,null,"11","","restaurant, bar"],
+    ["asia","china","shanghai","Sofitel Shanghai Sheshan Oriental",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","shanghai","Swissôtel Grand Shanghai","A5C9","Child policy: no minimum age if with adult.","0+","—","5","4.4/5","450","17","yes","restaurant, fitness, pool"],
+    ["asia","china","shenyang","Sofitel Shenyang Lido",null,"Child policy: 12 years old and above.","12+","—",null,null,null,null,null,null],
+    ["asia","china","shenzhen","Grand Mercure Shenzhen Oriental Ginza",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","shishi","Pullman Shishi Mattison","8624","Child policy: no minimum age if with adult.","0+","—","5",null,null,"11","","restaurant, pool, bar, spa"],
+    ["asia","china","suzhou","Novotel Suzhou SIP","9442","Child policy: no minimum age if with adult.","0+","—","4","4.9/5","88","15","yes","restaurant, bar, child_facilities, pool, fitness"],
+    ["asia","china","suzhou","Pullman Suzhou Zhonghui","9936","Child policy: no minimum age if with adult.","0+","—","5","4.3/5","483","11","yes","restaurant, bar, child_facilities, pool"],
+    ["asia","china","taiyuan","Pullman Taiyuan","8475","Child policy: no minimum age if with adult.","0+","—","5","4.4/5","82","11","yes","restaurant, pool, bar, fitness"],
+    ["asia","china","tangshan","Pullman Tangshan","9807","Child policy: no minimum age if with adult.","0+","—","5","4.9/5","490","11","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["asia","china","urumqi","Grand Mercure Urumqi Hualing","8557","Child policy: no minimum age if with adult.","0+","—","5",null,null,"11","","restaurant, bar, fitness"],
+    ["asia","china","weifang","Pullman Weifang","9590","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","123","11","yes","restaurant, pool, bar, spa, fitness"],
+    ["asia","china","wenzhou","Pullman Wenzhou","8837","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","180","11","yes","restaurant, bar, pool"],
+    ["asia","china","wuhan","Fairmont Wuhan","A7Z9","Children are welcome.\nEnjoy complimentary food and non-alcoholic offerings, including:\nBreakfast \nCoffee and tea available all day\n Afternoon tea and evening happy hour are available.","0+","Time limits; Fees","5","4.6/5","150","11","yes","fitness, restaurant, bar, pool"],
+    ["asia","china","wuxi","Pullman Wuxi New Lake","7545","Child policy: no minimum age if with adult.","0+","—","5",null,null,"11","","restaurant, pool, bar, spa"],
+    ["asia","china","xi-ning","The Sebel Xi Ning","9804","Child policy: no minimum age if with adult.","0+","—","4",null,null,"11","","restaurant, pool, bar, spa, fitness"],
+    ["asia","china","xiamen","Pullman Xiamen Powerlong","8160","Child policy: no minimum age if with adult.","0+","—","5","3.8/5","24","11","","restaurant, pool, bar, child_facilities"],
+    ["asia","china","xian","Novotel Xi'an SCPG",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","china","xian","Sofitel Xian on Renmin Square","5949","Child policy: no minimum age if with adult.","0+","—","5","5/5","330","11","yes","restaurant, pool, bar, spa, fitness"],
+    ["asia","china","xining","Sofitel Xining","9567","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","205","11","yes","restaurant, pool, bar, spa, fitness"],
+    ["asia","china","zhangjiajie","Pullman Zhangjiajie","7934","Child policy: no minimum age if with adult.","0+","—","5","4.4/5","111","11","yes","restaurant, pool, bar, fitness, child_facilities"],
+    ["asia","china","zhengzhou","Novotel Zhengzhou Convention Centre","8258","Child policy: no minimum age if with adult.","0+","—","4",null,null,"15","","restaurant, bar"],
+    ["asia","china","zhengzhou","Sofitel Zhengzhou International","2197","Child policy: no minimum age if with adult.","0+","—","5","4.8/5","540","11","yes","fitness, bar, restaurant, pool"],
+    ["asia","china","zhoushan","Pullman Zhoushan Seaview",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","hong-kong","hong-kong","Novotel Hong Kong Century",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","hong-kong","hong-kong","Novotel Hong Kong Citygate","6239","Child policy: no minimum age if with adult.","0+","—","4","4.5/5","4407","15","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["asia","hong-kong","hong-kong","The Park Lane Hong Kong - A Pullman Hotel",null,"Child policy: 18 years old and above.","18+","—",null,null,null,null,null,null],
+    ["asia","india","ahmedabad","Novotel Ahmedabad","8173","Child policy: no minimum age if with adult.","0+","—","5","4.2/5","1789","15","","restaurant, child_facilities, pool"],
+    ["asia","india","andhra-pradesh","Novotel Vijayawada Varun","A0L1","Children under 16 years are not permitted in the Lounge","16+","—","5","4.2/5","965","15","yes","restaurant, bar, child_facilities, pool, spa"],
+    ["asia","india","andhra-pradesh","Novotel Visakhapatnam Varun Beach","7535","Children under 16 years are not permitted in the Lounge","16+","—","5","4.4/5","879","16","yes","restaurant, bar, pool, fitness"],
+    ["asia","india","bengaluru","Novotel Bengaluru Outer Ring Road","6453","Child policy: no minimum age if with adult.","0+","—","5","4.2/5","1437","16","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","india","chennai","Novotel Chennai Chamiers Road","9636","Child policy: no minimum age if with adult.","0+","—","5","4.1/5","1110","15","","restaurant, pool"],
+    ["asia","india","guwahati","Novotel Guwahati GS Road","9581","Children under 16 must be accompanied by an adult.","Any","<16 need adult","5","4.1/5","1127","15","","bar, restaurant, child_facilities, spa"],
+    ["asia","india","hyderabad","Novotel Hyderabad Airport","6687","Children under 16 must be accompanied by an adult.","Any","<16 need adult","5","4.4/5","2233","15","yes","fitness, restaurant, bar, child_facilities"],
+    ["asia","india","hyderabad","Novotel Hyderabad Convention Centre","6182","Child policy: no minimum age if with adult.","0+","—","5","4.2/5","2238","15","yes","fitness, restaurant, bar, child_facilities"],
+    ["asia","india","hyderabad","Novotel Hyderabad Conventions Center",null,"Children under 16 years are not permitted in the Lounge","16+","—",null,null,null,null,null,null],
+    ["asia","india","jaipur","Fairmont Jaipur","A5G0","Children under the age of 12 are not allowed during cocktail hours.\nComplimenatry breakfast, high tea, cocktail hours and all-day tea/ coffee/juices available.","Any","Time limits; Fees","5","4.8/5","2007","11","yes","bar, restaurant, pool, child_facilities, spa"],
+    ["asia","india","kolkata","Novotel Kolkata - Hotel & Residences","6937","Child policy: no minimum age if with adult.","0+","—","5","4.4/5","1838","15","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","india","mumbai","Novotel Mumbai Juhu Beach","6926","Child policy: no minimum age if with adult.","0+","—","5","3.4/5","1454","15","","restaurant, fitness, bar, child_facilities, spa"],
+    ["asia","india","mumbai","Sofitel Mumbai BKC","6451","Child policy: 7 years old and above.","7+","—","5","4.4/5","2389","11","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["asia","india","new-delhi","Novotel New Delhi Aerocity","7560","Child policy: no minimum age if with adult.","0+","—",null,"4.1/5","2915","16","","restaurant, bar, child_facilities, pool, spa"],
+    ["asia","india","new-delhi","Pullman New Delhi Aerocity","7559","Child policy: no minimum age if with adult.","0+","—","5","4.3/5","2784","12","yes","bar, restaurant, pool, spa, child_facilities"],
+    ["asia","india","vijayawada","Novotel Vijayawada Varun","A0L1","Child policy: no minimum age if with adult.","0+","—","5","4.2/5","965","15","yes","restaurant, bar, child_facilities, pool, spa"],
+    ["asia","india","visakhapatnam","Novotel Visakhapatnam Varun Beach","7535","Child policy: no minimum age if with adult.","0+","—","5","4.4/5","879","16","yes","restaurant, bar, pool, fitness"],
+    ["asia","indonesia","bali","Novotel Bali Ngurah Rai Airport","9105","Child policy: no minimum age if with adult.","0+","—","4","4.7/5","858","15","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","indonesia","bali","Sofitel Bali Nusa Dua Beach Resort","9078","Children below 12 years old are only allowed to access Club Millesime under their parents supervision. \nChildren under 12 years of age are not permitted in the lounge during cocktails hours.","12+","Time limits","5","4.6/5","3845","11","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["asia","indonesia","bandung","Grand Mercure Bandung Setiabudi","8814","Child Policy:\n - No alcohol will be served to anyone under 18 years of age. Proof of age may be required\n - No minimum age if accompanied by an adult","0+","Adult req.","5","4.6/5","665","12","yes","restaurant, fitness, bar, child_facilities, spa"],
+    ["asia","indonesia","bandung","Pullman Bandung Grand Central","9109","No minimum age, must be accompanied by an adult.","0+","Adult req.","5","4.7/5","1522","12","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","indonesia","bangka","Novotel Bangka Hotel and Convention Centre",null,"Children under 12 must be accompanied by an adult. No outside food and drinks allowed.","Any","<12 need adult",null,null,null,null,null,null],
+    ["asia","indonesia","banjarmasin","Novotel Banjarmasin Airport","8489","No minimum age, must be accompanied by an adult.","0+","Adult req.","4","4.8/5","1018","15","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","indonesia","ikn---ibukota-nusantara","Swissôtel Nusantara","C2H0","Minimum 12 years old and must be accompanied by an adult.","Any","Adult req.","5","4.7/5","280","12","","restaurant, pool"],
+    ["asia","indonesia","jakarta","Fairmont Jakarta","A5G1","Children accompanied by adults are welcome.\nComplimentary breakfast, afternoon tea, evening cocktails.","Any","Time limits; Adult req.","5","4.6/5","3034","12","yes","fitness, restaurant, bar, child_facilities"],
+    ["asia","indonesia","jakarta","Mercure Jakarta Gatot Subroto","B151","Children aged under 12 must be accompanied by an adult. Executive Lounge opening hour is 2 - 9 pm","Any","<12 need adult","4","4.9/5","2168","11","","bar, fitness, restaurant, spa, pool"],
+    ["asia","indonesia","jakarta","Novotel Jakarta Gajah Mada","7447","Child policy: no minimum age if with adult.","0+","—","4","4.2/5","562","15","yes","restaurant, spa, bar, pool, child_facilities"],
+    ["asia","indonesia","jakarta","Novotel Jakarta Mangga Dua Square","5704","Children under 18 years old are prohibited from entering","Any","—","4","4.5/5","823","15","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","indonesia","jakarta","Pullman Jakarta Central Park","7536","Children under 12 must be accompanied by an adult","Any","<12 need adult","5","4.6/5","1915","11","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","indonesia","jakarta","Pullman Jakarta Indonesia Thamrin CBD","8491","Child policy: no minimum age if with adult.","0+","—","5","4.5/5","645","11","yes","fitness, restaurant, bar, pool"],
+    ["asia","indonesia","jakarta","Swissôtel Jakarta Pik Avenue","B590","Minimum 12 years old and must be accompanied by an adult.","Any","Adult req.","5","4.7/5","789","11","yes","restaurant, bar, child_facilities, pool, spa"],
+    ["asia","indonesia","lampung","Grand Mercure Lampung","9778","No minimum age, must be accompanied by an adult.","0+","Adult req.","5","5/5","1834","3","","restaurant, bar, pool"],
+    ["asia","indonesia","makassar","Novotel Makassar Grand Shayla","8584","No minimum age, must be accompanied by an adult.","0+","Adult req.","4","4.8/5","33","15","","restaurant, pool, bar, spa"],
+    ["asia","indonesia","medan","Grand Mercure Maha Cipta Medan Angkasa","9054","Child policy: no minimum age if with adult.","0+","—","5","4.4/5","160","12","","restaurant, bar, pool, fitness, child_facilities"],
+    ["asia","indonesia","pekanbaru","Novotel Pekanbaru","9482","No minimum age, must be accompanied by an adult.","0+","Adult req.","4","4.5/5","467","15","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["asia","indonesia","semarang","Novotel Semarang","5506","No minimum age, must be accompanied by an adult.","0+","Adult req.","4","4.3/5","118","15","yes","restaurant, bar, child_facilities"],
+    ["asia","indonesia","solo","Grand Mercure Solo Baru","C0I4","Children are not allowed in the Lounge due to its designation as a smoking area","Any","—","5","4.6/5","495","12","yes","bar, restaurant, child_facilities, spa"],
+    ["asia","indonesia","solo","Novotel Solo","0545","Child policy: 12 years old and above.","12+","—","4","4.5/5","841","15","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","indonesia","tangerang","Novotel Tangerang","7234","Children under 16 must be accompanied by an adult","Any","<16 need adult","4","4.6/5","529","15","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["asia","japan","naha","Novotel Okinawa Naha","B2P9","Children under 13 years old are not allowed during cocktail hours from 18:30 to 20:00, even if accompanied by an adult.","13+","Time limits; Adult req.","4","4.4/5","1788","15","yes","fitness, bar, restaurant, pool, child_facilities"],
+    ["asia","japan","nara","Novotel Nara","C166","Child policy: no minimum age if with adult.","0+","—","4","4.6/5","1976","12","yes","bar, fitness, child_facilities, restaurant, spa"],
+    ["asia","japan","osaka","Swissotel Nankai Osaka","A5C3","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","6499","12","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","japan","sapporo","Hôtel Sosei Sapporo MGallery","C082","Child policy: no minimum age if with adult.","0+","—","5","4.8/5","1233","11","","restaurant, bar"],
+    ["asia","japan","tokyo","Fairmont Tokyo","B6R8","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","766","11","yes","restaurant, pool, spa, bar"],
+    ["asia","japan","tokyo","Mercure Tokyo Hibiya","C1F1","No minimum age, must be accompanied by an adult.","0+","Adult req.","4","4.5/5","2192","12","","restaurant"],
+    ["asia","japan","tokyo","Pullman Tokyo Tamachi","B137","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","1674","12","yes","restaurant, bar, fitness, child_facilities"],
+    ["asia","macao","macau","Sofitel Macau at Ponte 16","6480","Child policy: no minimum age if with adult.","0+","—","5","4.9/5","371","11","yes","restaurant, pool, fitness, spa"],
+    ["asia","malaysia","klia","Mövenpick Hotel and Convention Centre KLIA","B4P4","Children under 16 must be accompanied by an adult.","Any","<16 need adult","5","4.5/5","2506","11","yes","restaurant, child_facilities, pool, spa"],
+    ["asia","malaysia","kuala-lumpur","Novotel Kuala Lumpur City Centre","6324","Children under 16 must be accompanied by an adult.","Any","<16 need adult","4","4.4/5","3501","15","yes","restaurant, bar, pool, fitness"],
+    ["asia","malaysia","kuala-lumpur","Pullman Kuala Lumpur City Centre - Hotel & Residences","A0C5","Access not available for children below 16 years old.","Any","—","5","4.3/5","3917","11","yes","bar, restaurant, pool, spa"],
+    ["asia","malaysia","kuala-lumpur","Pullman Kuala Lumpur City Centre Hotel & Residences","A0C5","Children under 16 years are not permitted in the Club Lounge","16+","—","5","4.3/5","3917","11","yes","bar, restaurant, pool, spa"],
+    ["asia","malaysia","kuala-lumpur","Sofitel Kuala Lumpur Damansara","A123","Children below 12 years old are only allowed to access Club Millesime under their parents supervision. \nChildren under 12 years of age are not permitted in the lounge during cocktails Apero Chic hours.","12+","Time limits","5","4.4/5","2173","11","yes","restaurant, bar, child_facilities, pool"],
+    ["asia","malaysia","kuching","Pullman Kuching","6332","Child policy: no minimum age if with adult.","0+","—","5","4.2/5","2337","11","","restaurant, fitness, bar, pool"],
+    ["asia","malaysia","miri","Pullman Miri Waterfront","9731","Children below 12 must be accompanied by an adult.","Any","<12 need adult","5","4.4/5","3340","11","yes","restaurant, pool, bar, child_facilities"],
+    ["asia","malaysia","sepang","Movenpick Hotel & Convention Centre KLIA",null,"No minimum age, must be accompanied by an adult.","0+","Adult req.",null,null,null,null,null,null],
+    ["asia","myanmar","mandalay","Pullman Mandalay Mingalar",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","myanmar","yangon","Novotel Yangon Max","9045","Child policy: no minimum age if with adult.","0+","—","5","4.5/5","574","15","yes","restaurant, bar, child_facilities, pool"],
+    ["asia","pakistan","islamabad","Movenpick Hotel Centaurus Islamabad",null,"Children under 12 not permitted. Children under 18 must be accompanied by an adult","12+","Adult req.",null,null,null,null,null,null],
+    ["asia","pakistan","karachi","Mövenpick Hotel Karachi",null,"Child policy: No minimum age if with adult and registered in room; if not registered children aged 5 year and above will be charged.","0+","Fees",null,null,null,null,null,null],
+    ["asia","pakistan","karachi","Mövenpick Karachi","B4N7","Child policy: no minimum age if with adult.","0+","—","5","4.2/5","1399","5","yes","bar, restaurant, pool, spa"],
+    ["asia","philippines","clark","Swissôtel Clark",null,"Child policy: 18 years old and above","18+","—",null,null,null,null,null,null],
+    ["asia","philippines","makati","Fairmont Makati","A5G3","Children are welcome from Friday to Sunday and on Holidays.\nComplimentary breakfast, all day snacks and non-alcoholic beverages.\nComplimentary evening cocktails.","0+","Time limits","5","4.7/5","4162","12","","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","philippines","quezon-city","Novotel Manila Araneta Center",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","singapore","singapore","Fairmont Singapore","A5G8","Children under 12 are not allowed during the cocktail period.\nComplimentary breakfast with coffee, tea, juices and other non-alcoholic drinks.\nComplimentary evening cocktails food and drinks. \nNon-alcoholic beverages and snacks are offered throughout the lounge operational hours.","12+","Time limits; Fees","5","4.7/5","7527","12","yes","restaurant, fitness, bar, pool, child_facilities"],
+    ["asia","singapore","singapore","Grand Mercure Singapore Roxy","3610","Child policy: no minimum age if with adult.","0+","—","4","4.5/5","5146","11","yes","restaurant, bar, pool, fitness"],
+    ["asia","singapore","singapore","Mercure Singapore Bugis","A0D7","Child policy: 12 years old and above.","12+","—","4","4.3/5","4515","12","yes","fitness, bar, restaurant, pool"],
+    ["asia","singapore","singapore","Mercure Singapore On Stevens","9561","Evening Cocktail Hour is reserved for guests above 12 years old. Children aged 12 years old and below are not permitted during Cocktail Hour.","12+","Time limits","4","4.1/5","1806","11","","restaurant, child_facilities, pool"],
+    ["asia","singapore","singapore","Novotel Singapore On Stevens","9543","Evening Cocktail Hour is reserved for guests above 12 years old. Children aged 12 years old and below are not permitted during Cocktail Hour.","12+","Time limits","4","4.2/5","1613","11","","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["asia","singapore","singapore","Pullman Singapore Hill Street","B5L7","General lounge access (the time prior to Cocktail Hour) is open to children if accompanied by an adult. During Cocktail Hour, children must be 12 years or older and accompanied by an adult","Any","Time limits; Adult req.","5","4.5/5","3698","11","","fitness, restaurant, bar, pool"],
+    ["asia","singapore","singapore","Pullman Singapore Orchard","B9H8","Evening Cocktail Hour is reserved for guests above 12 years old. Children aged 12 years old and below are not permitted during Cocktail Hour.","12+","Time limits","5","4.5/5","3463","12","yes","restaurant, bar, pool, fitness"],
+    ["asia","singapore","singapore","Sofitel Singapore City Centre","A152","Child policy: 12 years old and above.","12+","—","5","4.6/5","2769","11","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["asia","singapore","singapore","Swissotel The Stamford","A5D3","Families with children are warmly welcome to enjoy evening cocktails at the family zone located at Level 65, so everyone can share in the experience together.","Any","Time limits","5","4.6/5","16226","12","yes","restaurant, pool, fitness, bar"],
+    ["asia","south-korea","seoul","Fairmont Ambassador Seoul","B200","Children are not allowed during evening cocktail.\nFood and beverages are complimentary.","Any","Time limits","5","4.6/5","2708","17","","fitness, restaurant, pool, spa"],
+    ["asia","south-korea","seoul","Grand Mercure Ambassador Hotel and Residences Seoul Yongsan","9470","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","595","11","yes","restaurant, bar, child_facilities, pool, fitness"],
+    ["asia","south-korea","seoul","Grand Mercure Imperial Palace Seoul Gangnam","C3E4","Children under 16 years are not permitted in the Lounge","16+","—","5","4.3/5","1142","12","yes","restaurant, bar, pool"],
+    ["asia","south-korea","seoul","Novotel Ambassador Seoul Dongdaemun Hotels & Residences","A5U6","Child Policy: Children are only allowed between 07:30 AM and 4:00 PM. From 5:30 PM to 10:00 PM, Adults Only (19 years and above). Children aged 13 and older.","13+","—","5","4.5/5","1178","15","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","south-korea","seoul","Novotel Ambassador Seoul Gangnam","1633","Child Policy: Ages 14 and above.","Any","—","5","4.5/5","1524","15","yes","bar, restaurant, child_facilities"],
+    ["asia","south-korea","seoul","Novotel Ambassador Seoul Yongsan - Seoul Dragon City","9472","Child Policy: There are no age restrictions outside of happy hour. For happy hour from 5:30 PM to 7:30 PM, only individuals 19 years old and older are permitted.","0+","Time limits","5","4.4/5","1051","15","","bar, restaurant, pool"],
+    ["asia","south-korea","seoul","Novotel Suites Ambassador Seoul Yongsan","9473","Child Policy: There are no age restrictions outside of happy hour. For happy hour from 5:30 PM to 7:30 PM, only individuals 19 years old and older are permitted.","0+","Time limits","5","4.3/5","482","15","","bar, restaurant, pool"],
+    ["asia","south-korea","seoul","Sofitel Ambassador Seoul Hotel & Serviced Residences","B220","Child policy: children aged 12 and above are permitted to access, subject to payment of entry fees.","12+","Fees","5","4.7/5","4319","11","yes","restaurant, spa, bar, pool, child_facilities"],
+    ["asia","south-korea","seoul","The Ambassador Seoul - A Pullman Hotel","0966","Children are only allowed between 6:30 AM and 10:00 AM. Children aged 13 and older. Subject to payment of entry fees.","13+","Fees","5","4.3/5","582","11","","restaurant, pool"],
+    ["asia","south-korea","suwon","Novotel Ambassador Suwon","8748","Child Policy: Ages 16 and above.","Any","—","4","4.7/5","433","15","","restaurant, bar, fitness"],
+    ["asia","thailand","bangkok","Grand Mercure Bangkok Atrium","C0Y8","Child policy: no minimum age if with adult.","0+","—","5","4.3/5","2700","12","yes","restaurant, pool, spa, bar"],
+    ["asia","thailand","bangkok","Mercure Bangkok Makkasan","8422","Child policy: no minimum age if with adult.","0+","—","4","4.4/5","935","11","yes","fitness, bar, restaurant, pool"],
+    ["asia","thailand","bangkok","Mercure Bangkok Sukhumvit 11","A247","Child policy: no minimum age if with adult.","0+","—","4","4.7/5","1496","11","yes","bar, restaurant, pool, spa"],
+    ["asia","thailand","bangkok","Mövenpick BDMS Wellness Resort Bangkok","B4U9","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","2272","12","yes","bar, restaurant, pool, child_facilities"],
+    ["asia","thailand","bangkok","Mövenpick BDMS Wellness Resort Bangkok","B4U9","Child Policy: No minimum age if with adult","0+","—","5","4.6/5","2272","12","yes","bar, restaurant, pool, child_facilities"],
+    ["asia","thailand","bangkok","Mövenpick Hotel Sukhumvit 15 Bangkok","B4K2","Child policy: no minimum age if with adult.","0+","—","5","4.2/5","1477","12","yes","restaurant, bar, child_facilities, pool"],
+    ["asia","thailand","bangkok","Novotel Bangkok Future Park Rangsit","B346","Child policy: no minimum age if with adult.","0+","—","4","4.6/5","1128","15","yes","restaurant"],
+    ["asia","thailand","bangkok","Novotel Bangkok Impact","8059","Child policy: no minimum age if with adult.","0+","—","4","4.6/5","1178","15","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","thailand","bangkok","Novotel Bangkok Platinum Pratunam","7272","Child policy: no minimum age if with adult.","0+","—","4","4.5/5","348","15","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","thailand","bangkok","Novotel Bangkok Sukhumvit 20","9343","Child policy: no minimum age if with adult.","0+","—","4","4.6/5","549","12","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","thailand","bangkok","Pullman Bangkok Hotel G","3616","Child policy: no minimum age if with adult.","0+","—","5","4.3/5","3264","11","yes","restaurant, fitness, bar, pool"],
+    ["asia","thailand","bangkok","Pullman Bangkok King Power","6323","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","2980","13","yes","restaurant, bar, pool, spa"],
+    ["asia","thailand","bangkok","SO/ Sofitel Bangkok",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","thailand","bangkok","Sofitel Bangkok Sukhumvit","5213","Child policy: 12 years old and above, unless accompanied by an adult.","12+","Adult req.","5","4.7/5","4407","11","yes","bar, restaurant, pool, spa"],
+    ["asia","thailand","chonburi","Novotel Marina Sriracha","9775","No minimum age if with adult","0+","—","4","4.5/5","1733","15","yes","bar, restaurant"],
+    ["asia","thailand","krabi","Grand Mercure Ao Nang Krabi",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","thailand","krabi","Sofitel Krabi Phokeethra Golf & Spa Resort","6184","Child policy: 11 years old and above.","11+","—","5","4.5/5","1133","12","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["asia","thailand","pattaya","Mövenpick Siam Hotel Na Jomtien Pattaya",null,"Child policy: No minimum age if with adult. Supplementary charge will be applied for children above 7 years old.","0+","Fees",null,null,null,null,null,null],
+    ["asia","thailand","pattaya","Pullman Pattaya Hotel G","7540","Child policy: no minimum age if with adult.","0+","—","5","4.4/5","1504","11","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","thailand","phuket","Grand Mercure Phuket Patong","8109","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","1326","12","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","thailand","phuket","Pullman Phuket Karon Beach","C1D6","Child policy: 7 years and above age if with adult.","7+","—","5","4.4/5","1673","11","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","vietnam","danang","Grand Mercure Danang","7821","Child policy: no minimum age if with adult.","0+","—","5","4.8/5","257","12","yes","restaurant, spa, bar, child_facilities"],
+    ["asia","vietnam","danang","Novotel Danang Premier Han River","8287","Child policy: no minimum age if with adult.","0+","—","5","4.8/5","1797","15","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","vietnam","ha-noi","Movenpick Hotel Hanoi Centre","B4G6","No minimum age, must be accompanied by an adult.","0+","Adult req.","5","4.6/5","1512","11","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["asia","vietnam","hai-phong","Mercure Hai Phong","9183","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","556","11","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","vietnam","hai-phong","Pullman HaiPhong Grand Hotel",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["asia","vietnam","hanoi","Pullman Hanoi","7579","Child policy: 13 years old and above.","13+","—","5","4.4/5","946","11","yes","restaurant, spa, bar, child_facilities"],
+    ["asia","vietnam","hanoi","Sofitel Legend Metropole Hanoi","1555","Child policy: no minimum age if with adult.","0+","—","5","4.9/5","4627","11","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["asia","vietnam","ho-chi-minh-city","Hotel des Arts Saigon - MGallery Collection","9231","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","2645","8","yes","restaurant, fitness, bar, pool"],
+    ["asia","vietnam","ho-chi-minh-city","Novotel Saigon Centre","7965","Child policy: no minimum age if with adult.","0+","—","4","4.6/5","1274","15","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["asia","vietnam","ho-chi-minh-city","Pullman Saigon Centre","7489","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","2008","11","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["asia","vietnam","ho-chi-minh-city","Sofitel Saigon Plaza","2077","Child policy: 12 years old and above.","12+","—","5","4.7/5","1465","11","yes","restaurant, fitness, bar, pool"],
+    ["asia","vietnam","phan-thiet","Mövenpick Resort Phan Thiet","B6Y9","No minimum age, must be accompanied by an adult.","0+","Adult req.","5","4.6/5","668","11","yes","restaurant, bar, child_facilities, pool, spa"],
+    ["asia","vietnam","vung-tau","Pullman Vung Tau","7133","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","286","11","yes","restaurant, bar, child_facilities, pool"],
+    ["europe","czech-republic","ostrava","Mercure Ostrava Center","7051","Child policy: no minimum age if with adult.","0+","—","4","4.6/5","718","11","yes","restaurant, bar"],
+    ["europe","greece","athens","Sofitel Athens Airport","3167","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","3369","11","yes","fitness, restaurant, spa, bar, pool"],
+    ["europe","hungary","budapest","Mercure Budapest City Center","6565","Child policy: no minimum age if with adult.","0+","—","4","4.6/5","800","11","yes","fitness, bar, restaurant, child_facilities"],
+    ["europe","hungary","budapest","Sofitel Budapest Chain Bridge",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["europe","netherlands","amsterdam","Mövenpick Hotel Amsterdam City Centre","B4I7","Child policy: no minimum age if with adult.","0+","—","4","4.5/5","2722","11","yes","restaurant, bar, spa"],
+    ["europe","russian-federation","moscow","Swissôtel Krasnye Holmy Moscow",null,"Contact the hotel for details.","?","Contact hotel",null,null,null,null,null,null],
+    ["europe","russian-federation","sochi","Pullman Sochi Centre",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["europe","turkey","istanbul","Fairmont Quasar Istanbul","A800","Children are welcome.","0+","—","5","4.6/5","1079","12","yes","fitness, restaurant, bar, child_facilities"],
+    ["europe","turkey","istanbul","Pullman Istanbul Hotel and Convention Center",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["europe","turkey","istanbul","Swissôtel The Bosphorus Istanbul","A5D2","Contact the hotel for details.","?","Contact hotel","5","4.7/5","3838","12","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["europe","turkey","izmir","Mövenpick Hotel Izmir",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["europe","turkey","izmir","Swissôtel Büyük Efes","A5A6","Minimum 8 years old and must be accompanied  by an adult.","Any","Adult req.","5","4.6/5","5580","17","yes","restaurant, bar, child_facilities, pool"],
+    ["europe","united-kingdom","london","Sofitel London Heathrow Hotel","6214","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","15880","11","yes","fitness, bar, restaurant, spa"],
+    ["middle-east","bahrain","manama","Sofitel Bahrain Zallaq Thalassa sea & spa","6722","Child policy: no minimum age if with adult.","0+","—","5","4.5/5","1257","11","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["middle-east","egypt","cairo","Fairmont Nile City","A5E9","Children are welcome. \nComplimentary breakfast, snack and alcoholic beverages are available.","0+","—","5","4.6/5","2784","17","yes","restaurant, fitness, bar, pool, child_facilities"],
+    ["middle-east","egypt","cairo","Sofitel Cairo Downtown Nile","C3J2","Children are allowed under parents’ supervision.","Any","—","5","4.2/5","681","11","","restaurant, bar, pool, spa"],
+    ["middle-east","egypt","cairo","Sofitel Cairo Nile El Gezirah","5307","Children are allowed under parents’ supervision.","Any","—","5","4.7/5","1125","11","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["middle-east","jordan","amman","Fairmont Amman","A7X8","Children are not permitted.\nFood and beverages are complimentary, including breakfast, snacks throughout the day, and canapés in the evening.\nAlcohol is served from 6:00 pm - 8:00 pm","Any","Time limits","5","4.6/5","1549","11","yes","restaurant, bar"],
+    ["middle-east","jordan","amman","Movenpick Hotel Amman","B5J0","No minimum age if with adult/ 12 years old and above / Minimum 8 years old and must be accompanied by an adult)","0+","Adult req.","5","4.6/5","739","6","","restaurant, fitness, bar, pool, child_facilities"],
+    ["middle-east","lebanon","beirut","Movenpick Hotel Beirut",null,"No minimum age, must be accompanied by an adult.","0+","Adult req.",null,null,null,null,null,null],
+    ["middle-east","oman","muscat","Mövenpick Hotel & Apartments Ghala Muscat",null,"","—","—",null,null,null,null,null,null],
+    ["middle-east","qatar","doha","Banyan Tree Doha at La Cigale Musharib","B4T9","Child policy: 16 years old and above.","16+","—","5","4.5/5","313","18","yes","restaurant, bar, child_facilities, pool"],
+    ["middle-east","qatar","doha","Fairmont Doha","B663","Children are welcome.\nComplimentary coffee, tea and soft beverages.\nComplimentary free flow of house beverages and canapes.\nComplimentary dessert.\nAccess to specific dedicated pool and dining area.","0+","Fees","5","4.5/5","1312","12","yes","fitness, bar, restaurant, pool, spa"],
+    ["middle-east","qatar","doha","Mövenpick Hotel West Bay Doha",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["middle-east","qatar","doha","Pullman Doha West Bay","8112","Children under 12 must be accompanied by an adult. After 1700 hrs children under 18 are not permitted","12+","Adult req.","5","4.6/5","1858","12","yes","restaurant, bar, pool, fitness, child_facilities"],
+    ["middle-east","qatar","doha","Swissotel Cornich Park Towers Doha",null,"Children under 12 must be accompanied by an adult.","Any","<12 need adult",null,null,null,null,null,null],
+    ["middle-east","saudi-arabia","al-khobar","Sofitel Al Khobar The Corniche","5988","Children under 16 must be accompanied by an adult.","Any","<16 need adult","5","4.2/5","659","12","","fitness, restaurant, spa, pool, child_facilities"],
+    ["middle-east","saudi-arabia","khamis-mushayt","Mercure Hotel Khamis Mushayt",null,"Child policy: until 12 years old except during Happy Hour.","0–12","Time limits",null,null,null,null,null,null],
+    ["middle-east","saudi-arabia","madinah","Anwar Al Madinah Mövenpick Hotel","B4M6","Children under 12 must be accompanied by adult.","Any","<12 need adult","5","3.7/5","715","12","","restaurant"],
+    ["middle-east","saudi-arabia","makkah","Fairmont Makkah Clock Royal Tower",null,"Children are not welcome.\nWelcome drink/ coffee upon arrival at the lounge.\nComplimentary continental breakfast for limited items.\nComplimentary afternoon tea for 2 hours. \nComplimentary snacks for 3 hours at Lounge.","Any","Fees",null,null,null,null,null,null],
+    ["middle-east","saudi-arabia","medina","Anwar Al Madinah Movenpick Hotel","B4M6","No minimum age, must be accompanied by an adult.","0+","Adult req.","5","3.7/5","715","12","","restaurant"],
+    ["middle-east","saudi-arabia","qassim","Mövenpick Qassim","B4N1","No minimum age, must be accompanied by an adult.","0+","Adult req.","5","4.5/5","306","10","yes","restaurant, child_facilities, pool, spa"],
+    ["middle-east","saudi-arabia","riyadh","Fairmont Riyadh","A7X6","Food and non-alcoholic beverages are complimentary.\nContinental breakfast is available.","Any","—","5","4.7/5","766","18","yes","fitness, restaurant, spa, bar, pool"],
+    ["middle-east","saudi-arabia","riyadh","Mövenpick Hotel & Residences Riyadh",null,"No minimum age, must be accompanied by an adult.","0+","Adult req.",null,null,null,null,null,null],
+    ["middle-east","saudi-arabia","riyadh","Sofitel Riyadh","9029","No children allowed","Any","—","5","3.7/5","7","11","","restaurant, bar"],
+    ["middle-east","united-arab-emirates","abu-dhabi","Sofitel Abu Dhabi Corniche","7507","Children allowed only from 12:00 until 17:00 and if accompanied by an adult.","Any","Adult req.","5","4.3/5","1942","11","yes","fitness, restaurant, pool, child_facilities"],
+    ["middle-east","united-arab-emirates","bab-al-bahr","Fairmont Bab Al Bahr",null,"Children are welcome.\nEnjoy complimentary food and non-alcoholic offerings, including:\nBreakfast Buffet \nAfternoon tea sandwiches\nCanapes and hors d'oeuvres from hotel restaurants\nHouse wines along with cocktails and non-alcoholic beverages\nComplimenatry coffee and tea are available.","0+","Time limits; Fees",null,null,null,null,null,null],
+    ["middle-east","united-arab-emirates","dubai","Fairmont The Palm","A5F1","Children are welcome.\nFood and non-alcoholic beverages are complimentary.\nAn honor bar system is in place for alcoholic beverages.","0+","—","5","4.6/5","4623","12","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["middle-east","united-arab-emirates","dubai","Grand Plaza Movenpick Media City","B4J9","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","1666","12","yes","fitness, restaurant, spa, bar, pool"],
+    ["middle-east","united-arab-emirates","dubai","Grand Plaza Mövenpick Media City","B4J9","","—","—","5","4.7/5","1666","12","yes","fitness, restaurant, spa, bar, pool"],
+    ["middle-east","united-arab-emirates","dubai","Mercure Dubai Deira","A7N4","No child policy to enter the lounge. 12 yo and above consider adult, 6-12 yo 50% from the lounge package - no alcohol inclusive in the lounge offerings","Any","—","3","4.6/5","1518","5","yes","restaurant, bar, child_facilities, pool"],
+    ["middle-east","united-arab-emirates","dubai","Mövenpick Hotel & Apartments Bur Dubai","B4J0","Child policy: no minimum age if with adult.","0+","—","5","4.4/5","1661","11","yes","restaurant, fitness, bar, child_facilities, pool, spa"],
+    ["middle-east","united-arab-emirates","dubai","Mövenpick Hotel Jumeirah Beach","B4I9","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","2864","12","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["middle-east","united-arab-emirates","dubai","Pullman Dubai Creek City Cenrte Hotel",null,"Child policy: No access to children under 21.","Any","—",null,null,null,null,null,null],
+    ["middle-east","united-arab-emirates","dubai","Pullman Dubai Downtown","B8D7","Children allowed only if accompanied by parents, except during 'Happy Hour'.","Any","Time limits; Adult req.","5","4.5/5","3097","11","yes","restaurant, bar, pool, spa"],
+    ["middle-east","united-arab-emirates","dubai","Pullman Dubai Downtown","B8D7","Child policy: no minimum age if with adult., except for happy hour. Kid and under age of 21 guests are not allowed for happy hour.","0+","Time limits","5","4.5/5","3097","11","yes","restaurant, bar, pool, spa"],
+    ["middle-east","united-arab-emirates","dubai","Pullman Dubai Jumeirah Lakes Towers","6305","Children under 12 must be accompanied by an adult.","Any","<12 need adult","5","4.4/5","2172","11","yes","restaurant, child_facilities"],
+    ["middle-east","united-arab-emirates","dubai","Sofitel Dubai Downtown","7492","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","3924","11","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["middle-east","united-arab-emirates","dubai","Sofitel Dubai Jumeirah Beach","6146","Child policy: until 12 years old except during Happy Hour.","0–12","Time limits","5","4.6/5","3872","11","yes","restaurant, bar, pool, spa, child_facilities"],
+    ["middle-east","united-arab-emirates","dubai","Sofitel Dubai The Obelisk","B197","Contact the hotel for details.","?","Contact hotel","5","4.8/5","5284","11","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["middle-east","united-arab-emirates","dubai","Sofitel The Palm, Dubai",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["middle-east","united-arab-emirates","dubai","Swissotel Al Ghurair Dubai","B1P8","Members in hotel & suite rooms only – Apartment & Long stay guests will be ineligible for the lounge access irrespective of their membership status.","Any","—","5","4.4/5","2960","11","yes","restaurant, fitness, child_facilities, pool"],
+    ["middle-east","united-arab-emirates","dubai","Swissotel Dubai Al Murooj",null,"For hotel room guests only; open  from 12–9 PM. Afternoon Tea 2–4 PM, Happy Hour 6–8 PM. Kids 12–5 PM with parents. Boardroom 1 hr free. Apartment guests are not allowed","Any","Time limits",null,null,null,null,null,null],
+    ["middle-east","united-arab-emirates","ras-al-khaimah","Sofitel Al Hamra Beach Resort","B9F8","Children are welcome.","0+","—","5","4.5/5","1432","12","yes","restaurant, spa, bar, pool, child_facilities"],
+    ["north-america","bermuda","hamilton","Hamilton Princess & Beach Club - A Fairmont Managed Hotel",null,"Children are welcome.\nNon-alcoholic beverages are included. \nAn honor bar system in place for alcoholic beverages.","0+","—",null,null,null,null,null,null],
+    ["north-america","canada","banff","Fairmont Banff Springs","A550","Children are welcome when accompanied by an adult.\nComplimentary non-alcoholic beverages.\nFull-service bar available to guests.","0+","Adult req.","4","4.7/5","5835","16","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["north-america","canada","calgary","Fairmont Palliser","A555","Children are welcome.\nFood and non-alcoholic beverages are complimentary.\nBuffet  breakfast and evening hors d'oeuvres are available.\nThe honor bar system is in place for alcohol beverages.\nPets are not permitted inside the lounge.","0+","Time limits","4","4.5/5","4017","17","yes","restaurant, fitness, child_facilities, pool"],
+    ["north-america","canada","edmonton","Fairmont Hotel Macdonald","A559","Children are welcome.\nComplimentary snacks and non-alcoholic beverages are provided throughout the day.\nAlcoholic beverages are available for guests at an additional cost.","0+","—","4","4.6/5","1638","17","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["north-america","canada","lake-louise","Fairmont Chateau Lake Louise","A563","Children are welcome.\nBreakfast, snacks and early evening canapes are complimentary.\nNon-alcoholic beverages are complimentary, alcoholic beverages have a honor bar system in place.","0+","Time limits","5","4.7/5","7372","17","yes","fitness, bar, restaurant, pool, child_facilities, spa"],
+    ["north-america","canada","montreal","Fairmont The Queen Elizabeth","A567","Food and non-alcoholic beverages are complimentary.","Any","—","4.5","4.5/5","3959","17","yes","fitness, restaurant, spa, bar, pool, child_facilities"],
+    ["north-america","canada","ottawa","Fairmont Chateau Laurier",null,"Children are welcome.\nFood and non-alcoholic beverages are complimentary.\nAn honor bar system is in place for alcoholic beverages.","0+","—",null,null,null,null,null,null],
+    ["north-america","canada","quebec","Fairmont Le Chateau Frontenac",null,"Children under 18 must always be accompanied by an adult.\nDeluxe continental buffet breakfast available.\nSelection of appetizers and hors-d’oeuvre available.\nAn honor bar system in place for alcoholic beverages.\nComplimentary high speed wifi available in the lounge.","Any","<18 need adult",null,null,null,null,null,null],
+    ["north-america","canada","richmond","Fairmont Vancouver Airport",null,"Children are welcome.\nFood and non-alcoholic beverages are complimentary.\nThe honor bar system in place for alcohol beverages.\nService animals are permitted.","0+","—",null,null,null,null,null,null],
+    ["north-america","canada","toronto","Fairmont Royal York","A551","Children are welcome. \n\nEnjoy complimentary food and non-alcoholic offerings, including:\nBreakfast offerings\nAfternoon treats, featuring scones, pastries, and compotes\nEvening canapés \nDessert offerings \n\nAlcoholic beverages are available for an additional charge.","0+","Time limits; Fees","4","4.4/5","10989","17","yes","fitness, restaurant, bar, pool"],
+    ["north-america","canada","tremblant","Fairmont Tremblant","A565","Children are welcome.\nComplimentary daily contintental breakfast.\nDrinks, snacks, tea, coffee available all day. \nSweet offering from 8:00 PM to 10:00 PM.\nAn honor bar system in place for alcoholic beverages.","0+","Fees","4","4.5/5","1877","17","yes","restaurant, bar, child_facilities, pool, spa"],
+    ["north-america","canada","vancouver","Fairmont Hotel Vancouver","A584","Children are welcome\nFood and non-alcoholic beverages are complimentary.\nAlcohol is charged to guest rooms account on consumption.","0+","Fees","4","4.5/5","6258","17","","restaurant, bar, pool, spa"],
+    ["north-america","canada","vancouver","Fairmont Pacific Rim","A585","Children are welcome.\nFood and non-alcoholic beverages are complimentary.\nAlcoholic beverages are available for an additional charge.","0+","Fees","5","4.8/5","3998","17","yes","restaurant, bar, pool, spa"],
+    ["north-america","canada","vancouver","Fairmont Waterfront","A587","Children are welcome.\nFood and non-alcoholic beverages are complimentary.","0+","—","4","4.6/5","4676","17","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["north-america","canada","victoria","Fairmont Empress",null,"Fairmont Gold Lounge – Children under the age 16 are welcome. Food and non-alcoholic beverages are complimentary. Alcoholic beverages are available for an additional charge.","Any","Fees",null,null,null,null,null,null],
+    ["north-america","canada","whistler","Fairmont Chateau Whistler","A591","Children are welcome.\nFood and non-alcoholic beverages are complimentary.\nAn honor bar system is in place for alcoholic beverages.","0+","—","4","4.7/5","3952","17","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["north-america","canada","winnipeg","Fairmont Winnipeg","A592","Children are welcome.\nFood and non-alcoholic beverages are complimentary.\nAn honor bar system is in place for alcoholic beverages.","0+","—","4","4.1/5","1780","17","","restaurant, fitness"],
+    ["north-america","mexico","mexico","Sofitel Mexico City Reforma","9615","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","1980","17","yes","restaurant, fitness, bar, pool, spa"],
+    ["north-america","united-states-of-america","austin","Fairmont Austin","A7Z4","Children are welcome.\nFood and non-alcoholic beverages are complimentary.\nBuffet breakfast, afternoon snack, evening canapes and dessert are available.\nThe honor bar system in place for alcohol beverages.","0+","Time limits","4","4.6/5","5412","17","yes","restaurant, fitness, bar, pool, spa, child_facilities"],
+    ["north-america","united-states-of-america","boston","Fairmont Copley Plaza","A554","Children should be accompanied by an adult.\nComplimentary Food and Beverage.\nBreakfast and hors d'oeuvres are available.\nAn honor bar system in place for alcoholic beverages.","Any","Adult req.","4","4.4/5","4293","17","yes","restaurant, bar, fitness"],
+    ["north-america","united-states-of-america","chicago","Fairmont Chicago, Millennium Park","A557","Children accompanied by parents are welcome.\nEnjoy daily breakfast, all-day refreshments, evening canapés, and delectable desserts.\nAn honor bar system in place for alcoholic beverages.","Any","Time limits; Adult req.","4","4.2/5","4073","17","","restaurant, bar, fitness, child_facilities"],
+    ["north-america","united-states-of-america","dallas","Fairmont Dallas","A558","Complimentary deluxe breakfast.\nSunset canapés and nightly desserts offered.\nComplimentary soft drinks, coffee and tea available all day.\nAn honor bar system in place for alcoholic beverages.","Any","Fees","4","3.8/5","2613","17","","restaurant, bar, child_facilities, pool"],
+    ["north-america","united-states-of-america","hawaii","Fairmont Orchid Hawaii","A561","Enjoy complimentary food and non-alcoholic offerings, including:\nLocal inspired hot breakfast\nSunset canapés buffet\nNon-alcoholic beverages and dry snack bar\n-Complimentary coffee/tea (including specialty coffees)\nAn honor bar system in place for alcoholic beverages.\nComputer access in the lounge with high speed internet.\nComplimentary newspaper and magazines in the lounge.","Any","Fees","5","4.6/5","2781","17","","restaurant, bar, pool, fitness, spa"],
+    ["north-america","united-states-of-america","los-angeles","Fairmont Century Plaza","A8J5","Children and pets are welcome.\nBreakfast and afternoon appetizers are available.\nThe honor bar system in place for alcohol beverages.","Any","—","5","4.5/5","1711","17","yes","restaurant, fitness, bar, pool"],
+    ["north-america","united-states-of-america","scottsdale","Fairmont Scottsdale Princess","A579","Children are welcome.\nComplimentary breakfast and afternoon appetizers are offered.","0+","—","5","4.5/5","5591","17","","bar, restaurant, pool, child_facilities, spa"],
+    ["north-america","united-states-of-america","washington-d-c-","Fairmont Washington D.C. Georgetown","A590","Children are welcome.\nFood and non-alcoholic beverages are complimentary.\nAn honor bar system is in place for alcoholic beverages.","0+","—","5","4.6/5","1680","17","yes","restaurant, bar, pool, fitness, child_facilities"],
+    ["oceania","australia","adelaide","Pullman Adelaide","B217","Children under 12 not permitted. Children under 18 must be accompanied by an adult","12+","Adult req.","5","4.5/5","3681","11","yes","restaurant, bar"],
+    ["oceania","australia","brisbane","Sofitel Brisbane Central","5992","Children under 12 only allowed from 1400 until 1700 if accompanied by an adult.","Any","<12 need adult","5","4.4/5","8187","11","yes","fitness, restaurant, bar, pool, child_facilities"],
+    ["oceania","australia","coolangatta","The Sebel Twin Towns Coolangatta","C074","Child policy: no minimum age if with adult.","0+","—","4","4.6/5","3243","2","yes","restaurant, fitness, bar, child_facilities, pool"],
+    ["oceania","australia","mascot","Pullman Sydney Airport",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["oceania","australia","melbourne","Pullman Melbourne City Centre","3028","Child policy: no minimum age if with adult.","0+","—","5","4.2/5","3561","15","yes","fitness, bar, restaurant, child_facilities"],
+    ["oceania","australia","melbourne","Pullman Melbourne On the Park","9875","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","4952","11","yes","fitness, restaurant, bar"],
+    ["oceania","australia","melbourne","Sofitel Melbourne on Collins","1902","Child policy: no minimum age if with adult.","0+","—","5","4.7/5","7570","11","yes","fitness, bar, restaurant, child_facilities"],
+    ["oceania","australia","sydney","Sofitel Sydney Darling Harbour","9729","Child policy: no minimum age if with adult.","0+","—","5","4.5/5","10055","12","yes","restaurant, pool, fitness, bar"],
+    ["oceania","australia","sydney","Sofitel Sydney Wentworth","3665","Child policy: no minimum age if with adult.","0+","—","5","4.1/5","6439","11","yes","restaurant, bar, child_facilities"],
+    ["oceania","australia","sydney","Swissôtel Sydney","A5D0","Child policy: no minimum age if with adult.","0+","—",null,"4.3/5","7071","12","yes","fitness, bar, restaurant, pool"],
+    ["oceania","new-zealand","auckland","Pullman Auckland","A8U9","Child policy: no minimum age if with adult.","0+","—","5","4.6/5","9887","17","yes","restaurant, bar"],
+    ["oceania","new-zealand","queenstown","Sofitel Queenstown - Hotel & Spa",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["south-america","brazil","belo-horizonte","Mercure Belo Horizonte Lourdes","3575","Child policy: no minimum age if with adult.","0+","—","4","4.2/5","4108","11","yes","restaurant, pool, fitness"],
+    ["south-america","brazil","rio","Fairmont Rio de Janeiro Copacabana","1988","Children are welcome.\nFood and beverages are complimentary.","0+","—","5","4.5/5","4429","12","yes","fitness, restaurant, spa, bar, pool"],
+    ["south-america","brazil","s-o-paulo","ibis São Paulo Congonhas",null,"Child policy: no minimum age if with adult.","0+","—",null,null,null,null,null,null],
+    ["south-america","brazil","s-o-paulo","Pullman São Paulo Vila Olimpia",null,"Children under 16 must be accompanied by an adult.","Any","<16 need adult",null,null,null,null,null,null],
+    ["south-america","chile","santiago","Novotel Las Condes",null,"Contact the hotel for details.","?","Contact hotel",null,null,null,null,null,null],
+    ["south-america","chile","santiago","Novotel Vitacura",null,"Contact the hotel for details.","?","Contact hotel",null,null,null,null,null,null],
+    ["south-america","ecuador","quito","Swissôtel Quito","A5C4","Contact the hotel for details.","?","Contact hotel","5","4.7/5","405","12","","restaurant, fitness, bar, child_facilities, pool"],
+    ["south-america","peru","lima","Novotel Lima","6339","Contact the hotel for details.","?","Contact hotel","4","4.6/5","748","15","yes","bar, restaurant, pool, child_facilities"],
+    ["south-america","peru","lima","Swissôtel Lima","A5B8","Contact the hotel for details.","?","Contact hotel","5","4.7/5","35","11","","restaurant, pool, bar, child_facilities, fitness"]
   ]
 }
-2026-02.json
