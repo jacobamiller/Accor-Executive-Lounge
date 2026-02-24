@@ -1,13 +1,13 @@
 {
-  "manifest_version": 3,
-  "name": "Accor Executive Lounge Highlighter",
-  "version": "1.0",
-  "description": "Highlights Accor Vietnam hotels that have an Executive Lounge with a red border on the search results page.",
-  "content_scripts": [
-    {
-      "matches": ["https://all.accor.com/booking/en/accor/hotels/vietnam*"],
-      "js": ["content.js"],
-      "run_at": "document_idle"
-    }
-  ]
+    "manifest_version": 3,
+    "name": "Accor Executive Lounge Highlighter",
+    "version": "2.0",
+    "description": "Highlights Accor hotels globally that have an Executive Lounge with a red border and badge on search results.",
+    "content_scripts": [
+          {
+                  "matches": ["https://all.accor.com/booking/*"],
+                  "js": ["content.js"],
+                  "run_at": "document_idle"
+          }
+    ]
 }
