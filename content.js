@@ -197,6 +197,7 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   '9183', // Mercure Hai Phong
   '7579', // Pullman Hanoi
   'B4S6', // Pullman Hai Phong Grand Hotel
+  'B4S6', // Pullman Hai Phong Grand Hotel
   '1555', // Sofitel Legend Metropole Hanoi
   '9231', // Hotel des Arts Saigon - MGallery Collection
   '7965', // Novotel Saigon Centre
