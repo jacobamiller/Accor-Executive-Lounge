@@ -10,14 +10,19 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   // Ivory Coast (2 hotels)
   'B4X4', // Mövenpick Hotel Abidjan
   'B1I4', // Novotel Abidjan Marcory
+  // Kenya (1 hotels)
+  'B4Q7', // Mövenpick Nairobi Hotel & Residences
+  // Morocco (1 hotels)
+  'A7Z0', // Fairmont La Marina Rabat-Salé
 
   // ===== ASIA =====
   // Azerbaijan (1 hotels)
   'A593', // Fairmont Baku Flame Towers
-  // Cambodia (2 hotels)
+  // Cambodia (3 hotels)
   '6526', // Sofitel Phnom Penh Phokeethra
+  'B2E8', // Novotel Phnom Penh BKK 1
   '3123', // Sofitel Angkor Phokeethra Golf & Spa Resort
-  // China (60 hotels)
+  // China (61 hotels)
   '8276', // Pullman Anshan Time Square
   'A5F9', // Fairmont Beijing
   '6684', // Grand Mercure Beijing Central
@@ -78,8 +83,10 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   '7934', // Pullman Zhangjiajie
   '8258', // Novotel Zhengzhou Convention Centre
   '2197', // Sofitel Zhengzhou International
-  // Hong Kong (1 hotels)
+  '7598', // Pullman Shanghai Jing'an
+  // Hong Kong (2 hotels)
   '6239', // Novotel Hong Kong Citygate
+  '3562', // Novotel Century Hong Kong
   // India (16 hotels)
   '8173', // Novotel Ahmedabad
   'A0L1', // Novotel Vijayawada Varun
@@ -183,12 +190,13 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   '7540', // Pullman Pattaya Hotel G
   '8109', // Grand Mercure Phuket Patong
   'C1D6', // Pullman Phuket Karon Beach
-  // Vietnam (12 hotels)
+  // Vietnam (13 hotels)
   '7821', // Grand Mercure Danang
   '8287', // Novotel Danang Premier Han River
   'B4G6', // Movenpick Hotel Hanoi Centre
   '9183', // Mercure Hai Phong
   '7579', // Pullman Hanoi
+  'B4S6', // Pullman Hai Phong Grand Hotel
   '1555', // Sofitel Legend Metropole Hanoi
   '9231', // Hotel des Arts Saigon - MGallery Collection
   '7965', // Novotel Saigon Centre
@@ -301,10 +309,10 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   '6339', // Novotel Lima
   'A5B8', // Swissôtel Lima
 
-  // ===== UNMATCHED HOTELS (64 hotels) =====
+  // ===== UNMATCHED HOTELS (58 hotels) =====
   // These hotels could not be matched via the API.
   // Search manually on all.accor.com and inspect data-hotel-id attribute.
-  // TODO: Resolve remaining 64 unmatched hotel IDs
+  // TODO: Resolve remaining 58 unmatched hotel IDs
 ]);
 
 function injectStyles() {
