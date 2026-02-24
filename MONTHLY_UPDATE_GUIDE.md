@@ -360,6 +360,57 @@ The primary extraction bookmarklet's `norm()` function can be improved to handle
 
 ---
 
+## Backup Method: City-Search ID Resolution
+
+The primary extraction bookmarklet resolves ~83% of hotel IDs via the Accor catalog API. The remaining ~17% fail due to name mismatches between the lounge page and the API. Common mismatch patterns include:
+
+| Pattern | Lounge Page Name | Accor API/Website Name |
+|---------|-----------------|----------------------|
+| City name spacing | Pullman **HaiPhong** Grand Hotel | Pullman **Hai Phong** Grand Hotel |
+| Word order | Novotel **Hong Kong Century** | Novotel **Century Hong Kong** |
+| Abbreviation spacing | Novotel Phnom Penh **BKK1** | Novotel Phnom Penh **BKK 1** |
+| Apostrophe variants | Pullman Shanghai **Jing An** | Pullman Shanghai **Jing'an** |
+| Name differences | Fairmont La Marina Rabat **Sale Hotel And Residences** | Fairmont La Marina **Rabat-Sale** |
+
+### How to Resolve Unmatched Hotels
+
+For each hotel with a `null` hotel_id in the extracted JSON:
+
+1. **Search by city** on `all.accor.com/booking/en/accor/hotels/{city-slug}`
+2. **Wait for results to load**, then run this in the browser console:
+   ```javascript
+   document.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
+     const id = card.getAttribute('data-hotel-id');
+     const name = card.querySelector('h2')?.textContent?.trim();
+     console.log(id + ' | ' + name);
+   });
+   ```
+3. **Match by brand + city keywords** -- for example, for "Pullman HaiPhong Grand Hotel", look for a Pullman hotel in the Hai Phong results
+4. **Update the JSON** with the resolved hotel_id
+5. **If no results** for a city, the hotel may be temporarily closed, rebranded, or not yet on the booking platform
+
+### Improving the Primary Bookmarklet Matching
+
+The primary extraction bookmarklet norm() function can be improved to handle more name variants. Key improvements for future updates:
+
+1. **Remove all spaces before comparison** -- catches "HaiPhong" vs "Hai Phong"
+2. **Sort words alphabetically** -- catches word order differences like "Hong Kong Century" vs "Century Hong Kong"
+3. **Try substring matching** -- if normalized name A contains normalized name B (or vice versa), consider it a match
+4. **Brand-prefix matching** -- extract the brand (Pullman, Sofitel, etc.) and match within same-brand hotels in the same city
+
+### Known Mismatch Resolutions (February 2026)
+
+| Lounge Page Name | Resolved Hotel ID | Accor Website Name |
+|-----------------|-------------------|-------------------|
+| Movenpick Hotel & Residences Nairobi | B4Q7 | Movenpick Nairobi Hotel & Residences |
+| Fairmont La Marina Rabat Sale Hotel And Residences | A7Z0 | Fairmont La Marina Rabat-Sale |
+| Novotel Phnom Penh BKK1 | B2E8 | Novotel Phnom Penh BKK 1 |
+| Novotel Hong Kong Century | 3562 | Novotel Century Hong Kong |
+| Pullman Shanghai Jing An | 7598 | Pullman Shanghai Jing'an |
+| Pullman HaiPhong Grand Hotel | B4S6 | Pullman Hai Phong Grand Hotel |
+
+---
+
 ## Limitations and Notes
 
 - **Hotel IDs resolved via API:** The extraction bookmarklets use the Accor catalog API to fuzzy-match hotel names and resolve IDs. Approximately 83% of hotels are matched automatically. Hotels with `null` IDs need to be looked up manually — search for the hotel on all.accor.com and inspect the search result card's `data-hotel-id` attribute.
