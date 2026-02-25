@@ -1,13 +1,16 @@
 {
-    "manifest_version": 3,
-    "name": "Accor Executive Lounge Highlighter",
-    "version": "2.0",
-    "description": "Highlights Accor hotels globally that have an Executive Lounge with a red border and badge on search results.",
-    "content_scripts": [
-          {
-                  "matches": ["https://all.accor.com/booking/*"],
-                  "js": ["content.js"],
-                  "run_at": "document_idle"
-          }
-    ]
+        "manifest_version": 3,
+        "name": "Accor Executive Lounge Highlighter",
+        "version": "2.1",
+        "description": "Highlights Accor hotels globally that have an Executive Lounge with a red border and badge on search results.",
+        "host_permissions": [
+                    "https://all.accor.com/*"
+        ],
+        "content_scripts": [
+                    {
+                                    "matches": ["https://all.accor.com/*"],
+                                    "js": ["content.js"],
+                                    "run_at": "document_idle"
+                    }
+        ]
 }
