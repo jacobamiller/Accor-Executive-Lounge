@@ -315,6 +315,10 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   // TODO: Resolve remaining 58 unmatched hotel IDs
 ]);
 
+// ==================== TOGGLE STATE ====================
+let loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
+
+// ==================== STYLES ====================
 function injectStyles() {
   if (document.getElementById('exec-lounge-styles')) return;
   const style = document.createElement('style');
@@ -341,10 +345,48 @@ function injectStyles() {
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
+    .exec-lounge-hidden {
+      display: none !important;
+    }
+    #exec-lounge-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border: 2px solid #e63946;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-left: 12px;
+      vertical-align: middle;
+      line-height: 1.4;
+    }
+    #exec-lounge-toggle-btn.active {
+      background: #e63946;
+      color: #ffffff;
+    }
+    #exec-lounge-toggle-btn:not(.active) {
+      background: transparent;
+      color: #e63946;
+    }
+    #exec-lounge-toggle-btn:hover {
+      opacity: 0.85;
+    }
+    #exec-lounge-counter {
+      font-size: 12px;
+      color: #888;
+      margin-left: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      vertical-align: middle;
+    }
   `;
   document.head.appendChild(style);
 }
 
+// ==================== HIGHLIGHT CARDS ====================
 function highlightCard(card) {
   const hotelId = card.getAttribute('data-hotel-id');
   if (!EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId)) return;
@@ -353,7 +395,7 @@ function highlightCard(card) {
   card.classList.add('exec-lounge-highlighted');
   const badge = document.createElement('div');
   badge.className = 'exec-lounge-badge';
-  badge.textContent = 'Executive Lounge ✓';
+  badge.textContent = 'Executive Lounge \u2713';
   card.appendChild(badge);
 }
 
@@ -362,6 +404,105 @@ function highlightCards(root) {
   cards.forEach(highlightCard);
 }
 
+// ==================== TOGGLE FEATURE ====================
+function applyFilterToCard(card) {
+  const hotelId = card.getAttribute('data-hotel-id');
+  if (!hotelId) return;
+  if (loungeFilterActive && !EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId)) {
+    card.classList.add('exec-lounge-hidden');
+  } else {
+    card.classList.remove('exec-lounge-hidden');
+  }
+}
+
+function applyFilterToAllCards() {
+  const cards = document.querySelectorAll('div.result-list-item[data-hotel-id]');
+  cards.forEach(applyFilterToCard);
+  updateCounter();
+}
+
+function updateCounter() {
+  const counter = document.getElementById('exec-lounge-counter');
+  if (!counter) return;
+  const allCards = document.querySelectorAll('div.result-list-item[data-hotel-id]');
+  const totalCards = allCards.length;
+  let loungeCount = 0;
+  allCards.forEach(card => {
+    const hotelId = card.getAttribute('data-hotel-id');
+    if (EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId)) loungeCount++;
+  });
+  if (loungeFilterActive) {
+    counter.textContent = `Showing ${loungeCount} of ${totalCards} hotels with Executive Lounge`;
+  } else {
+    counter.textContent = `${loungeCount} of ${totalCards} hotels have an Executive Lounge`;
+  }
+}
+
+function updateToggleButton() {
+  const btn = document.getElementById('exec-lounge-toggle-btn');
+  if (!btn) return;
+  if (loungeFilterActive) {
+    btn.classList.add('active');
+    btn.textContent = '\u2713 Lounge Only';
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = 'Lounge Only';
+  }
+}
+
+function toggleFilter() {
+  loungeFilterActive = !loungeFilterActive;
+  sessionStorage.setItem('execLoungeToggleActive', loungeFilterActive.toString());
+  updateToggleButton();
+  applyFilterToAllCards();
+}
+
+function injectToggleButton() {
+  if (document.getElementById('exec-lounge-toggle-btn')) return;
+
+  // Try to find the results header area
+  const resultsHeader = document.querySelector('[class*="results-header"]')
+    || document.querySelector('[class*="search-results"] h1')
+    || document.querySelector('[class*="search-results"] h2')
+    || document.querySelector('[class*="hotel-count"]')
+    || document.querySelector('[class*="result-count"]');
+
+  // Create toggle button
+  const btn = document.createElement('button');
+  btn.id = 'exec-lounge-toggle-btn';
+  btn.type = 'button';
+  btn.addEventListener('click', toggleFilter);
+
+  // Create counter
+  const counter = document.createElement('span');
+  counter.id = 'exec-lounge-counter';
+
+  // Create wrapper
+  const wrapper = document.createElement('div');
+  wrapper.id = 'exec-lounge-toggle-wrapper';
+  wrapper.style.cssText = 'padding: 8px 16px; display: flex; align-items: center; flex-wrap: wrap;';
+  wrapper.appendChild(btn);
+  wrapper.appendChild(counter);
+
+  if (resultsHeader) {
+    resultsHeader.parentNode.insertBefore(wrapper, resultsHeader.nextSibling);
+  } else {
+    // Fallback: insert before the first result card
+    const firstCard = document.querySelector('div.result-list-item[data-hotel-id]');
+    if (firstCard && firstCard.parentNode) {
+      firstCard.parentNode.insertBefore(wrapper, firstCard);
+    } else {
+      // Last resort: try again later via observer
+      return;
+    }
+  }
+
+  // Set initial state
+  updateToggleButton();
+  updateCounter();
+}
+
+// ==================== MUTATION OBSERVER ====================
 let observer = null;
 function startObserver() {
   if (observer) return;
@@ -371,11 +512,21 @@ function startObserver() {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
         if (node.classList && node.classList.contains('result-list-item') && node.hasAttribute('data-hotel-id')) {
           highlightCard(node);
+          applyFilterToCard(node);
         }
         if (node.querySelectorAll) {
-          node.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(highlightCard);
+          node.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
+            highlightCard(card);
+            applyFilterToCard(card);
+          });
         }
       }
+    }
+    // Update counter when new cards are added
+    updateCounter();
+    // Try to inject toggle button if it hasn't been placed yet
+    if (!document.getElementById('exec-lounge-toggle-btn')) {
+      injectToggleButton();
     }
   });
   observer.observe(document.body, { subtree: true, childList: true });
@@ -388,15 +539,19 @@ function stopObserver() {
   }
 }
 
+// ==================== INIT ====================
 function init() {
+  loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
   injectStyles();
   highlightCards();
+  injectToggleButton();
+  applyFilterToAllCards();
   startObserver();
 }
 
 init();
 
-// v2.0: Watch for route changes on ALL Accor booking pages (not just Vietnam)
+// v2.1: Watch for route changes on ALL Accor booking pages
 (function watchRouteChanges() {
   let lastUrl = location.href;
   setInterval(() => {
