@@ -1,5 +1,5 @@
 console.log('[ExecLounge] content.js loaded on:', window.location.href);
-// Accor Executive Lounge Highlighter - content.js v2.1 Global
+// Accor Executive Lounge Highlighter - content.js v2.2 Global
 // Highlights hotel cards with an Executive Lounge with a thick red border.
 // Hotel IDs populated from monthly lounge extraction data.
 // Run the "Extract All Lounge Hotels" bookmarklet to get updated IDs.
@@ -555,7 +555,7 @@ function init() {
 
 init();
 
-// v2.1: Watch for route changes on ALL Accor booking pages
+// v2.2: Watch for route changes on ALL Accor booking pages
 (function watchRouteChanges() {
   let lastUrl = location.href;
   setInterval(() => {
