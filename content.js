@@ -1,5 +1,5 @@
 console.log('[ExecLounge] content.js loaded on:', window.location.href);
-// Accor Executive Lounge Highlighter - content.js v2.2 Global
+// Accor Executive Lounge Highlighter - content.js v2.3 Global
 // Highlights hotel cards with an Executive Lounge with a thick red border.
 // Hotel IDs populated from monthly lounge extraction data.
 // Run the "Extract All Lounge Hotels" bookmarklet to get updated IDs.
@@ -508,6 +508,8 @@ let observer = null;
 function startObserver() {
   if (observer) return;
   observer = new MutationObserver((mutations) => {
+    // Re-entrancy guard: pause observer while processing to prevent feedback loops
+    observer.disconnect();
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
@@ -529,6 +531,8 @@ function startObserver() {
     if (!document.getElementById('exec-lounge-toggle-btn')) {
       injectToggleButton();
     }
+    // Re-entrancy guard: resume observing after processing
+    observer.observe(document.body, { subtree: true, childList: true });
   });
   observer.observe(document.body, { subtree: true, childList: true });
 }
@@ -557,6 +561,8 @@ init();
 
 // v2.2: Watch for route changes on ALL Accor booking pages
 (function watchRouteChanges() {
+  // Only watch for route changes if we started on a booking page
+  if (!/\/booking\//i.test(location.pathname)) return;
   let lastUrl = location.href;
   setInterval(() => {
     if (location.href === lastUrl) return;
