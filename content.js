@@ -1,4 +1,5 @@
-// Accor Executive Lounge Highlighter - content.js v2.0 Global
+console.log('[ExecLounge] content.js loaded on:', window.location.href);
+// Accor Executive Lounge Highlighter - content.js v2.1 Global
 // Highlights hotel cards with an Executive Lounge with a thick red border.
 // Hotel IDs populated from monthly lounge extraction data.
 // Run the "Extract All Lounge Hotels" bookmarklet to get updated IDs.
@@ -461,9 +462,9 @@ function injectToggleButton() {
   if (document.getElementById('exec-lounge-toggle-btn')) return;
 
   // Try to find the results header area
-  const resultsHeader = document.querySelector('[class*="results-header"]')
+  const resultsHeader = document.querySelector('.availability-status-message')
+    || document.querySelector('[class*="results-header"]')
     || document.querySelector('[class*="search-results"] h1')
-    || document.querySelector('[class*="search-results"] h2')
     || document.querySelector('[class*="hotel-count"]')
     || document.querySelector('[class*="result-count"]');
 
@@ -541,6 +542,9 @@ function stopObserver() {
 
 // ==================== INIT ====================
 function init() {
+  // Only run on booking pages
+  if (!/\/booking\//i.test(location.pathname)) return;
+  console.log('[ExecLounge] init() running - found booking page');
   loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
   injectStyles();
   highlightCards();
