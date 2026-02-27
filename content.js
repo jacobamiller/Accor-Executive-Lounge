@@ -7,7 +7,7 @@ console.log('[ExecLounge] content.js loaded on:', window.location.href);
 const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   // ===== AFRICA =====
   // Ghana (1 hotels)
-  'B4P0', // Mövenpick Ambassador Hotel Accra
+  'B4P0', // Mövenpick Ambassador Hotel Accr
   // Ivory Coast (2 hotels)
   'B4X4', // Mövenpick Hotel Abidjan
   'B1I4', // Novotel Abidjan Marcory
@@ -466,10 +466,18 @@ function addTaxInclusivePrice(card) {
   if (!data) return;
 
   const total = data.basePrice + data.tax;
+  const perNight = Math.round(total / data.nights);
+
   const offerPrice = card.querySelector('p.offer-price');
   if (!offerPrice) return;
 
-  offerPrice.innerHTML = `Total: <span class="exec-tax-total" style="color: #e63946; font-weight: 700;">${data.currency}${total}</span> w/ Tax`;
+  if (data.nights > 1) {
+    // "Total: $135 w/ Tax ($45/night)"
+    offerPrice.innerHTML = `Total: <span class="exec-tax-total" style="color: #e63946; font-weight: 700;">${data.currency}${total}</span> w/ Tax (${data.currency}${perNight}/night)`;
+  } else {
+    // "Total: $45 w/ Tax"
+    offerPrice.innerHTML = `Total: <span class="exec-tax-total" style="color: #e63946; font-weight: 700;">${data.currency}${total}</span> w/ Tax`;
+  }
   card.setAttribute('data-exec-tax-processed', 'true');
 }
 
