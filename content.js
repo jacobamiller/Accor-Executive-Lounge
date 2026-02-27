@@ -717,7 +717,7 @@ function injectStyles() {
     .exec-lounge-badge {
       position: absolute;
       top: 4px;
-      right: 8px;
+      right: 4px;
       background: #e63946;
       color: #ffffff;
       font-size: 11px;
@@ -736,7 +736,7 @@ function injectStyles() {
     .free-breakfast-badge {
       position: absolute;
       top: 22px;
-      right: 8px;
+      right: 4px;
       background: #0e8a16;
       color: #ffffff;
       font-size: 11px;
