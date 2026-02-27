@@ -383,6 +383,24 @@ function injectStyles() {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       vertical-align: middle;
     }
+    p.offer-price.exec-tax-styled {
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #1a1a2e !important;
+      line-height: 1.5 !important;
+      letter-spacing: 0.01em;
+    }
+    .exec-tax-total {
+      color: #e63946;
+      font-weight: 700;
+      font-size: 1.15em;
+    }
+    .exec-tax-per-night {
+      color: #555;
+      font-size: 0.92em;
+      font-weight: 400;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -471,12 +489,13 @@ function addTaxInclusivePrice(card) {
   const offerPrice = card.querySelector('p.offer-price');
   if (!offerPrice) return;
 
+  offerPrice.classList.add('exec-tax-styled');
   if (data.nights > 1) {
     // "Total: $135 w/ Tax ($45/night)"
-    offerPrice.innerHTML = `Total: <span class="exec-tax-total" style="color: #e63946; font-weight: 700;">${data.currency}${total}</span> w/ Tax (${data.currency}${perNight}/night)`;
+    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${total}</span> w/ Tax <span class="exec-tax-per-night">(${data.currency}${perNight}/night)</span>`;
   } else {
     // "Total: $45 w/ Tax"
-    offerPrice.innerHTML = `Total: <span class="exec-tax-total" style="color: #e63946; font-weight: 700;">${data.currency}${total}</span> w/ Tax`;
+    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${total}</span> w/ Tax`;
   }
   card.setAttribute('data-exec-tax-processed', 'true');
 }
