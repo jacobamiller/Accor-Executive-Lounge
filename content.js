@@ -401,6 +401,9 @@ function injectStyles() {
       font-size: 0.92em;
       font-weight: 400;
     }
+    .exec-base-price {
+      font-weight: 600;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -539,10 +542,20 @@ function addTaxInclusivePrice(card) {
 
   offerPrice.classList.add('exec-tax-styled');
   if (data.nights > 1) {
-    offerPrice.innerHTML = `From ${data.currency}${basePriceStr} \u2014 Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax <span class="exec-tax-per-night">(${data.currency}${perNightStr}/night)</span>`;
+    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax <span class="exec-tax-per-night">(${data.currency}${perNightStr}/night)</span>`;
   } else {
-    offerPrice.innerHTML = `From ${data.currency}${basePriceStr} \u2014 Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax`;
+    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax`;
   }
+
+  // Insert "From $XX" into the stay-details line, before the tax text
+  const taxEl = card.querySelector('span.stay-details__formatted-tax-type');
+  if (taxEl && !card.querySelector('.exec-base-price')) {
+    const baseSpan = document.createElement('span');
+    baseSpan.className = 'exec-base-price';
+    baseSpan.textContent = `From ${data.currency}${basePriceStr} `;
+    taxEl.parentNode.insertBefore(baseSpan, taxEl);
+  }
+
   card.setAttribute('data-exec-tax-processed', 'true');
 }
 
