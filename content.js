@@ -530,6 +530,7 @@ function addTaxInclusivePrice(card) {
 
   const total = data.basePrice + data.tax;
   const perNight = total / data.nights;
+  const basePriceStr = formatPrice(data.basePrice);
   const totalStr = formatPrice(total);
   const perNightStr = formatPrice(Math.round(perNight));
 
@@ -538,9 +539,9 @@ function addTaxInclusivePrice(card) {
 
   offerPrice.classList.add('exec-tax-styled');
   if (data.nights > 1) {
-    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax <span class="exec-tax-per-night">(${data.currency}${perNightStr}/night)</span>`;
+    offerPrice.innerHTML = `From ${data.currency}${basePriceStr} \u2014 Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax <span class="exec-tax-per-night">(${data.currency}${perNightStr}/night)</span>`;
   } else {
-    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax`;
+    offerPrice.innerHTML = `From ${data.currency}${basePriceStr} \u2014 Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax`;
   }
   card.setAttribute('data-exec-tax-processed', 'true');
 }
