@@ -802,6 +802,7 @@ function injectStyles() {
       color: #1a1a2e !important;
       line-height: 1.5 !important;
       letter-spacing: 0.01em;
+      text-align: right !important;
     }
     .exec-tax-total {
       color: #e63946;
@@ -815,6 +816,8 @@ function injectStyles() {
     }
     .exec-base-price {
       font-weight: 600;
+      display: block;
+      text-align: right;
     }
   `;
   document.head.appendChild(style);
