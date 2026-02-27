@@ -398,11 +398,61 @@ function highlightCard(card) {
   badge.className = 'exec-lounge-badge';
   badge.textContent = 'Executive Lounge \u2713';
   card.appendChild(badge);
+  // Parse price data for this card
+  const priceData = parsePriceData(card);
+  if (priceData) console.log('[ExecLounge] Price data:', hotelId, priceData);
 }
 
 function highlightCards(root) {
   const cards = (root || document).querySelectorAll('div.result-list-item[data-hotel-id]');
   cards.forEach(highlightCard);
+}
+
+// ==================== PRICE DATA PARSING ====================
+function parsePriceData(card) {
+  try {
+    // Extract base price and currency from span.offer-price__amount
+    const priceEl = card.querySelector('span.offer-price__amount');
+    if (!priceEl) return null;
+    const priceText = priceEl.textContent.trim();
+    const priceMatch = priceText.match(/([^\d\s.,]+)([\d.,]+)/);
+    if (!priceMatch) return null;
+    const currency = priceMatch[1].trim();
+    const basePrice = parseFloat(priceMatch[2].replace(/,/g, ''));
+    if (isNaN(basePrice)) return null;
+
+    // Extract tax from span.stay-details__formatted-tax-type
+    const taxEl = card.querySelector('span.stay-details__formatted-tax-type');
+    if (!taxEl) return null;
+    const taxText = taxEl.textContent.trim();
+    const taxMatch = taxText.match(/([^\d\s.,]+)([\d.,]+)/);
+    if (!taxMatch) return null;
+    const tax = parseFloat(taxMatch[2].replace(/,/g, ''));
+    if (isNaN(tax)) return null;
+
+    // Extract nights from span.pricing-type-label
+    const nightsEl = card.querySelector('span.pricing-type-label');
+    if (!nightsEl) return null;
+    const nightsText = nightsEl.textContent.trim();
+    const nightsMatch = nightsText.match(/(\d+)\s*night/i);
+    if (!nightsMatch) return null;
+    const nights = parseInt(nightsMatch[1], 10);
+    if (isNaN(nights) || nights < 1) return null;
+
+    return {
+      basePrice,
+      tax,
+      nights,
+      currency,
+      raw: {
+        priceText,
+        taxText,
+        nightsText
+      }
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
 // ==================== TOGGLE FEATURE ====================
@@ -516,11 +566,15 @@ function startObserver() {
         if (node.classList && node.classList.contains('result-list-item') && node.hasAttribute('data-hotel-id')) {
           highlightCard(node);
           applyFilterToCard(node);
+          const nodePriceData = parsePriceData(node);
+          if (nodePriceData) console.log('[ExecLounge] Price data:', node.getAttribute('data-hotel-id'), nodePriceData);
         }
         if (node.querySelectorAll) {
           node.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
             highlightCard(card);
             applyFilterToCard(card);
+            const cardPriceData = parsePriceData(card);
+            if (cardPriceData) console.log('[ExecLounge] Price data:', card.getAttribute('data-hotel-id'), cardPriceData);
           });
         }
       }
