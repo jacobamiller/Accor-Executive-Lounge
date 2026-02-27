@@ -735,7 +735,7 @@ function injectStyles() {
     }
     .free-breakfast-badge {
       position: absolute;
-      top: 30px;
+      top: 26px;
       right: 8px;
       background: #0e8a16;
       color: #ffffff;
