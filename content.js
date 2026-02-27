@@ -729,10 +729,13 @@ function injectStyles() {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      min-width: 110px;
+      text-align: center;
+      box-sizing: border-box;
     }
     .free-breakfast-badge {
       position: absolute;
-      top: 36px;
+      top: 30px;
       right: 8px;
       background: #0e8a16;
       color: #ffffff;
@@ -745,6 +748,9 @@ function injectStyles() {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      min-width: 110px;
+      text-align: center;
+      box-sizing: border-box;
     }
     .free-breakfast-only {
       position: relative !important;
