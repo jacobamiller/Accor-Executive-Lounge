@@ -803,6 +803,7 @@ function injectStyles() {
       line-height: 1.5 !important;
       letter-spacing: 0.01em;
       text-align: right !important;
+      padding-right: 10px !important;
     }
     .exec-tax-total {
       color: #e63946;
@@ -818,6 +819,7 @@ function injectStyles() {
       font-weight: 600;
       display: block;
       text-align: right;
+      padding-right: 10px;
     }
   `;
   document.head.appendChild(style);
