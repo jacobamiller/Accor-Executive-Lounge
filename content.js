@@ -975,13 +975,14 @@ function addTaxInclusivePrice(card) {
     offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax`;
   }
 
-  // Insert "From $XX" into the stay-details line, before the tax text
+  // Replace tax details with "From $XX + Taxes $YY"
   const taxEl = card.querySelector('span.stay-details__formatted-tax-type');
   if (taxEl && !card.querySelector('.exec-base-price')) {
+    const taxStr = formatPrice(data.tax);
     const baseSpan = document.createElement('span');
     baseSpan.className = 'exec-base-price';
-    baseSpan.textContent = `From ${data.currency}${basePriceStr} `;
-    taxEl.parentNode.insertBefore(baseSpan, taxEl);
+    baseSpan.textContent = `From ${data.currency}${basePriceStr} + Taxes ${data.currency}${taxStr}`;
+    taxEl.parentNode.replaceChild(baseSpan, taxEl);
   }
 
   card.setAttribute('data-exec-tax-processed', 'true');
