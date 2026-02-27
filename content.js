@@ -716,7 +716,7 @@ function injectStyles() {
     }
     .exec-lounge-badge {
       position: absolute;
-      top: 8px;
+      top: 4px;
       right: 8px;
       background: #e63946;
       color: #ffffff;
@@ -729,13 +729,13 @@ function injectStyles() {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      min-width: 110px;
+      min-width: 126px;
       text-align: center;
       box-sizing: border-box;
     }
     .free-breakfast-badge {
       position: absolute;
-      top: 26px;
+      top: 22px;
       right: 8px;
       background: #0e8a16;
       color: #ffffff;
@@ -748,7 +748,7 @@ function injectStyles() {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      min-width: 110px;
+      min-width: 126px;
       text-align: center;
       box-sizing: border-box;
     }
@@ -756,7 +756,7 @@ function injectStyles() {
       position: relative !important;
     }
     .free-breakfast-only .free-breakfast-badge {
-      top: 8px;
+      top: 4px;
     }
     .exec-lounge-hidden {
       display: none !important;
