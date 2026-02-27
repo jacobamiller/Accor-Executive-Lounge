@@ -405,7 +405,10 @@ function highlightCard(card) {
 
 function highlightCards(root) {
   const cards = (root || document).querySelectorAll('div.result-list-item[data-hotel-id]');
-  cards.forEach(highlightCard);
+  cards.forEach(card => {
+    highlightCard(card);
+    addTaxInclusivePrice(card);
+  });
 }
 
 // ==================== PRICE DATA PARSING ====================
@@ -453,6 +456,21 @@ function parsePriceData(card) {
   } catch (e) {
     return null;
   }
+}
+
+
+// ==================== TAX-INCLUSIVE PRICE ====================
+function addTaxInclusivePrice(card) {
+  if (card.getAttribute('data-exec-tax-processed') === 'true') return;
+  const data = parsePriceData(card);
+  if (!data) return;
+
+  const total = data.basePrice + data.tax;
+  const offerPrice = card.querySelector('p.offer-price');
+  if (!offerPrice) return;
+
+  offerPrice.innerHTML = `Total: <span class="exec-tax-total" style="color: #e63946; font-weight: 700;">${data.currency}${total}</span> w/ Tax`;
+  card.setAttribute('data-exec-tax-processed', 'true');
 }
 
 // ==================== TOGGLE FEATURE ====================
@@ -566,6 +584,7 @@ function startObserver() {
         if (node.classList && node.classList.contains('result-list-item') && node.hasAttribute('data-hotel-id')) {
           highlightCard(node);
           applyFilterToCard(node);
+          addTaxInclusivePrice(node);
           const nodePriceData = parsePriceData(node);
           if (nodePriceData) console.log('[ExecLounge] Price data:', node.getAttribute('data-hotel-id'), nodePriceData);
         }
@@ -573,6 +592,7 @@ function startObserver() {
           node.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
             highlightCard(card);
             applyFilterToCard(card);
+            addTaxInclusivePrice(card);
             const cardPriceData = parsePriceData(card);
             if (cardPriceData) console.log('[ExecLounge] Price data:', card.getAttribute('data-hotel-id'), cardPriceData);
           });
