@@ -429,6 +429,52 @@ function highlightCards(root) {
   });
 }
 
+// ==================== PRICE HELPERS ====================
+/**
+ * Parse a localized number string into a float.
+ * Handles US (1,350.00) and European (1.350,00) formats.
+ */
+function parseLocalizedNumber(str) {
+  str = str.replace(/\s/g, '');
+  if (str.includes(',') && str.includes('.')) {
+    // Both separators: last one is the decimal
+    if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+      // European: 1.350,00
+      return parseFloat(str.replace(/\./g, '').replace(',', '.'));
+    }
+    // US: 1,350.00
+    return parseFloat(str.replace(/,/g, ''));
+  }
+  if (str.includes(',')) {
+    // Single comma: decimal if followed by exactly 2 digits at end, else thousands
+    if (/,\d{2}$/.test(str) && (str.match(/,/g) || []).length === 1) {
+      return parseFloat(str.replace(',', '.'));
+    }
+    return parseFloat(str.replace(/,/g, ''));
+  }
+  return parseFloat(str);
+}
+
+/**
+ * Extract currency symbol and numeric amount from a price string.
+ * Supports prefix ($45, A$1,350) and suffix (1.350,00 €) currencies.
+ */
+function parseCurrencyAmount(text) {
+  // Try prefix currency: $45, A$1,350, HK$200, €67,50
+  let match = text.match(/([^\d\s.,]+)\s*([\d.,]+)/);
+  if (match) {
+    const amount = parseLocalizedNumber(match[2]);
+    if (!isNaN(amount)) return { currency: match[1].trim(), amount };
+  }
+  // Try suffix currency: 1.350,00 €
+  match = text.match(/([\d.,]+)\s*([^\d\s.,]+)/);
+  if (match) {
+    const amount = parseLocalizedNumber(match[1]);
+    if (!isNaN(amount)) return { currency: match[2].trim(), amount };
+  }
+  return null;
+}
+
 // ==================== PRICE DATA PARSING ====================
 function parsePriceData(card) {
   try {
@@ -436,20 +482,15 @@ function parsePriceData(card) {
     const priceEl = card.querySelector('span.offer-price__amount');
     if (!priceEl) return null;
     const priceText = priceEl.textContent.trim();
-    const priceMatch = priceText.match(/([^\d\s.,]+)([\d.,]+)/);
-    if (!priceMatch) return null;
-    const currency = priceMatch[1].trim();
-    const basePrice = parseFloat(priceMatch[2].replace(/,/g, ''));
-    if (isNaN(basePrice)) return null;
+    const priceResult = parseCurrencyAmount(priceText);
+    if (!priceResult) return null;
 
     // Extract tax from span.stay-details__formatted-tax-type
     const taxEl = card.querySelector('span.stay-details__formatted-tax-type');
     if (!taxEl) return null;
     const taxText = taxEl.textContent.trim();
-    const taxMatch = taxText.match(/([^\d\s.,]+)([\d.,]+)/);
-    if (!taxMatch) return null;
-    const tax = parseFloat(taxMatch[2].replace(/,/g, ''));
-    if (isNaN(tax)) return null;
+    const taxResult = parseCurrencyAmount(taxText);
+    if (!taxResult) return null;
 
     // Extract nights from span.pricing-type-label
     const nightsEl = card.querySelector('span.pricing-type-label');
@@ -461,15 +502,11 @@ function parsePriceData(card) {
     if (isNaN(nights) || nights < 1) return null;
 
     return {
-      basePrice,
-      tax,
+      basePrice: priceResult.amount,
+      tax: taxResult.amount,
       nights,
-      currency,
-      raw: {
-        priceText,
-        taxText,
-        nightsText
-      }
+      currency: priceResult.currency,
+      raw: { priceText, taxText, nightsText }
     };
   } catch (e) {
     return null;
@@ -478,24 +515,32 @@ function parsePriceData(card) {
 
 
 // ==================== TAX-INCLUSIVE PRICE ====================
+function formatPrice(amount) {
+  return amount % 1 === 0 ? String(amount) : amount.toFixed(2);
+}
+
 function addTaxInclusivePrice(card) {
   if (card.getAttribute('data-exec-tax-processed') === 'true') return;
   const data = parsePriceData(card);
-  if (!data) return;
+  if (!data) {
+    const hotelId = card.getAttribute('data-hotel-id') || 'unknown';
+    console.debug('[ExecLounge] No tax data for hotel', hotelId, ', skipping');
+    return;
+  }
 
   const total = data.basePrice + data.tax;
-  const perNight = Math.round(total / data.nights);
+  const perNight = total / data.nights;
+  const totalStr = formatPrice(total);
+  const perNightStr = formatPrice(Math.round(perNight));
 
   const offerPrice = card.querySelector('p.offer-price');
   if (!offerPrice) return;
 
   offerPrice.classList.add('exec-tax-styled');
   if (data.nights > 1) {
-    // "Total: $135 w/ Tax ($45/night)"
-    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${total}</span> w/ Tax <span class="exec-tax-per-night">(${data.currency}${perNight}/night)</span>`;
+    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax <span class="exec-tax-per-night">(${data.currency}${perNightStr}/night)</span>`;
   } else {
-    // "Total: $45 w/ Tax"
-    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${total}</span> w/ Tax`;
+    offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax`;
   }
   card.setAttribute('data-exec-tax-processed', 'true');
 }
@@ -668,6 +713,10 @@ init();
   setInterval(() => {
     if (location.href === lastUrl) return;
     lastUrl = location.href;
+    // Clear tax-processed flags so prices recompute on date/currency changes
+    document.querySelectorAll('[data-exec-tax-processed]').forEach(el => {
+      el.removeAttribute('data-exec-tax-processed');
+    });
     const isTarget = /all\.accor\.com\/booking/i.test(location.href);
     stopObserver();
     if (isTarget) init();
