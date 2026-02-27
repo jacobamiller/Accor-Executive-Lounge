@@ -316,6 +316,14 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   // TODO: Resolve remaining 58 unmatched hotel IDs
 ]);
 
+// Hotel IDs offering complimentary breakfast for Platinum/Diamond members.
+// Populated from data/breakfast/YYYY-MM.json via Bookmarklet 2.
+// TODO: Run "Extract All Breakfast Hotels" bookmarklet and populate (~7,400+ hotels)
+const FREE_BREAKFAST_HOTEL_IDS = new Set([
+  // Run Bookmarklet 2 on https://all.accor.com/loyalty-program/user/hotels-lounge/index.en.shtml
+  // Save output as data/breakfast/YYYY-MM.json, then paste hotel IDs here.
+]);
+
 // ==================== TOGGLE STATE ====================
 let loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
 
@@ -345,6 +353,28 @@ function injectStyles() {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .free-breakfast-badge {
+      position: absolute;
+      top: 36px;
+      right: 8px;
+      background: #0e8a16;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      z-index: 10;
+      pointer-events: none;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .free-breakfast-only {
+      position: relative !important;
+    }
+    .free-breakfast-only .free-breakfast-badge {
+      top: 8px;
     }
     .exec-lounge-hidden {
       display: none !important;
@@ -424,10 +454,26 @@ function highlightCard(card) {
   if (priceData) console.log('[ExecLounge] Price data:', hotelId, priceData);
 }
 
+function addBreakfastBadge(card) {
+  const hotelId = card.getAttribute('data-hotel-id');
+  if (!FREE_BREAKFAST_HOTEL_IDS.has(hotelId)) return;
+  if (card.getAttribute('data-breakfast-badge') === 'true') return;
+  card.setAttribute('data-breakfast-badge', 'true');
+  // If breakfast-only (no lounge), add position:relative and place badge at top
+  if (!EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId)) {
+    card.classList.add('free-breakfast-only');
+  }
+  const badge = document.createElement('div');
+  badge.className = 'free-breakfast-badge';
+  badge.textContent = 'Free Breakfast \u2713';
+  card.appendChild(badge);
+}
+
 function highlightCards(root) {
   const cards = (root || document).querySelectorAll('div.result-list-item[data-hotel-id]');
   cards.forEach(card => {
     highlightCard(card);
+    addBreakfastBadge(card);
     addTaxInclusivePrice(card);
   });
 }
@@ -669,6 +715,7 @@ function startObserver() {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
         if (node.classList && node.classList.contains('result-list-item') && node.hasAttribute('data-hotel-id')) {
           highlightCard(node);
+          addBreakfastBadge(node);
           applyFilterToCard(node);
           addTaxInclusivePrice(node);
           const nodePriceData = parsePriceData(node);
@@ -677,6 +724,7 @@ function startObserver() {
         if (node.querySelectorAll) {
           node.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
             highlightCard(card);
+            addBreakfastBadge(card);
             applyFilterToCard(card);
             addTaxInclusivePrice(card);
             const cardPriceData = parsePriceData(card);
