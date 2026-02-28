@@ -246,23 +246,61 @@ function tryExtractLoyalty(attemptsLeft) {
 
     try {
       var lsKeys = []; for (var i = 0; i < localStorage.length; i++) lsKeys.push(localStorage.key(i));
-      console.log('[ExecLounge] DIAG - localStorage keys (' + lsKeys.length + '):', lsKeys.slice(0, 40));
+      console.log('[ExecLounge] DIAG - localStorage keys (' + lsKeys.length + '): ' + lsKeys.slice(0, 40).join(', '));
     } catch (e) { console.log('[ExecLounge] DIAG - localStorage error:', e.message); }
 
     try {
       var ssKeys = []; for (var j = 0; j < sessionStorage.length; j++) ssKeys.push(sessionStorage.key(j));
-      console.log('[ExecLounge] DIAG - sessionStorage keys (' + ssKeys.length + '):', ssKeys.slice(0, 40));
+      console.log('[ExecLounge] DIAG - sessionStorage keys (' + ssKeys.length + '): ' + ssKeys.slice(0, 40).join(', '));
     } catch (e) { console.log('[ExecLounge] DIAG - sessionStorage error:', e.message); }
 
     try {
       var cookieNames = document.cookie.split(';').map(function(c) { return c.trim().split('=')[0]; }).filter(Boolean);
-      console.log('[ExecLounge] DIAG - Cookie names (' + cookieNames.length + '):', cookieNames.slice(0, 40));
+      console.log('[ExecLounge] DIAG - Cookie names (' + cookieNames.length + '): ' + cookieNames.slice(0, 40).join(', '));
     } catch (e) { console.log('[ExecLounge] DIAG - cookies error:', e.message); }
 
     try {
       var windowKeys = Object.keys(window).filter(function(k) { return /user|member|loyalty|fidelity|tier|auth/i.test(k); });
-      console.log('[ExecLounge] DIAG - Window globals matching user/loyalty:', windowKeys.slice(0, 20));
+      console.log('[ExecLounge] DIAG - Window globals (' + windowKeys.length + '): ' + windowKeys.join(', '));
+      // Dump values of each window global
+      windowKeys.forEach(function(k) {
+        try {
+          var val = window[k];
+          var type = typeof val;
+          if (type === 'object' && val !== null) {
+            console.log('[ExecLounge] DIAG - window.' + k + ' =', JSON.stringify(val).slice(0, 500));
+          } else {
+            console.log('[ExecLounge] DIAG - window.' + k + ' = (' + type + ')', String(val).slice(0, 200));
+          }
+        } catch(x) { console.log('[ExecLounge] DIAG - window.' + k + ' error:', x.message); }
+      });
     } catch (e) { console.log('[ExecLounge] DIAG - window keys error:', e.message); }
+
+    // Also log all dataLayer entries (not just last 3) looking for user data
+    try {
+      if (Array.isArray(window.dataLayer)) {
+        window.dataLayer.forEach(function(entry, idx) {
+          var s = JSON.stringify(entry);
+          if (/user|member|loyalty|tier|platinum|gold|silver|diamond|level|fidelity|status/i.test(s)) {
+            console.log('[ExecLounge] DIAG - dataLayer[' + idx + '] HAS USER DATA:', s.slice(0, 800));
+          }
+        });
+      }
+    } catch (e) { console.log('[ExecLounge] DIAG - dataLayer scan error:', e.message); }
+
+    // Scan localStorage/sessionStorage values for tier keywords
+    try {
+      [localStorage, sessionStorage].forEach(function(storage, si) {
+        var sName = si === 0 ? 'localStorage' : 'sessionStorage';
+        for (var x = 0; x < storage.length; x++) {
+          var sk = storage.key(x);
+          var sv = storage.getItem(sk);
+          if (/platinum|gold|silver|diamond|limitless|loyalty|tier|fidelity/i.test(sv)) {
+            console.log('[ExecLounge] DIAG - ' + sName + '[' + sk + '] HAS TIER DATA:', sv.slice(0, 500));
+          }
+        }
+      });
+    } catch (e) { console.log('[ExecLounge] DIAG - storage scan error:', e.message); }
 
     console.log('[ExecLounge] DIAG === End diagnostic dump ===');
     console.log('[ExecLounge] Loyalty tier not found after all attempts');
