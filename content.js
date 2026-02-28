@@ -957,6 +957,31 @@ function injectStyles() {
       color: #666;
       font-weight: 400;
     }
+    .exec-detail-badges {
+      display: flex;
+      gap: 8px;
+      padding: 8px 16px;
+      flex-wrap: wrap;
+    }
+    .exec-detail-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      white-space: nowrap;
+    }
+    .exec-detail-badge--lounge {
+      background: #e63946;
+    }
+    .exec-detail-badge--breakfast {
+      background: #0e8a16;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -999,6 +1024,60 @@ function highlightCards(root) {
     addBreakfastBadge(card);
     addTaxInclusivePrice(card);
   });
+}
+
+// ==================== HOTEL DETAIL PAGE BADGES ====================
+function getHotelIdFromUrl() {
+  const match = location.pathname.match(/\/hotel\/([A-Za-z0-9]+)/i);
+  return match ? match[1] : null;
+}
+
+function injectDetailPageBadges() {
+  if (!isHotelDetailPage()) return;
+  if (document.getElementById('exec-detail-badges')) return;
+
+  const hotelId = getHotelIdFromUrl();
+  if (!hotelId) return;
+
+  const hasLounge = EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId);
+  const hasBreakfast = FREE_BREAKFAST_HOTEL_IDS.has(hotelId);
+  if (!hasLounge && !hasBreakfast) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.id = 'exec-detail-badges';
+  wrapper.className = 'exec-detail-badges';
+
+  if (hasLounge) {
+    const badge = document.createElement('span');
+    badge.className = 'exec-detail-badge exec-detail-badge--lounge';
+    badge.textContent = 'Executive Lounge \u2713';
+    wrapper.appendChild(badge);
+  }
+  if (hasBreakfast) {
+    const badge = document.createElement('span');
+    badge.className = 'exec-detail-badge exec-detail-badge--breakfast';
+    badge.textContent = 'Free Breakfast \u2713';
+    wrapper.appendChild(badge);
+  }
+
+  // Insert near the top of the page — try hotel name/header selectors
+  const header = document.querySelector('[class*="hotel-name"]')
+    || document.querySelector('[class*="hotel-header"]')
+    || document.querySelector('[class*="hotel-title"]')
+    || document.querySelector('[class*="property-name"]')
+    || document.querySelector('h1');
+
+  if (header) {
+    header.insertAdjacentElement('afterend', wrapper);
+  } else {
+    // Fallback: insert before the first room card or at top of main content
+    const roomsContainer = findRoomsContainer();
+    if (roomsContainer && roomsContainer.parentNode) {
+      roomsContainer.parentNode.insertBefore(wrapper, roomsContainer);
+    }
+  }
+  console.log('[ExecLounge] Detail page badges injected for hotel', hotelId,
+    hasLounge ? '+Lounge' : '', hasBreakfast ? '+Breakfast' : '');
 }
 
 // ==================== PRICE HELPERS ====================
@@ -1793,7 +1872,8 @@ function startObserver() {
       );
       if (needsReinject) injectAllRatePanels();
     }
-    // Detail page tax-inclusive prices: inject on new rooms
+    // Detail page: badges and tax-inclusive prices
+    injectDetailPageBadges();
     addTaxToDetailPageRooms();
     // Re-entrancy guard: resume observing after processing
     observer.observe(document.body, { subtree: true, childList: true });
@@ -1819,6 +1899,7 @@ function init() {
   highlightCards();
   injectToggleButton();
   applyFilterToAllCards();
+  injectDetailPageBadges();
   injectShowAllRatesButton();
   if (showAllRatesActive) {
     showAllRatesRetryCount = 0;
@@ -1845,6 +1926,8 @@ init();
     // Clean up injected panels on route change
     removeAllRatePanels();
     document.querySelectorAll('.exec-detail-tax').forEach(el => el.remove());
+    const oldBadges = document.getElementById('exec-detail-badges');
+    if (oldBadges) oldBadges.remove();
     showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
     const isTarget = /all\.accor\.com\/booking/i.test(location.href);
     stopObserver();
