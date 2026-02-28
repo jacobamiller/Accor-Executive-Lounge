@@ -1603,8 +1603,7 @@ function markUpgradeEligibleRooms() {
 
     const indicator = document.createElement('div');
     indicator.className = 'exec-upgrade-indicator';
-    indicator.innerHTML = '<span class="exec-upgrade-arrow">\u2B06</span> Upgrade eligible to ' +
-      nextUp.name;
+    indicator.innerHTML = '<span class="exec-upgrade-arrow">\u2B06</span> Upgrade Eligible';
     room.el.appendChild(indicator);
   }
 }
