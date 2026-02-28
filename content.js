@@ -1705,11 +1705,17 @@ function injectBenefitsBox() {
     }
   }
 
-  // Search page: insert after toggle wrapper
+  // Search page: insert after the entire topbar so it gets full width
+  const topbar = document.querySelector('.result-list__topbar');
+  if (topbar) {
+    topbar.insertAdjacentElement('afterend', box);
+    console.log('[ExecLounge] Benefits box injected on search page');
+    return;
+  }
+  // Fallback: after toggle wrapper
   const toggleWrapper = document.getElementById('exec-lounge-toggle-wrapper');
   if (toggleWrapper) {
     toggleWrapper.insertAdjacentElement('afterend', box);
-    console.log('[ExecLounge] Benefits box injected on search page');
     return;
   }
 }
