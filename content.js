@@ -702,7 +702,7 @@ const FREE_BREAKFAST_HOTEL_IDS = new Set([
 
 // ==================== TOGGLE STATE ====================
 let loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
-let showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
+let showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') !== 'false';
 let detectedLoyaltyTier = sessionStorage.getItem('execLoyaltyTier') || null;
 let loyaltyDetectionDone = detectedLoyaltyTier !== null;
 
@@ -2267,7 +2267,7 @@ function init() {
   if (!/\/booking\//i.test(location.pathname)) return;
   console.log('[ExecLounge] init() running - found booking page');
   loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
-  showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
+  showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') !== 'false';
   injectStyles();
   highlightCards();
   injectToggleButton();
@@ -2307,7 +2307,7 @@ init();
     document.querySelectorAll('.exec-upgrade-indicator').forEach(el => el.remove());
     const oldBadges = document.getElementById('exec-detail-badges');
     if (oldBadges) oldBadges.remove();
-    showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
+    showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') !== 'false';
     const isTarget = /all\.accor\.com\/booking/i.test(location.href);
     stopObserver();
     if (isTarget) init();
