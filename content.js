@@ -1129,6 +1129,20 @@ function addTaxInclusivePrice(card) {
   card.setAttribute('data-exec-tax-processed', 'true');
 }
 
+// Helper: get number of nights from URL (tries nights param, then dateIn/dateOut)
+function getNightsFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const n = parseInt(params.get('nights'), 10);
+  if (n > 0) return n;
+  const dateIn = params.get('dateIn');
+  const dateOut = params.get('dateOut');
+  if (dateIn && dateOut) {
+    const diff = (new Date(dateOut) - new Date(dateIn)) / (1000 * 60 * 60 * 24);
+    if (diff > 0) return Math.round(diff);
+  }
+  return 1;
+}
+
 // ==================== DETAIL PAGE TAX-INCLUSIVE PRICE ====================
 // Helper: detect currency format (prefix vs suffix) and build formatter
 function buildCurrencyFormatter(formattedAmount) {
@@ -1182,8 +1196,7 @@ async function addTaxToDetailPageRooms() {
   const cache = await extractApolloCacheViaPageScript();
   if (!cache) return;
 
-  const urlParams = new URLSearchParams(location.search);
-  const nights = parseInt(urlParams.get('nights'), 10) || 1;
+  const nights = getNightsFromUrl();
 
   rooms.forEach(roomEl => {
     if (roomEl.querySelector('.exec-detail-tax')) return;
@@ -1512,8 +1525,7 @@ async function injectAllRatePanels() {
   console.log('[ExecLounge] Valid page offer IDs:', [...validOfferIds]);
 
   // Get nights from URL
-  const urlParams = new URLSearchParams(location.search);
-  const nights = parseInt(urlParams.get('nights'), 10) || 1;
+  const nights = getNightsFromUrl();
 
   // Use the same selector that found the rooms container for the button
   const roomSelector = findRoomsSelector();
