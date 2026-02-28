@@ -1130,10 +1130,23 @@ function extractApolloCacheViaPageScript() {
 
 function getOffersForRoom(roomEl, cache) {
   const offerClass = [...roomEl.classList].find(c => c.startsWith('hotel-offer-'));
-  if (!offerClass) return [];
+  if (!offerClass) {
+    console.log('[ExecLounge] No hotel-offer- class on room. All classes:', [...roomEl.classList]);
+    // Try data attributes as fallback
+    const offerId = roomEl.getAttribute('data-offer-id') || roomEl.getAttribute('data-id');
+    if (offerId) console.log('[ExecLounge] Found data attribute offer ID:', offerId);
+    return [];
+  }
   const bestOfferId = offerClass.replace('hotel-offer-', '');
+  console.log('[ExecLounge] Best offer ID from class:', bestOfferId);
   const bestOffer = cache['BestOfferInfo:' + bestOfferId];
-  if (!bestOffer || !bestOffer.accommodation) return [];
+  if (!bestOffer || !bestOffer.accommodation) {
+    console.log('[ExecLounge] No BestOfferInfo:' + bestOfferId, 'in cache. Trying partial match...');
+    // Try partial key match
+    const partialMatch = Object.keys(cache).find(k => k.includes(bestOfferId));
+    if (partialMatch) console.log('[ExecLounge] Found partial key match:', partialMatch, cache[partialMatch]);
+    return [];
+  }
   const roomName = bestOffer.accommodation.name;
 
   const allOffers = Object.entries(cache)
@@ -1251,40 +1264,61 @@ let showAllRatesRetryCount = 0;
 const SHOW_ALL_RATES_MAX_RETRIES = 3;
 
 async function injectAllRatePanels() {
+  console.log('[ExecLounge] injectAllRatePanels() called');
   const cache = await extractApolloCacheViaPageScript();
   if (!cache) {
+    console.warn('[ExecLounge] Apollo cache returned null, retry', showAllRatesRetryCount);
     if (showAllRatesRetryCount < SHOW_ALL_RATES_MAX_RETRIES) {
       showAllRatesRetryCount++;
       setTimeout(() => {
         if (showAllRatesActive) injectAllRatePanels();
       }, 500);
     } else {
-      console.debug('[ExecLounge] Apollo cache not available after retries');
+      console.error('[ExecLounge] Apollo cache not available after retries');
     }
     return;
   }
   showAllRatesRetryCount = 0;
 
-  const hasOffers = Object.keys(cache).some(k => k.startsWith('BestOfferInfo:'));
+  // Debug: log cache key patterns
+  const cacheKeys = Object.keys(cache);
+  console.log('[ExecLounge] Cache has', cacheKeys.length, 'keys. Sample keys:', cacheKeys.slice(0, 20));
+  const offerKeys = cacheKeys.filter(k => /offer|room|accom|rate/i.test(k));
+  console.log('[ExecLounge] Offer/room related keys:', offerKeys.slice(0, 30));
+
+  const hasOffers = cacheKeys.some(k => k.startsWith('BestOfferInfo:'));
   if (!hasOffers) {
-    console.debug('[ExecLounge] No BestOfferInfo entries in cache');
+    console.warn('[ExecLounge] No BestOfferInfo entries in cache. Looking for similar keys:',
+      cacheKeys.filter(k => /offer/i.test(k)).slice(0, 20));
     return;
   }
 
-  const rooms = document.querySelectorAll('.hotel-accommodation');
-  rooms.forEach(roomEl => {
+  // Use the same selector that found the rooms container for the button
+  const roomSelector = findRoomsSelector();
+  const rooms = document.querySelectorAll(roomSelector);
+  console.log('[ExecLounge] Found', rooms.length, 'rooms with selector:', roomSelector);
+
+  rooms.forEach((roomEl, i) => {
     if (roomEl.querySelector('.ext-all-rates-panel')) return;
     if (roomEl.classList.contains('hotel-accommodation--selected')) return;
     if (roomEl.offsetHeight === 0) return;
 
+    console.log('[ExecLounge] Room', i, 'classes:', [...roomEl.classList]);
     const offers = getOffersForRoom(roomEl, cache);
+    console.log('[ExecLounge] Room', i, 'offers found:', offers.length);
     if (offers.length === 0) return;
 
     const panel = buildRatePanel(offers);
-    const topInfos = roomEl.querySelector('.hotel-accommodation__top-infos');
+    // Try multiple insertion points
+    const topInfos = roomEl.querySelector('.hotel-accommodation__top-infos')
+      || roomEl.querySelector('[class*="top-infos"]')
+      || roomEl.querySelector('[class*="room-info"]')
+      || roomEl.querySelector('[class*="accommodation__top"]');
     if (topInfos) {
       topInfos.insertAdjacentElement('afterend', panel);
     } else {
+      console.log('[ExecLounge] No top-infos found, appending to room. Children:',
+        [...roomEl.children].map(c => c.className).slice(0, 5));
       roomEl.appendChild(panel);
     }
   });
@@ -1298,18 +1332,25 @@ function isHotelDetailPage() {
   return /\/hotel\/[A-Za-z0-9]+/i.test(location.pathname);
 }
 
+const ROOM_SELECTORS = [
+  '.hotel-accommodation',
+  '[class*="hotel-accommodation"]',
+  '[class*="room-card"]',
+  '[class*="accommodation"]',
+  '[class*="room-list"]',
+  '[class*="offer-list"]',
+  '[class*="hotel-offer"]',
+];
+
+function findRoomsSelector() {
+  for (const sel of ROOM_SELECTORS) {
+    if (document.querySelector(sel)) return sel;
+  }
+  return '.hotel-accommodation';
+}
+
 function findRoomsContainer() {
-  // Try multiple selectors for the rooms section
-  const selectors = [
-    '.hotel-accommodation',
-    '[class*="hotel-accommodation"]',
-    '[class*="room-card"]',
-    '[class*="accommodation"]',
-    '[class*="room-list"]',
-    '[class*="offer-list"]',
-    '[class*="hotel-offer"]',
-  ];
-  for (const sel of selectors) {
+  for (const sel of ROOM_SELECTORS) {
     const el = document.querySelector(sel);
     if (el) {
       console.log('[ExecLounge] Found rooms container with selector:', sel, el);
@@ -1360,6 +1401,7 @@ function updateShowAllRatesButton() {
 
 function toggleShowAllRates() {
   showAllRatesActive = !showAllRatesActive;
+  console.log('[ExecLounge] Toggle Show All Rates:', showAllRatesActive);
   sessionStorage.setItem('execShowAllRatesActive', showAllRatesActive.toString());
   updateShowAllRatesButton();
   if (showAllRatesActive) {
