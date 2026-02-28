@@ -918,6 +918,21 @@ function injectStyles() {
       color: #888;
       font-size: 10px;
     }
+    .ext-rate-total-line {
+      font-size: 12px;
+      color: #1a1a2e;
+      font-weight: 500;
+    }
+    .ext-rate-per-night {
+      color: #555;
+      font-size: 10px;
+      font-weight: 400;
+    }
+    .ext-rate-tax-breakdown {
+      font-size: 10px;
+      color: #666;
+      font-weight: 400;
+    }
     .exec-detail-tax {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       font-size: 13px;
@@ -1115,20 +1130,58 @@ function addTaxInclusivePrice(card) {
 }
 
 // ==================== DETAIL PAGE TAX-INCLUSIVE PRICE ====================
+// Helper: detect currency format (prefix vs suffix) and build formatter
+function buildCurrencyFormatter(formattedAmount) {
+  const prefixMatch = formattedAmount.match(/^([^\d.,\s]+)\s*/);
+  const suffixMatch = formattedAmount.match(/\s*([^\d.,\s]+)$/);
+  if (prefixMatch && !suffixMatch) {
+    return (amount) => prefixMatch[1] + formatPrice(amount);
+  }
+  if (suffixMatch && !prefixMatch) {
+    return (amount) => formatPrice(amount) + ' ' + suffixMatch[1];
+  }
+  // Default to prefix
+  const cur = (prefixMatch && prefixMatch[1]) || (suffixMatch && suffixMatch[1]) || '$';
+  return (amount) => cur + formatPrice(amount);
+}
+
+// Compute tax-inclusive data from an Apollo cache offer
+function computeTaxData(offer, nights) {
+  const mainPrice = offer.pricing && offer.pricing.main;
+  if (!mainPrice || !mainPrice.amount) return null;
+
+  const baseAmount = mainPrice.amount;
+  const formattedBase = mainPrice.formattedAmount || '';
+  const taxText = (offer.pricing && offer.pricing.formattedTaxType) || '';
+  const taxParsed = parseCurrencyAmount(taxText);
+  if (!taxParsed) return null;
+
+  const taxAmount = taxParsed.amount;
+  const total = baseAmount + taxAmount;
+  const perNight = Math.round(total / nights);
+  const fmt = buildCurrencyFormatter(formattedBase);
+
+  return {
+    total, baseAmount, taxAmount, perNight, nights, fmt,
+    fmtTotal: fmt(total),
+    fmtBase: fmt(baseAmount),
+    fmtTax: fmt(taxAmount),
+    fmtPerNight: fmt(perNight),
+  };
+}
+
 async function addTaxToDetailPageRooms() {
   if (!isHotelDetailPage()) return;
   const roomSelector = findRoomsSelector();
   const rooms = document.querySelectorAll(roomSelector);
   if (rooms.length === 0) return;
 
-  // Check if any room still needs processing
   const needsProcessing = [...rooms].some(r => !r.querySelector('.exec-detail-tax'));
   if (!needsProcessing) return;
 
   const cache = await extractApolloCacheViaPageScript();
   if (!cache) return;
 
-  // Get nights from URL params
   const urlParams = new URLSearchParams(location.search);
   const nights = parseInt(urlParams.get('nights'), 10) || 1;
 
@@ -1136,58 +1189,40 @@ async function addTaxToDetailPageRooms() {
     if (roomEl.querySelector('.exec-detail-tax')) return;
     if (roomEl.offsetHeight === 0) return;
 
-    // Find offer ID from class
     const offerClass = [...roomEl.classList].find(c => c.startsWith('hotel-offer-'));
     if (!offerClass) return;
     const offerId = offerClass.replace('hotel-offer-', '');
     const offer = cache['BestOfferInfo:' + offerId];
     if (!offer || !offer.pricing) return;
 
-    const mainPrice = offer.pricing.main;
-    if (!mainPrice || !mainPrice.amount) return;
+    const tax = computeTaxData(offer, nights);
+    if (!tax) return;
 
-    const baseAmount = mainPrice.amount;
-    const formattedBase = mainPrice.formattedAmount || '';
-    const taxText = offer.pricing.formattedTaxType || '';
-    const taxAmount = parseCurrencyAmount(taxText);
+    // Hide original price and tax elements to avoid duplication
+    roomEl.querySelectorAll('[class*="price"], [class*="tax"], [class*="stay-details"]').forEach(el => {
+      if (!el.classList.contains('exec-detail-tax') && !el.closest('.ext-all-rates-panel')) {
+        el.style.display = 'none';
+      }
+    });
 
-    if (!taxAmount) return;
-
-    const total = baseAmount + taxAmount.amount;
-    const totalStr = formatPrice(total);
-    const baseStr = formatPrice(baseAmount);
-    const taxStr = formatPrice(taxAmount.amount);
-
-    // Detect currency from formatted price
-    const currencyMatch = formattedBase.match(/^[^\d.,\s]+/) || formattedBase.match(/[^\d.,\s]+$/);
-    const currency = currencyMatch ? currencyMatch[0].trim() : taxAmount.currency;
-    // Check if currency is suffix (e.g. "1.350,00 €")
-    const isSuffix = formattedBase.match(/[^\d.,\s]+$/) && !formattedBase.match(/^[^\d.,\s]+/);
-    const fmtTotal = isSuffix ? totalStr + ' ' + currency : currency + totalStr;
-    const fmtBase = isSuffix ? baseStr + ' ' + currency : currency + baseStr;
-    const fmtTax = isSuffix ? taxStr + ' ' + currency : currency + taxStr;
-
-    const perNight = total / nights;
-    const perNightStr = formatPrice(Math.round(perNight));
-    const fmtPerNight = isSuffix ? perNightStr + ' ' + currency : currency + perNightStr;
-
-    // Build the tax-inclusive display element
+    // Build element matching search page format:
+    // Total: $275 w/ Tax ($92/night)
+    // From $242 + Taxes $33
     const taxDiv = document.createElement('div');
     taxDiv.className = 'exec-detail-tax';
 
-    let html = `<span class="exec-tax-total">${fmtTotal}</span> w/ Tax`;
+    let line1 = `Total: <span class="exec-tax-total">${tax.fmtTotal}</span> w/ Tax`;
     if (nights > 1) {
-      html += ` <span class="exec-tax-per-night">(${fmtPerNight}/night)</span>`;
+      line1 += ` <span class="exec-tax-per-night">(${tax.fmtPerNight}/night)</span>`;
     }
-    html += `<br><span class="exec-detail-tax-breakdown">From ${fmtBase} + Taxes ${fmtTax}</span>`;
-    taxDiv.innerHTML = html;
+    const line2 = `From ${tax.fmtBase} + Taxes ${tax.fmtTax}`;
+    taxDiv.innerHTML = line1 + `<br><span class="exec-detail-tax-breakdown">${line2}</span>`;
 
-    // Insert after the price area — try multiple selectors
-    const priceArea = roomEl.querySelector('[class*="price"]')
-      || roomEl.querySelector('[class*="amount"]')
-      || roomEl.querySelector('.hotel-accommodation__top-infos');
-    if (priceArea) {
-      priceArea.insertAdjacentElement('afterend', taxDiv);
+    // Insert into the room card
+    const topInfos = roomEl.querySelector('[class*="top-infos"]')
+      || roomEl.querySelector('[class*="accommodation__top"]');
+    if (topInfos) {
+      topInfos.insertAdjacentElement('afterend', taxDiv);
     } else {
       roomEl.appendChild(taxDiv);
     }
@@ -1326,7 +1361,7 @@ function getOffersForRoom(roomEl, cache, validOfferIds) {
   return unique;
 }
 
-function buildRatePanel(offers) {
+function buildRatePanel(offers, nights) {
   const panel = document.createElement('div');
   panel.className = 'ext-all-rates-panel';
 
@@ -1343,8 +1378,10 @@ function buildRatePanel(offers) {
     const cancellation = (simplifiedPolicies.cancellation && simplifiedPolicies.cancellation.label) || '';
     const cancellationCode = (simplifiedPolicies.cancellation && simplifiedPolicies.cancellation.code) || '';
     const mealPlan = (offer.mealPlan && offer.mealPlan.label) || '';
-    const taxInfo = (offer.pricing && offer.pricing.formattedTaxType) || '';
     const typeBadge = offer.type === 'PACKAGE' ? 'DEAL' : '';
+
+    // Compute tax-inclusive total for this rate
+    const tax = computeTaxData(offer, nights);
 
     // Column 1: Rate name + type badge
     const nameCol = document.createElement('div');
@@ -1372,17 +1409,38 @@ function buildRatePanel(offers) {
     }
     policyCol.textContent = cancellation;
 
-    // Column 4: Prices
+    // Column 4: Prices with tax-inclusive total
     const priceCol = document.createElement('div');
     priceCol.className = 'ext-rate-price';
-    if (memberPrice) {
-      const memberSpan = document.createElement('span');
-      memberSpan.className = 'ext-rate-member-price';
-      memberSpan.textContent = memberPrice;
-      priceCol.appendChild(memberSpan);
+
+    if (tax) {
+      // Tax-inclusive total: "Total: $275 w/ Tax ($92/night)"
+      const totalLine = document.createElement('div');
+      totalLine.className = 'ext-rate-total-line';
+      let totalHtml = `Total: <span class="ext-rate-member-price">${tax.fmtTotal}</span> w/ Tax`;
+      if (nights > 1) {
+        totalHtml += ` <span class="ext-rate-per-night">(${tax.fmtPerNight}/night)</span>`;
+      }
+      totalLine.innerHTML = totalHtml;
+      priceCol.appendChild(totalLine);
+
+      // "From $242 + Taxes $33"
+      const breakdownLine = document.createElement('div');
+      breakdownLine.className = 'ext-rate-tax-breakdown';
+      breakdownLine.textContent = `From ${tax.fmtBase} + Taxes ${tax.fmtTax}`;
+      priceCol.appendChild(breakdownLine);
+    } else {
+      // No tax data — just show member price
+      if (memberPrice) {
+        const memberSpan = document.createElement('span');
+        memberSpan.className = 'ext-rate-member-price';
+        memberSpan.textContent = memberPrice;
+        priceCol.appendChild(memberSpan);
+      }
     }
+
     if (publicPrice && publicPrice !== memberPrice) {
-      const publicSpan = document.createElement('span');
+      const publicSpan = document.createElement('div');
       publicSpan.className = 'ext-rate-public-price';
       publicSpan.textContent = publicPrice;
       priceCol.appendChild(publicSpan);
@@ -1392,12 +1450,6 @@ function buildRatePanel(offers) {
       savingsDiv.className = 'ext-rate-savings';
       savingsDiv.textContent = 'Save ' + savings;
       priceCol.appendChild(savingsDiv);
-    }
-    if (taxInfo) {
-      const taxDiv = document.createElement('div');
-      taxDiv.className = 'ext-rate-tax';
-      taxDiv.textContent = taxInfo;
-      priceCol.appendChild(taxDiv);
     }
 
     card.appendChild(nameCol);
@@ -1447,6 +1499,10 @@ async function injectAllRatePanels() {
   const validOfferIds = getPageOfferIds();
   console.log('[ExecLounge] Valid page offer IDs:', [...validOfferIds]);
 
+  // Get nights from URL
+  const urlParams = new URLSearchParams(location.search);
+  const nights = parseInt(urlParams.get('nights'), 10) || 1;
+
   // Use the same selector that found the rooms container for the button
   const roomSelector = findRoomsSelector();
   const rooms = document.querySelectorAll(roomSelector);
@@ -1462,7 +1518,7 @@ async function injectAllRatePanels() {
     console.log('[ExecLounge] Room', i, 'offers found:', offers.length);
     if (offers.length === 0) return;
 
-    const panel = buildRatePanel(offers);
+    const panel = buildRatePanel(offers, nights);
     // Try multiple insertion points
     const topInfos = roomEl.querySelector('.hotel-accommodation__top-infos')
       || roomEl.querySelector('[class*="top-infos"]')
