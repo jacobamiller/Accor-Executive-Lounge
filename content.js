@@ -703,6 +703,8 @@ const FREE_BREAKFAST_HOTEL_IDS = new Set([
 // ==================== TOGGLE STATE ====================
 let loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
 let showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
+let detectedLoyaltyTier = sessionStorage.getItem('execLoyaltyTier') || null;
+let loyaltyDetectionDone = detectedLoyaltyTier !== null;
 
 // ==================== STYLES ====================
 function injectStyles() {
@@ -982,6 +984,62 @@ function injectStyles() {
     .exec-detail-badge--breakfast {
       background: #0e8a16;
     }
+    .exec-loyalty-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      white-space: nowrap;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .exec-loyalty-badge--classic {
+      background: #f0f0f0;
+      color: #666;
+    }
+    .exec-loyalty-badge--silver {
+      background: #c0c0c0;
+      color: #333;
+    }
+    .exec-loyalty-badge--gold {
+      background: #f5c518;
+      color: #333;
+    }
+    .exec-loyalty-badge--platinum {
+      background: #e8e8e8;
+      color: #333;
+    }
+    .exec-loyalty-badge--diamond {
+      background: #1a1a2e;
+      color: #fff;
+    }
+    .exec-loyalty-badge--limitless {
+      background: linear-gradient(135deg, #1a1a2e, #6b21a8);
+      color: #fff;
+    }
+    .exec-loyalty-badge.exec-detail-badge {
+      margin-left: 0;
+    }
+    .exec-upgrade-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f3e8ff;
+      border: 1px solid #d4b8ff;
+      border-radius: 4px;
+      padding: 4px 10px;
+      margin-top: 6px;
+      font-size: 11px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #6b21a8;
+    }
+    .exec-upgrade-arrow {
+      font-size: 14px;
+      color: #6b21a8;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -1076,6 +1134,16 @@ function injectDetailPageBadges() {
       roomsContainer.parentNode.insertBefore(wrapper, roomsContainer);
     }
   }
+  // Append loyalty badge if tier is detected
+  if (detectedLoyaltyTier) {
+    const tierLower = detectedLoyaltyTier.toLowerCase();
+    const loyaltyBadge = document.createElement('span');
+    loyaltyBadge.id = 'exec-loyalty-badge';
+    loyaltyBadge.className = `exec-detail-badge exec-loyalty-badge exec-loyalty-badge--${tierLower}`;
+    loyaltyBadge.textContent = 'ALL - ' + detectedLoyaltyTier.charAt(0) + detectedLoyaltyTier.slice(1).toLowerCase();
+    wrapper.appendChild(loyaltyBadge);
+  }
+
   console.log('[ExecLounge] Detail page badges injected for hotel', hotelId,
     hasLounge ? '+Lounge' : '', hasBreakfast ? '+Breakfast' : '');
 }
@@ -1347,6 +1415,145 @@ function extractApolloCacheViaPageScript() {
     document.addEventListener('exec-response-cache', handler);
     document.dispatchEvent(new CustomEvent('exec-request-cache'));
   });
+}
+
+// ==================== LOYALTY DETECTION ====================
+function extractLoyaltyViaPageScript() {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      document.removeEventListener('exec-response-loyalty', handler);
+      resolve(null);
+    }, 8000);
+    function handler(e) {
+      clearTimeout(timeout);
+      document.removeEventListener('exec-response-loyalty', handler);
+      try { resolve(JSON.parse(e.detail)); } catch { resolve(null); }
+    }
+    document.addEventListener('exec-response-loyalty', handler);
+    document.dispatchEvent(new CustomEvent('exec-request-loyalty'));
+  });
+}
+
+async function detectAndCacheLoyaltyTier() {
+  if (loyaltyDetectionDone) return detectedLoyaltyTier;
+  const result = await extractLoyaltyViaPageScript();
+  loyaltyDetectionDone = true;
+  if (result && result.tierCode) {
+    detectedLoyaltyTier = result.tierCode;
+    sessionStorage.setItem('execLoyaltyTier', result.tierCode);
+  } else {
+    detectedLoyaltyTier = '';
+    sessionStorage.setItem('execLoyaltyTier', '');
+  }
+  injectLoyaltyBadge();
+  if (isHotelDetailPage()) markUpgradeEligibleRooms();
+  return detectedLoyaltyTier;
+}
+
+// ==================== LOYALTY BADGE ====================
+function injectLoyaltyBadge() {
+  if (!detectedLoyaltyTier) return;
+  // Don't duplicate
+  if (document.getElementById('exec-loyalty-badge')) return;
+
+  const tierLower = detectedLoyaltyTier.toLowerCase();
+  const badge = document.createElement('span');
+  badge.id = 'exec-loyalty-badge';
+  badge.className = `exec-loyalty-badge exec-loyalty-badge--${tierLower}`;
+  badge.textContent = 'ALL - ' + detectedLoyaltyTier.charAt(0) + detectedLoyaltyTier.slice(1).toLowerCase();
+
+  if (isHotelDetailPage()) {
+    // On detail pages: add as a detail badge
+    let detailBadges = document.getElementById('exec-detail-badges');
+    if (!detailBadges) {
+      // Create the wrapper if injectDetailPageBadges didn't (no lounge/breakfast)
+      detailBadges = document.createElement('div');
+      detailBadges.id = 'exec-detail-badges';
+      detailBadges.className = 'exec-detail-badges';
+      const header = document.querySelector('[class*="hotel-name"]')
+        || document.querySelector('[class*="hotel-header"]')
+        || document.querySelector('[class*="hotel-title"]')
+        || document.querySelector('[class*="property-name"]')
+        || document.querySelector('h1');
+      if (header) {
+        header.insertAdjacentElement('afterend', detailBadges);
+      } else {
+        const roomsContainer = findRoomsContainer();
+        if (roomsContainer && roomsContainer.parentNode) {
+          roomsContainer.parentNode.insertBefore(detailBadges, roomsContainer);
+        } else {
+          return; // No anchor found, skip
+        }
+      }
+    }
+    badge.classList.add('exec-detail-badge');
+    detailBadges.appendChild(badge);
+    return;
+  }
+  // On search pages: append to toggle wrapper
+  const wrapper = document.getElementById('exec-lounge-toggle-wrapper');
+  if (wrapper) {
+    wrapper.appendChild(badge);
+  }
+}
+
+// ==================== UPGRADE ELIGIBILITY ====================
+const ROOM_CATEGORY_KEYWORDS = [
+  { rank: 1, keywords: ['standard', 'classic', 'starter', 'economy'] },
+  { rank: 2, keywords: ['superior', 'comfort', 'privilege'] },
+  { rank: 3, keywords: ['deluxe', 'premium', 'executive room', 'club'] },
+  { rank: 4, keywords: ['junior suite', 'studio suite'] },
+  { rank: 5, keywords: ['suite', 'prestige', 'residence', 'presidential', 'royal'] },
+];
+
+function getRoomCategoryRank(roomName) {
+  if (!roomName) return 0;
+  const lower = roomName.toLowerCase();
+  // Check higher ranks first to avoid "suite" matching before "junior suite"
+  for (let i = ROOM_CATEGORY_KEYWORDS.length - 1; i >= 0; i--) {
+    const cat = ROOM_CATEGORY_KEYWORDS[i];
+    for (const kw of cat.keywords) {
+      if (lower.includes(kw)) return cat.rank;
+    }
+  }
+  return 0;
+}
+
+function markUpgradeEligibleRooms() {
+  const UPGRADE_TIERS = ['PLATINUM', 'DIAMOND', 'LIMITLESS'];
+  if (!detectedLoyaltyTier || !UPGRADE_TIERS.includes(detectedLoyaltyTier.toUpperCase())) return;
+
+  // Remove existing indicators
+  document.querySelectorAll('.exec-upgrade-indicator').forEach(el => el.remove());
+
+  const roomSelector = findRoomsSelector();
+  const rooms = document.querySelectorAll(roomSelector);
+  if (rooms.length < 2) return;
+
+  // Build ranked list
+  const roomData = [...rooms].map(el => {
+    const nameEl = el.querySelector('[class*="accommodation__title"], [class*="room-name"], [class*="offer-name"], h2, h3');
+    const name = nameEl ? nameEl.textContent.trim() : '';
+    return { el, name, rank: getRoomCategoryRank(name) };
+  });
+
+  const maxRank = Math.max(...roomData.map(r => r.rank));
+  if (maxRank <= 0) return;
+
+  for (const room of roomData) {
+    if (room.rank >= maxRank || room.rank === 0) continue;
+    // Find next higher room
+    const nextUp = roomData
+      .filter(r => r.rank > room.rank && r.name)
+      .sort((a, b) => a.rank - b.rank)[0];
+    if (!nextUp) continue;
+
+    const indicator = document.createElement('div');
+    indicator.className = 'exec-upgrade-indicator';
+    indicator.innerHTML = '<span class="exec-upgrade-arrow">\u2B06</span> Upgrade eligible to ' +
+      nextUp.name;
+    room.el.appendChild(indicator);
+  }
 }
 
 // Build a set of valid offer IDs that belong to the current page's hotel
@@ -1872,9 +2079,11 @@ function startObserver() {
       );
       if (needsReinject) injectAllRatePanels();
     }
-    // Detail page: badges and tax-inclusive prices
+    // Detail page: badges, tax-inclusive prices, and loyalty
     injectDetailPageBadges();
     addTaxToDetailPageRooms();
+    injectLoyaltyBadge();
+    if (isHotelDetailPage() && detectedLoyaltyTier) markUpgradeEligibleRooms();
     // Re-entrancy guard: resume observing after processing
     observer.observe(document.body, { subtree: true, childList: true });
   });
@@ -1907,6 +2116,10 @@ function init() {
   }
   addTaxToDetailPageRooms();
   startObserver();
+  // Loyalty detection: restore cached tier or detect async
+  detectedLoyaltyTier = sessionStorage.getItem('execLoyaltyTier') || null;
+  loyaltyDetectionDone = detectedLoyaltyTier !== null;
+  detectAndCacheLoyaltyTier(); // async, non-blocking
 }
 
 init();
@@ -1926,6 +2139,8 @@ init();
     // Clean up injected panels on route change
     removeAllRatePanels();
     document.querySelectorAll('.exec-detail-tax').forEach(el => el.remove());
+    document.getElementById('exec-loyalty-badge')?.remove();
+    document.querySelectorAll('.exec-upgrade-indicator').forEach(el => el.remove());
     const oldBadges = document.getElementById('exec-detail-badges');
     if (oldBadges) oldBadges.remove();
     showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
