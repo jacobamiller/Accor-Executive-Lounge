@@ -1243,7 +1243,7 @@ function extractApolloCacheViaPageScript() {
       try {
         const data = JSON.parse(e.detail);
         if (data.error) {
-          console.warn('[ExecLounge] Bridge error:', data.error);
+          console.warn('[ExecLounge] Bridge error:', data.error, data.diag || '');
           resolve(null);
         } else {
           resolve(data.cache || null);
