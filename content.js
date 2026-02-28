@@ -1482,18 +1482,30 @@ async function injectAllRatePanels() {
   }
   showAllRatesRetryCount = 0;
 
-  // Debug: log cache key patterns
+  // Debug: log ALL unique cache key prefixes to discover the naming pattern
   const cacheKeys = Object.keys(cache);
-  console.log('[ExecLounge] Cache has', cacheKeys.length, 'keys. Sample keys:', cacheKeys.slice(0, 20));
-  const offerKeys = cacheKeys.filter(k => /offer|room|accom|rate/i.test(k));
-  console.log('[ExecLounge] Offer/room related keys:', offerKeys.slice(0, 30));
+  const keyPrefixes = {};
+  cacheKeys.forEach(k => {
+    const prefix = k.split(':')[0] || k.split('.')[0] || k;
+    keyPrefixes[prefix] = (keyPrefixes[prefix] || 0) + 1;
+  });
+  console.log('[ExecLounge] Cache has', cacheKeys.length, 'keys. Key prefixes:', keyPrefixes);
+  console.log('[ExecLounge] Sample keys:', cacheKeys.slice(0, 50));
 
-  const hasOffers = cacheKeys.some(k => k.startsWith('BestOfferInfo:'));
-  if (!hasOffers) {
-    console.warn('[ExecLounge] No BestOfferInfo entries in cache. Looking for similar keys:',
-      cacheKeys.filter(k => /offer/i.test(k)).slice(0, 20));
-    return;
+  // Look for keys containing pricing/offer/room-related terms
+  const interestingKeys = cacheKeys.filter(k => /offer|room|accom|rate|price|pric|best|booking/i.test(k));
+  console.log('[ExecLounge] Interesting keys:', interestingKeys.slice(0, 30));
+
+  // If we find interesting keys, log a sample value
+  if (interestingKeys.length > 0) {
+    console.log('[ExecLounge] Sample value for', interestingKeys[0], ':', JSON.stringify(cache[interestingKeys[0]]).slice(0, 500));
   }
+
+  // Also log the first few values to understand the structure
+  const firstKeys = cacheKeys.slice(0, 5);
+  firstKeys.forEach(k => {
+    console.log('[ExecLounge] Key:', k, 'Value:', JSON.stringify(cache[k]).slice(0, 300));
+  });
 
   // Collect valid offer IDs from the current page
   const validOfferIds = getPageOfferIds();
