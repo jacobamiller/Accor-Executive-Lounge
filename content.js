@@ -1294,11 +1294,42 @@ function removeAllRatePanels() {
   document.querySelectorAll('.ext-all-rates-panel').forEach(el => el.remove());
 }
 
+function isHotelDetailPage() {
+  return /\/hotel\/[A-Za-z0-9]+/i.test(location.pathname);
+}
+
+function findRoomsContainer() {
+  // Try multiple selectors for the rooms section
+  const selectors = [
+    '.hotel-accommodation',
+    '[class*="hotel-accommodation"]',
+    '[class*="room-card"]',
+    '[class*="accommodation"]',
+    '[class*="room-list"]',
+    '[class*="offer-list"]',
+    '[class*="hotel-offer"]',
+  ];
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    if (el) {
+      console.log('[ExecLounge] Found rooms container with selector:', sel, el);
+      return el;
+    }
+  }
+  return null;
+}
+
 function injectShowAllRatesButton() {
   if (document.getElementById('show-all-rates-btn')) return;
+  if (!isHotelDetailPage()) return;
 
-  const roomsContainer = document.querySelector('.hotel-accommodation');
-  if (!roomsContainer) return;
+  const roomsContainer = findRoomsContainer();
+  if (!roomsContainer) {
+    console.debug('[ExecLounge] No rooms container found yet. DOM classes on page:',
+      [...new Set([...document.querySelectorAll('[class]')].flatMap(el => [...el.classList]).filter(c => /room|accom|offer|rate|hotel/i.test(c)))].slice(0, 30)
+    );
+    return;
+  }
 
   const btn = document.createElement('button');
   btn.id = 'show-all-rates-btn';
@@ -1312,6 +1343,7 @@ function injectShowAllRatesButton() {
 
   roomsContainer.parentNode.insertBefore(wrapper, roomsContainer);
   updateShowAllRatesButton();
+  console.log('[ExecLounge] Show All Rates button injected');
 }
 
 function updateShowAllRatesButton() {
