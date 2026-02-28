@@ -167,8 +167,94 @@ function searchCookiesForTier() {
   return null;
 }
 
+function searchVueComponentsForTier() {
+  try {
+    // Find the account/login button and walk its Vue component tree
+    const selectors = [
+      '.button-logo__button--connected',
+      '[class*="button-logo"]',
+      '[class*="login-nav"]',
+      '[class*="user-menu"]',
+      '[class*="account-menu"]',
+      '[class*="header"] [class*="user"]',
+      '[class*="header"] [class*="account"]',
+      '[aria-label*="account" i]',
+      '[aria-label*="Account" i]',
+    ];
+    const elements = new Set();
+    for (const sel of selectors) {
+      document.querySelectorAll(sel).forEach(function(el) { elements.add(el); });
+    }
+    // Walk up and through Vue component instances
+    for (const el of elements) {
+      // Try Vue 3 internal instance
+      const fiber = el.__vueParentComponent || el.__vue__;
+      if (fiber) {
+        const result = walkVueInstance(fiber, 6);
+        if (result) return { ...result, source: 'vue-component' };
+      }
+      // Walk up DOM to find nearest Vue component
+      let parent = el;
+      for (let i = 0; i < 10 && parent; i++) {
+        if (parent.__vueParentComponent) {
+          const result = walkVueInstance(parent.__vueParentComponent, 6);
+          if (result) return { ...result, source: 'vue-component' };
+        }
+        if (parent.__vue__) {
+          const result = walkVueInstance(parent.__vue__, 6);
+          if (result) return { ...result, source: 'vue-component' };
+        }
+        parent = parent.parentElement;
+      }
+    }
+    // Also try walking from root Vue app
+    const vueApp = findVueApp();
+    if (vueApp && vueApp._instance) {
+      const result = walkVueInstance(vueApp._instance, 5);
+      if (result) return { ...result, source: 'vue-root' };
+    }
+  } catch (e) {
+    console.log('[ExecLounge] Vue component loyalty search error:', e.message);
+  }
+  return null;
+}
+
+function walkVueInstance(instance, maxDepth) {
+  if (!instance || maxDepth <= 0) return null;
+  // Check data, props, setupState, ctx
+  const dataContainers = [
+    instance.data, instance.props, instance.setupState,
+    instance.ctx, instance.proxy,
+    instance.$data, instance.$props,
+  ];
+  for (const container of dataContainers) {
+    if (!container) continue;
+    const result = deepSearchForTier(container, 3);
+    if (result) return result;
+  }
+  // Walk child components
+  const children = instance.subTree && instance.subTree.children;
+  if (Array.isArray(children)) {
+    for (const child of children) {
+      if (child && child.component) {
+        const result = walkVueInstance(child.component, maxDepth - 1);
+        if (result) return result;
+      }
+    }
+  }
+  // Vue 2 style children
+  if (Array.isArray(instance.$children)) {
+    for (const child of instance.$children) {
+      const result = walkVueInstance(child, maxDepth - 1);
+      if (result) return result;
+    }
+  }
+  return null;
+}
+
 function detectLoyaltyTier() {
   const sources = [
+    searchVueComponentsForTier,
     searchApolloForTier,
     searchNuxtForTier,
     searchAnalyticsForTier,
@@ -218,6 +304,46 @@ function tryExtractLoyalty(attemptsLeft) {
         }
       }
     } catch (e) { console.log('[ExecLounge] DIAG - Apollo error:', e.message); }
+
+    // Vue component tree around account button
+    try {
+      var btn = document.querySelector('.button-logo__button--connected');
+      console.log('[ExecLounge] DIAG - Account button found:', !!btn);
+      if (btn) {
+        // Walk up to find Vue instances
+        var el = btn;
+        for (var vi = 0; vi < 15 && el; vi++) {
+          var comp = el.__vueParentComponent || el.__vue__;
+          if (comp) {
+            var compName = (comp.type && comp.type.__name) || (comp.type && comp.type.name) || (comp.$options && comp.$options.name) || 'unknown';
+            var dataKeys = [];
+            if (comp.setupState) try { dataKeys = dataKeys.concat(Object.keys(comp.setupState).slice(0, 20)); } catch(x) {}
+            if (comp.data) try { dataKeys = dataKeys.concat(Object.keys(comp.data).slice(0, 20)); } catch(x) {}
+            if (comp.props) try { dataKeys = dataKeys.concat(Object.keys(comp.props).slice(0, 20)); } catch(x) {}
+            if (comp.ctx) try { dataKeys = dataKeys.concat(Object.keys(comp.ctx).filter(function(k) { return !k.startsWith('$') && !k.startsWith('_'); }).slice(0, 20)); } catch(x) {}
+            if (comp.$data) try { dataKeys = dataKeys.concat(Object.keys(comp.$data).slice(0, 20)); } catch(x) {}
+            console.log('[ExecLounge] DIAG - Vue component at depth ' + vi + ': ' + compName + ' keys: ' + dataKeys.join(', '));
+            // Dump setupState/data for user-related keys
+            var containers = [comp.setupState, comp.data, comp.ctx, comp.proxy, comp.$data];
+            for (var ci = 0; ci < containers.length; ci++) {
+              if (!containers[ci]) continue;
+              try {
+                var allCKeys = Object.keys(containers[ci]);
+                var userKeys = allCKeys.filter(function(k) { return /user|member|loyalty|tier|auth|profile|account|fidelity|card|status|level/i.test(k); });
+                if (userKeys.length > 0) {
+                  userKeys.forEach(function(uk) {
+                    try {
+                      console.log('[ExecLounge] DIAG - ' + compName + '.' + uk + ' =', JSON.stringify(containers[ci][uk]).slice(0, 500));
+                    } catch(x) {}
+                  });
+                }
+              } catch(x) {}
+            }
+          }
+          el = el.parentElement;
+        }
+      }
+    } catch (e) { console.log('[ExecLounge] DIAG - Vue component error:', e.message); }
 
     try {
       console.log('[ExecLounge] DIAG - __NUXT__:', window.__NUXT__ ? Object.keys(window.__NUXT__).slice(0, 20) : 'not found');
