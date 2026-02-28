@@ -1045,7 +1045,7 @@ function injectStyles() {
       border: 2px solid #e63946;
       border-radius: 8px;
       padding: 14px 18px;
-      margin: 12px 16px;
+      margin: 12px 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     .exec-benefits-header {
