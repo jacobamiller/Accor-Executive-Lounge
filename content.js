@@ -1498,10 +1498,8 @@ async function detectAndCacheLoyaltyTier() {
     sessionStorage.setItem('execLoyaltyTier', '');
   }
   injectLoyaltyBadge();
-  if (isHotelDetailPage()) {
-    markUpgradeEligibleRooms();
-    injectBenefitsBox();
-  }
+  injectBenefitsBox();
+  if (isHotelDetailPage()) markUpgradeEligibleRooms();
   return detectedLoyaltyTier;
 }
 
@@ -1613,77 +1611,106 @@ function markUpgradeEligibleRooms() {
 
 // ==================== BENEFITS BOX ====================
 function injectBenefitsBox() {
-  if (!isHotelDetailPage()) return;
   if (document.getElementById('exec-benefits-box')) return;
 
-  const hotelId = getHotelIdFromUrl();
-  const hasLounge = hotelId && EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId);
-  const hasBreakfast = hotelId && FREE_BREAKFAST_HOTEL_IDS.has(hotelId);
-  const UPGRADE_TIERS = ['PLATINUM', 'DIAMOND', 'LIMITLESS'];
-  const hasUpgrade = UPGRADE_TIERS.includes(detectedLoyaltyTier.toUpperCase());
-
-  const tierDisplay = detectedLoyaltyTier.charAt(0) + detectedLoyaltyTier.slice(1).toLowerCase();
-
+  const onDetailPage = isHotelDetailPage();
   const box = document.createElement('div');
   box.id = 'exec-benefits-box';
   box.className = 'exec-benefits-box';
 
-  // Header
-  const header = document.createElement('div');
-  header.className = 'exec-benefits-header';
-  const tierBadge = document.createElement('span');
-  tierBadge.className = 'exec-benefits-tier';
-  tierBadge.textContent = 'ALL - ' + tierDisplay;
-  header.appendChild(tierBadge);
-  const title = document.createElement('span');
-  title.className = 'exec-benefits-title';
-  title.textContent = 'Eligible Benefits';
-  header.appendChild(title);
-  box.appendChild(header);
+  if (!detectedLoyaltyTier) {
+    // Not logged in — show login prompt
+    const header = document.createElement('div');
+    header.className = 'exec-benefits-header';
+    const title = document.createElement('span');
+    title.className = 'exec-benefits-title';
+    title.textContent = 'Log in to check your status and benefits';
+    header.appendChild(title);
+    box.appendChild(header);
+  } else {
+    const UPGRADE_TIERS = ['PLATINUM', 'DIAMOND', 'LIMITLESS'];
+    const hasUpgrade = UPGRADE_TIERS.includes(detectedLoyaltyTier.toUpperCase());
+    const tierDisplay = detectedLoyaltyTier.charAt(0) + detectedLoyaltyTier.slice(1).toLowerCase();
 
-  // Benefits list
-  const list = document.createElement('div');
-  list.className = 'exec-benefits-list';
+    // Header
+    const header = document.createElement('div');
+    header.className = 'exec-benefits-header';
+    const tierBadge = document.createElement('span');
+    tierBadge.className = 'exec-benefits-tier';
+    tierBadge.textContent = 'ALL - ' + tierDisplay;
+    header.appendChild(tierBadge);
+    const title = document.createElement('span');
+    title.className = 'exec-benefits-title';
+    title.textContent = onDetailPage ? 'Eligible Benefits' : 'Your Benefits';
+    header.appendChild(title);
+    box.appendChild(header);
 
-  const benefits = [
-    { label: 'Executive Lounge', active: hasLounge },
-    { label: 'Free Breakfast', active: hasBreakfast },
-    { label: 'Room Upgrade', active: hasUpgrade },
-  ];
+    // Benefits list
+    const list = document.createElement('div');
+    list.className = 'exec-benefits-list';
 
-  benefits.forEach(function(b) {
-    const item = document.createElement('span');
-    item.className = 'exec-benefit-item' + (b.active ? '' : ' exec-benefit-item--inactive');
-    const check = document.createElement('span');
-    check.className = 'exec-benefit-check';
-    check.textContent = b.active ? '\u2713' : '\u2717';
-    item.appendChild(check);
-    item.appendChild(document.createTextNode(' ' + b.label));
-    list.appendChild(item);
-  });
+    let benefits;
+    if (onDetailPage) {
+      // Hotel-specific: check if this hotel has lounge/breakfast
+      const hotelId = getHotelIdFromUrl();
+      const hasLounge = hotelId && EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId);
+      const hasBreakfast = hotelId && FREE_BREAKFAST_HOTEL_IDS.has(hotelId);
+      benefits = [
+        { label: 'Executive Lounge', active: hasLounge },
+        { label: 'Free Breakfast', active: hasBreakfast },
+        { label: 'Room Upgrade', active: hasUpgrade },
+      ];
+    } else {
+      // Search page: show general tier benefits
+      benefits = [
+        { label: 'Executive Lounge', active: hasUpgrade },
+        { label: 'Free Breakfast', active: hasUpgrade },
+        { label: 'Room Upgrade', active: hasUpgrade },
+      ];
+    }
 
-  box.appendChild(list);
+    benefits.forEach(function(b) {
+      const item = document.createElement('span');
+      item.className = 'exec-benefit-item' + (b.active ? '' : ' exec-benefit-item--inactive');
+      const check = document.createElement('span');
+      check.className = 'exec-benefit-check';
+      check.textContent = b.active ? '\u2713' : '\u2717';
+      item.appendChild(check);
+      item.appendChild(document.createTextNode(' ' + b.label));
+      list.appendChild(item);
+    });
 
-  // Insert above the awards toggle
-  const awardsModule = document.querySelector('[data-testid="conversational-module"]');
-  if (awardsModule && awardsModule.parentNode) {
-    awardsModule.parentNode.insertBefore(box, awardsModule);
-    console.log('[ExecLounge] Benefits box injected above awards toggle');
-    return;
+    box.appendChild(list);
   }
 
-  // Fallback: insert after detail badges or header
-  const detailBadges = document.getElementById('exec-detail-badges');
-  if (detailBadges) {
-    detailBadges.insertAdjacentElement('afterend', box);
-    return;
+  // Detail page: insert above the awards toggle
+  if (onDetailPage) {
+    const awardsModule = document.querySelector('[data-testid="conversational-module"]');
+    if (awardsModule && awardsModule.parentNode) {
+      awardsModule.parentNode.insertBefore(box, awardsModule);
+      console.log('[ExecLounge] Benefits box injected above awards toggle');
+      return;
+    }
+    const detailBadges = document.getElementById('exec-detail-badges');
+    if (detailBadges) {
+      detailBadges.insertAdjacentElement('afterend', box);
+      return;
+    }
+    const headerEl = document.querySelector('[class*="hotel-name"]')
+      || document.querySelector('[class*="hotel-header"]')
+      || document.querySelector('h1');
+    if (headerEl) {
+      headerEl.insertAdjacentElement('afterend', box);
+      return;
+    }
   }
 
-  const headerEl = document.querySelector('[class*="hotel-name"]')
-    || document.querySelector('[class*="hotel-header"]')
-    || document.querySelector('h1');
-  if (headerEl) {
-    headerEl.insertAdjacentElement('afterend', box);
+  // Search page: insert after toggle wrapper
+  const toggleWrapper = document.getElementById('exec-lounge-toggle-wrapper');
+  if (toggleWrapper) {
+    toggleWrapper.insertAdjacentElement('afterend', box);
+    console.log('[ExecLounge] Benefits box injected on search page');
+    return;
   }
 }
 
@@ -2214,10 +2241,8 @@ function startObserver() {
     injectDetailPageBadges();
     addTaxToDetailPageRooms();
     injectLoyaltyBadge();
-    if (isHotelDetailPage()) {
-      injectBenefitsBox();
-      if (detectedLoyaltyTier) markUpgradeEligibleRooms();
-    }
+    injectBenefitsBox();
+    if (isHotelDetailPage() && detectedLoyaltyTier) markUpgradeEligibleRooms();
     // Re-entrancy guard: resume observing after processing
     observer.observe(document.body, { subtree: true, childList: true });
   });
