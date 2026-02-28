@@ -120,15 +120,66 @@ function searchAnalyticsForTier() {
   return null;
 }
 
+// Accor card type codes → tier names
+const ACCOR_CARD_TYPES = {
+  'A1': 'CLASSIC', 'A2': 'SILVER', 'A3': 'GOLD',
+  'A4': 'PLATINUM', 'A5': 'DIAMOND', 'A6': 'LIMITLESS',
+};
+
 function searchStorageForTier() {
+  // Priority: check known Accor keys first
+  try {
+    const label = sessionStorage.getItem('loyalty-product-label');
+    if (label) {
+      const t = normalizeTier(label);
+      if (t) return { tierCode: t, source: 'storage', field: 'loyalty-product-label' };
+    }
+  } catch (e) {}
+
+  try {
+    const card = sessionStorage.getItem('loyalty-card');
+    if (card) {
+      const t = normalizeTier(card);
+      if (t) return { tierCode: t, source: 'storage', field: 'loyalty-card' };
+      // Try JSON
+      try {
+        const obj = JSON.parse(card);
+        if (obj && typeof obj === 'object') {
+          const result = deepSearchForTier(obj, 4);
+          if (result) return { ...result, source: 'storage', storageKey: 'loyalty-card' };
+        }
+      } catch {}
+    }
+  } catch (e) {}
+
+  // Check ngStorage identification for cardType
+  const idKeys = ['ngStorage-identification_all.accor', 'ngStorage-identification'];
+  for (const idKey of idKeys) {
+    try {
+      const raw = sessionStorage.getItem(idKey);
+      if (raw) {
+        const obj = JSON.parse(raw);
+        if (obj && obj.cardType && ACCOR_CARD_TYPES[obj.cardType]) {
+          return { tierCode: ACCOR_CARD_TYPES[obj.cardType], source: 'storage', field: 'cardType', storageKey: idKey };
+        }
+      }
+    } catch {}
+  }
+
+  // General scan
   const keyPattern = /user|member|auth|loyalty|profile|fidelity/i;
   for (const storage of [localStorage, sessionStorage]) {
     try {
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
         if (!keyPattern.test(key)) continue;
+        const rawVal = storage.getItem(key);
+        // Try plain string first
+        const t = normalizeTier(rawVal);
+        if (t) return { tierCode: t, source: 'storage', field: key };
+        // Try JSON
         try {
-          const val = JSON.parse(storage.getItem(key));
+          const val = JSON.parse(rawVal);
           if (val && typeof val === 'object') {
             const result = deepSearchForTier(val, 4);
             if (result) return { ...result, source: 'storage', storageKey: key };
