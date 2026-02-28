@@ -1236,7 +1236,7 @@ function extractApolloCacheViaPageScript() {
       document.removeEventListener('exec-response-cache', handler);
       console.warn('[ExecLounge] Cache request timed out');
       resolve(null);
-    }, 3000);
+    }, 8000);
     function handler(e) {
       clearTimeout(timeout);
       document.removeEventListener('exec-response-cache', handler);
