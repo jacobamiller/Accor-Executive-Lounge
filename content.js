@@ -1118,44 +1118,99 @@ function extractApolloCacheViaPageScript() {
   });
 }
 
-function getOffersForRoom(roomEl, cache) {
+// Build a set of valid offer IDs that belong to the current page's hotel
+function getPageOfferIds() {
+  const ids = new Set();
+  const roomSelector = findRoomsSelector();
+  document.querySelectorAll(roomSelector).forEach(el => {
+    const cls = [...el.classList].find(c => c.startsWith('hotel-offer-'));
+    if (cls) ids.add(cls.replace('hotel-offer-', ''));
+  });
+  return ids;
+}
+
+function getOffersForRoom(roomEl, cache, validOfferIds) {
   const offerClass = [...roomEl.classList].find(c => c.startsWith('hotel-offer-'));
   if (!offerClass) {
     console.log('[ExecLounge] No hotel-offer- class on room. All classes:', [...roomEl.classList]);
-    // Try data attributes as fallback
-    const offerId = roomEl.getAttribute('data-offer-id') || roomEl.getAttribute('data-id');
-    if (offerId) console.log('[ExecLounge] Found data attribute offer ID:', offerId);
     return [];
   }
   const bestOfferId = offerClass.replace('hotel-offer-', '');
-  console.log('[ExecLounge] Best offer ID from class:', bestOfferId);
   const bestOffer = cache['BestOfferInfo:' + bestOfferId];
   if (!bestOffer || !bestOffer.accommodation) {
-    console.log('[ExecLounge] No BestOfferInfo:' + bestOfferId, 'in cache. Trying partial match...');
-    // Try partial key match
-    const partialMatch = Object.keys(cache).find(k => k.includes(bestOfferId));
-    if (partialMatch) console.log('[ExecLounge] Found partial key match:', partialMatch, cache[partialMatch]);
+    console.log('[ExecLounge] No BestOfferInfo:' + bestOfferId, 'in cache');
     return [];
   }
+
+  // Use accommodation ref for precise matching (not just name which can collide across hotels)
+  const accommRef = (bestOffer.accommodation && bestOffer.accommodation.__ref) || null;
+  const accommCode = (bestOffer.accommodation && bestOffer.accommodation.code) || null;
   const roomName = bestOffer.accommodation.name;
 
+  // Get hotel ID from URL for extra filtering
+  const hotelIdMatch = location.pathname.match(/\/hotel\/([A-Za-z0-9]+)/i);
+  const pageHotelId = hotelIdMatch ? hotelIdMatch[1] : null;
+
+  console.log('[ExecLounge] Room match criteria — ref:', accommRef, 'code:', accommCode, 'name:', roomName, 'hotelId:', pageHotelId);
+
+  // Log first offer structure for debugging
+  console.log('[ExecLounge] Sample BestOfferInfo keys:', Object.keys(bestOffer));
+  if (bestOffer.accommodation) console.log('[ExecLounge] accommodation keys:', Object.keys(bestOffer.accommodation));
+
   const allOffers = Object.entries(cache)
-    .filter(([k, v]) => k.startsWith('BestOfferInfo:') && v.accommodation && v.accommodation.name === roomName)
+    .filter(([k, v]) => {
+      if (!k.startsWith('BestOfferInfo:')) return false;
+      if (!v.accommodation) return false;
+
+      // Match by accommodation ref (most precise — unique per room type per hotel)
+      if (accommRef && v.accommodation.__ref) {
+        return v.accommodation.__ref === accommRef;
+      }
+      // Fallback: match by accommodation code
+      if (accommCode && v.accommodation.code) {
+        return v.accommodation.code === accommCode;
+      }
+      // Last resort: match by name BUT only if the offer ID is on this page
+      // (prevents cross-hotel matches)
+      if (v.accommodation.name === roomName) {
+        const offerId = k.replace('BestOfferInfo:', '');
+        // Accept if it's one of the page's offer IDs, OR if it shares a hotel ref
+        if (validOfferIds && validOfferIds.has(offerId)) return true;
+        // Check if this offer references the same hotel
+        if (pageHotelId && v.hotel) {
+          const offerHotelCode = (typeof v.hotel === 'string') ? v.hotel :
+            (v.hotel.code || v.hotel.id || (v.hotel.__ref || '').replace(/.*:/, ''));
+          if (offerHotelCode === pageHotelId) return true;
+        }
+        // If no hotel field, cautiously include it (same-name match)
+        if (!v.hotel) return true;
+        return false;
+      }
+      return false;
+    })
     .map(([k, v]) => {
       const rateRef = (v.rate && v.rate.__ref) || '';
-      const rateKey = rateRef.replace('__ref:', '');
+      const rateKey = rateRef;
       const rateInfo = cache[rateKey] || {};
       return Object.assign({}, v, { resolvedRate: rateInfo, cacheKey: k });
     });
 
+  console.log('[ExecLounge] Found', allOffers.length, 'raw offers for', roomName);
+
+  // Deduplicate by rate label + price
   const seen = new Set();
   const unique = allOffers.filter(o => {
-    const key = (o.resolvedRate && o.resolvedRate.label || '') + '|' + (o.pricing && o.pricing.main && o.pricing.main.amount || 0);
+    // Skip offers with no pricing (phantom/invalid)
+    if (!o.pricing || !o.pricing.main || !o.pricing.main.amount) return false;
+    const rateLabel = (o.resolvedRate && o.resolvedRate.label) || '';
+    const amount = o.pricing.main.amount || 0;
+    const key = rateLabel + '|' + amount;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 
+  // Sort: ROOM type first, then by price ascending
   unique.sort((a, b) => {
     if (a.type !== b.type) return a.type === 'ROOM' ? -1 : 1;
     const aPrice = (a.pricing && a.pricing.main && a.pricing.main.amount) || 0;
@@ -1163,6 +1218,7 @@ function getOffersForRoom(roomEl, cache) {
     return aPrice - bPrice;
   });
 
+  console.log('[ExecLounge] Returning', unique.length, 'unique offers for', roomName);
   return unique;
 }
 
@@ -1283,6 +1339,10 @@ async function injectAllRatePanels() {
     return;
   }
 
+  // Collect valid offer IDs from the current page
+  const validOfferIds = getPageOfferIds();
+  console.log('[ExecLounge] Valid page offer IDs:', [...validOfferIds]);
+
   // Use the same selector that found the rooms container for the button
   const roomSelector = findRoomsSelector();
   const rooms = document.querySelectorAll(roomSelector);
@@ -1294,7 +1354,7 @@ async function injectAllRatePanels() {
     if (roomEl.offsetHeight === 0) return;
 
     console.log('[ExecLounge] Room', i, 'classes:', [...roomEl.classList]);
-    const offers = getOffersForRoom(roomEl, cache);
+    const offers = getOffersForRoom(roomEl, cache, validOfferIds);
     console.log('[ExecLounge] Room', i, 'offers found:', offers.length);
     if (offers.length === 0) return;
 
