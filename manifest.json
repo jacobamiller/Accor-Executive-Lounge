@@ -10,6 +10,12 @@
               "content_scripts": [
                               {
                                                 "matches": ["https://all.accor.com/booking/*"],
+                                                "js": ["page-bridge.js"],
+                                                "run_at": "document_idle",
+                                                "world": "MAIN"
+                              },
+                              {
+                                                "matches": ["https://all.accor.com/booking/*"],
                                                 "js": ["content.js"],
                                                 "run_at": "document_idle"
                               }

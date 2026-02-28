@@ -1093,38 +1093,28 @@ function addTaxInclusivePrice(card) {
 // ==================== SHOW ALL RATES ====================
 function extractApolloCacheViaPageScript() {
   return new Promise((resolve) => {
-    const eventName = 'exec-apollo-cache-' + Date.now();
-    const script = document.createElement('script');
-    script.textContent = `
-      try {
-        const cache = document.querySelector('#app')
-          .__vue_app__.config.globalProperties
-          .$apolloProvider.defaultClient.cache.extract();
-        document.dispatchEvent(new CustomEvent('${eventName}', {
-          detail: JSON.stringify(cache)
-        }));
-      } catch(e) {
-        document.dispatchEvent(new CustomEvent('${eventName}', {
-          detail: null
-        }));
-      }
-    `;
     const timeout = setTimeout(() => {
-      document.removeEventListener(eventName, handler);
+      document.removeEventListener('exec-response-cache', handler);
+      console.warn('[ExecLounge] Cache request timed out');
       resolve(null);
     }, 3000);
     function handler(e) {
       clearTimeout(timeout);
-      document.removeEventListener(eventName, handler);
+      document.removeEventListener('exec-response-cache', handler);
       try {
-        resolve(e.detail ? JSON.parse(e.detail) : null);
+        const data = JSON.parse(e.detail);
+        if (data.error) {
+          console.warn('[ExecLounge] Bridge error:', data.error);
+          resolve(null);
+        } else {
+          resolve(data.cache || null);
+        }
       } catch {
         resolve(null);
       }
     }
-    document.addEventListener(eventName, handler);
-    document.head.appendChild(script);
-    script.remove();
+    document.addEventListener('exec-response-cache', handler);
+    document.dispatchEvent(new CustomEvent('exec-request-cache'));
   });
 }
 
