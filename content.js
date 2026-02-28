@@ -702,6 +702,7 @@ const FREE_BREAKFAST_HOTEL_IDS = new Set([
 
 // ==================== TOGGLE STATE ====================
 let loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
+let showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
 
 // ==================== STYLES ====================
 function injectStyles() {
@@ -820,6 +821,102 @@ function injectStyles() {
       display: block;
       text-align: right;
       padding-right: 10px;
+    }
+    #show-all-rates-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border: 2px solid #1a73e8;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      line-height: 1.4;
+    }
+    #show-all-rates-btn.active {
+      background: #1a73e8;
+      color: #ffffff;
+    }
+    #show-all-rates-btn:not(.active) {
+      background: transparent;
+      color: #1a73e8;
+    }
+    #show-all-rates-btn:hover {
+      opacity: 0.85;
+    }
+    .ext-all-rates-panel {
+      padding: 8px 12px;
+      margin: 4px 0 8px 0;
+      border-top: 1px solid #e0e0e0;
+    }
+    .ext-rate-card {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      background: #fafafa;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 12px;
+    }
+    .ext-rate-card:hover {
+      background: #f0f4ff;
+    }
+    .ext-rate-name {
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+    .ext-rate-type-badge {
+      display: inline-block;
+      background: #ff9800;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+    .ext-rate-meal {
+      color: #0e8a16;
+      font-size: 11px;
+    }
+    .ext-rate-policy {
+      font-size: 11px;
+    }
+    .ext-rate-policy.free-cancel {
+      color: #0e8a16;
+    }
+    .ext-rate-policy.non-refundable {
+      color: #d32f2f;
+    }
+    .ext-rate-price {
+      text-align: right;
+    }
+    .ext-rate-member-price {
+      font-weight: 700;
+      color: #e63946;
+      font-size: 13px;
+    }
+    .ext-rate-public-price {
+      text-decoration: line-through;
+      color: #999;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+    .ext-rate-savings {
+      color: #0e8a16;
+      font-size: 10px;
+    }
+    .ext-rate-tax {
+      color: #888;
+      font-size: 10px;
     }
   `;
   document.head.appendChild(style);
@@ -993,6 +1090,254 @@ function addTaxInclusivePrice(card) {
   card.setAttribute('data-exec-tax-processed', 'true');
 }
 
+// ==================== SHOW ALL RATES ====================
+function extractApolloCacheViaPageScript() {
+  return new Promise((resolve) => {
+    const eventName = 'exec-apollo-cache-' + Date.now();
+    const script = document.createElement('script');
+    script.textContent = `
+      try {
+        const cache = document.querySelector('#app')
+          .__vue_app__.config.globalProperties
+          .$apolloProvider.defaultClient.cache.extract();
+        document.dispatchEvent(new CustomEvent('${eventName}', {
+          detail: JSON.stringify(cache)
+        }));
+      } catch(e) {
+        document.dispatchEvent(new CustomEvent('${eventName}', {
+          detail: null
+        }));
+      }
+    `;
+    const timeout = setTimeout(() => {
+      document.removeEventListener(eventName, handler);
+      resolve(null);
+    }, 3000);
+    function handler(e) {
+      clearTimeout(timeout);
+      document.removeEventListener(eventName, handler);
+      try {
+        resolve(e.detail ? JSON.parse(e.detail) : null);
+      } catch {
+        resolve(null);
+      }
+    }
+    document.addEventListener(eventName, handler);
+    document.head.appendChild(script);
+    script.remove();
+  });
+}
+
+function getOffersForRoom(roomEl, cache) {
+  const offerClass = [...roomEl.classList].find(c => c.startsWith('hotel-offer-'));
+  if (!offerClass) return [];
+  const bestOfferId = offerClass.replace('hotel-offer-', '');
+  const bestOffer = cache['BestOfferInfo:' + bestOfferId];
+  if (!bestOffer || !bestOffer.accommodation) return [];
+  const roomName = bestOffer.accommodation.name;
+
+  const allOffers = Object.entries(cache)
+    .filter(([k, v]) => k.startsWith('BestOfferInfo:') && v.accommodation && v.accommodation.name === roomName)
+    .map(([k, v]) => {
+      const rateRef = (v.rate && v.rate.__ref) || '';
+      const rateKey = rateRef.replace('__ref:', '');
+      const rateInfo = cache[rateKey] || {};
+      return Object.assign({}, v, { resolvedRate: rateInfo, cacheKey: k });
+    });
+
+  const seen = new Set();
+  const unique = allOffers.filter(o => {
+    const key = (o.resolvedRate && o.resolvedRate.label || '') + '|' + (o.pricing && o.pricing.main && o.pricing.main.amount || 0);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  unique.sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'ROOM' ? -1 : 1;
+    const aPrice = (a.pricing && a.pricing.main && a.pricing.main.amount) || 0;
+    const bPrice = (b.pricing && b.pricing.main && b.pricing.main.amount) || 0;
+    return aPrice - bPrice;
+  });
+
+  return unique;
+}
+
+function buildRatePanel(offers) {
+  const panel = document.createElement('div');
+  panel.className = 'ext-all-rates-panel';
+
+  offers.forEach(offer => {
+    const card = document.createElement('div');
+    card.className = 'ext-rate-card';
+
+    const rateName = (offer.resolvedRate && offer.resolvedRate.label) || 'Standard Rate';
+    const memberPrice = (offer.pricing && offer.pricing.main && offer.pricing.main.formattedAmount) || '';
+    const publicPrice = (offer.pricing && offer.pricing.alternative && offer.pricing.alternative.formattedAmount) || '';
+    const deductions = (offer.pricing && offer.pricing.deduction) || [];
+    const savings = deductions.length > 0 ? deductions[0].formattedAmount || '' : '';
+    const simplifiedPolicies = (offer.pricing && offer.pricing.main && offer.pricing.main.simplifiedPolicies) || {};
+    const cancellation = (simplifiedPolicies.cancellation && simplifiedPolicies.cancellation.label) || '';
+    const cancellationCode = (simplifiedPolicies.cancellation && simplifiedPolicies.cancellation.code) || '';
+    const mealPlan = (offer.mealPlan && offer.mealPlan.label) || '';
+    const taxInfo = (offer.pricing && offer.pricing.formattedTaxType) || '';
+    const typeBadge = offer.type === 'PACKAGE' ? 'DEAL' : '';
+
+    // Column 1: Rate name + type badge
+    const nameCol = document.createElement('div');
+    nameCol.className = 'ext-rate-name';
+    nameCol.textContent = rateName;
+    if (typeBadge) {
+      const badge = document.createElement('span');
+      badge.className = 'ext-rate-type-badge';
+      badge.textContent = typeBadge;
+      nameCol.appendChild(badge);
+    }
+
+    // Column 2: Meal plan
+    const mealCol = document.createElement('div');
+    mealCol.className = 'ext-rate-meal';
+    mealCol.textContent = mealPlan;
+
+    // Column 3: Cancellation policy
+    const policyCol = document.createElement('div');
+    policyCol.className = 'ext-rate-policy';
+    if (cancellationCode === 'FREE_CANCELLATION' || cancellation.toLowerCase().includes('free')) {
+      policyCol.classList.add('free-cancel');
+    } else if (cancellationCode === 'NON_REFUNDABLE' || cancellation.toLowerCase().includes('non')) {
+      policyCol.classList.add('non-refundable');
+    }
+    policyCol.textContent = cancellation;
+
+    // Column 4: Prices
+    const priceCol = document.createElement('div');
+    priceCol.className = 'ext-rate-price';
+    if (memberPrice) {
+      const memberSpan = document.createElement('span');
+      memberSpan.className = 'ext-rate-member-price';
+      memberSpan.textContent = memberPrice;
+      priceCol.appendChild(memberSpan);
+    }
+    if (publicPrice && publicPrice !== memberPrice) {
+      const publicSpan = document.createElement('span');
+      publicSpan.className = 'ext-rate-public-price';
+      publicSpan.textContent = publicPrice;
+      priceCol.appendChild(publicSpan);
+    }
+    if (savings) {
+      const savingsDiv = document.createElement('div');
+      savingsDiv.className = 'ext-rate-savings';
+      savingsDiv.textContent = 'Save ' + savings;
+      priceCol.appendChild(savingsDiv);
+    }
+    if (taxInfo) {
+      const taxDiv = document.createElement('div');
+      taxDiv.className = 'ext-rate-tax';
+      taxDiv.textContent = taxInfo;
+      priceCol.appendChild(taxDiv);
+    }
+
+    card.appendChild(nameCol);
+    card.appendChild(mealCol);
+    card.appendChild(policyCol);
+    card.appendChild(priceCol);
+    panel.appendChild(card);
+  });
+
+  return panel;
+}
+
+let showAllRatesRetryCount = 0;
+const SHOW_ALL_RATES_MAX_RETRIES = 3;
+
+async function injectAllRatePanels() {
+  const cache = await extractApolloCacheViaPageScript();
+  if (!cache) {
+    if (showAllRatesRetryCount < SHOW_ALL_RATES_MAX_RETRIES) {
+      showAllRatesRetryCount++;
+      setTimeout(() => {
+        if (showAllRatesActive) injectAllRatePanels();
+      }, 500);
+    } else {
+      console.debug('[ExecLounge] Apollo cache not available after retries');
+    }
+    return;
+  }
+  showAllRatesRetryCount = 0;
+
+  const hasOffers = Object.keys(cache).some(k => k.startsWith('BestOfferInfo:'));
+  if (!hasOffers) {
+    console.debug('[ExecLounge] No BestOfferInfo entries in cache');
+    return;
+  }
+
+  const rooms = document.querySelectorAll('.hotel-accommodation');
+  rooms.forEach(roomEl => {
+    if (roomEl.querySelector('.ext-all-rates-panel')) return;
+    if (roomEl.classList.contains('hotel-accommodation--selected')) return;
+    if (roomEl.offsetHeight === 0) return;
+
+    const offers = getOffersForRoom(roomEl, cache);
+    if (offers.length === 0) return;
+
+    const panel = buildRatePanel(offers);
+    const topInfos = roomEl.querySelector('.hotel-accommodation__top-infos');
+    if (topInfos) {
+      topInfos.insertAdjacentElement('afterend', panel);
+    } else {
+      roomEl.appendChild(panel);
+    }
+  });
+}
+
+function removeAllRatePanels() {
+  document.querySelectorAll('.ext-all-rates-panel').forEach(el => el.remove());
+}
+
+function injectShowAllRatesButton() {
+  if (document.getElementById('show-all-rates-btn')) return;
+
+  const roomsContainer = document.querySelector('.hotel-accommodation');
+  if (!roomsContainer) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'show-all-rates-btn';
+  btn.type = 'button';
+  btn.addEventListener('click', toggleShowAllRates);
+
+  const wrapper = document.createElement('div');
+  wrapper.id = 'show-all-rates-wrapper';
+  wrapper.style.cssText = 'padding: 8px 16px; display: flex; align-items: center;';
+  wrapper.appendChild(btn);
+
+  roomsContainer.parentNode.insertBefore(wrapper, roomsContainer);
+  updateShowAllRatesButton();
+}
+
+function updateShowAllRatesButton() {
+  const btn = document.getElementById('show-all-rates-btn');
+  if (!btn) return;
+  if (showAllRatesActive) {
+    btn.classList.add('active');
+    btn.textContent = '\u2713 Hide All Rates';
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = 'Show All Rates';
+  }
+}
+
+function toggleShowAllRates() {
+  showAllRatesActive = !showAllRatesActive;
+  sessionStorage.setItem('execShowAllRatesActive', showAllRatesActive.toString());
+  updateShowAllRatesButton();
+  if (showAllRatesActive) {
+    showAllRatesRetryCount = 0;
+    injectAllRatePanels();
+  } else {
+    removeAllRatePanels();
+  }
+}
+
 // ==================== TOGGLE FEATURE ====================
 function applyFilterToCard(card) {
   const hotelId = card.getAttribute('data-hotel-id');
@@ -1127,6 +1472,19 @@ function startObserver() {
     if (!document.getElementById('exec-lounge-toggle-btn')) {
       injectToggleButton();
     }
+    // Show All Rates: inject button and re-inject panels for new rooms
+    if (!document.getElementById('show-all-rates-btn')) {
+      injectShowAllRatesButton();
+    }
+    if (showAllRatesActive) {
+      const rooms = document.querySelectorAll('.hotel-accommodation');
+      const needsReinject = [...rooms].some(r =>
+        !r.querySelector('.ext-all-rates-panel') &&
+        !r.classList.contains('hotel-accommodation--selected') &&
+        r.offsetHeight > 0
+      );
+      if (needsReinject) injectAllRatePanels();
+    }
     // Re-entrancy guard: resume observing after processing
     observer.observe(document.body, { subtree: true, childList: true });
   });
@@ -1146,10 +1504,16 @@ function init() {
   if (!/\/booking\//i.test(location.pathname)) return;
   console.log('[ExecLounge] init() running - found booking page');
   loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
+  showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
   injectStyles();
   highlightCards();
   injectToggleButton();
   applyFilterToAllCards();
+  injectShowAllRatesButton();
+  if (showAllRatesActive) {
+    showAllRatesRetryCount = 0;
+    injectAllRatePanels();
+  }
   startObserver();
 }
 
@@ -1167,6 +1531,9 @@ init();
     document.querySelectorAll('[data-exec-tax-processed]').forEach(el => {
       el.removeAttribute('data-exec-tax-processed');
     });
+    // Clean up show-all-rates panels on route change
+    removeAllRatePanels();
+    showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
     const isTarget = /all\.accor\.com\/booking/i.test(location.href);
     stopObserver();
     if (isTarget) init();
