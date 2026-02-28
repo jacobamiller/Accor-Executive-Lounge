@@ -918,6 +918,30 @@ function injectStyles() {
       color: #888;
       font-size: 10px;
     }
+    .exec-detail-tax {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1a2e;
+      line-height: 1.5;
+      padding: 4px 12px;
+      text-align: right;
+    }
+    .exec-detail-tax .exec-tax-total {
+      color: #e63946;
+      font-weight: 700;
+      font-size: 1.15em;
+    }
+    .exec-detail-tax .exec-tax-per-night {
+      color: #555;
+      font-size: 0.92em;
+      font-weight: 400;
+    }
+    .exec-detail-tax-breakdown {
+      font-size: 11px;
+      color: #666;
+      font-weight: 400;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -1088,6 +1112,86 @@ function addTaxInclusivePrice(card) {
   }
 
   card.setAttribute('data-exec-tax-processed', 'true');
+}
+
+// ==================== DETAIL PAGE TAX-INCLUSIVE PRICE ====================
+async function addTaxToDetailPageRooms() {
+  if (!isHotelDetailPage()) return;
+  const roomSelector = findRoomsSelector();
+  const rooms = document.querySelectorAll(roomSelector);
+  if (rooms.length === 0) return;
+
+  // Check if any room still needs processing
+  const needsProcessing = [...rooms].some(r => !r.querySelector('.exec-detail-tax'));
+  if (!needsProcessing) return;
+
+  const cache = await extractApolloCacheViaPageScript();
+  if (!cache) return;
+
+  // Get nights from URL params
+  const urlParams = new URLSearchParams(location.search);
+  const nights = parseInt(urlParams.get('nights'), 10) || 1;
+
+  rooms.forEach(roomEl => {
+    if (roomEl.querySelector('.exec-detail-tax')) return;
+    if (roomEl.offsetHeight === 0) return;
+
+    // Find offer ID from class
+    const offerClass = [...roomEl.classList].find(c => c.startsWith('hotel-offer-'));
+    if (!offerClass) return;
+    const offerId = offerClass.replace('hotel-offer-', '');
+    const offer = cache['BestOfferInfo:' + offerId];
+    if (!offer || !offer.pricing) return;
+
+    const mainPrice = offer.pricing.main;
+    if (!mainPrice || !mainPrice.amount) return;
+
+    const baseAmount = mainPrice.amount;
+    const formattedBase = mainPrice.formattedAmount || '';
+    const taxText = offer.pricing.formattedTaxType || '';
+    const taxAmount = parseCurrencyAmount(taxText);
+
+    if (!taxAmount) return;
+
+    const total = baseAmount + taxAmount.amount;
+    const totalStr = formatPrice(total);
+    const baseStr = formatPrice(baseAmount);
+    const taxStr = formatPrice(taxAmount.amount);
+
+    // Detect currency from formatted price
+    const currencyMatch = formattedBase.match(/^[^\d.,\s]+/) || formattedBase.match(/[^\d.,\s]+$/);
+    const currency = currencyMatch ? currencyMatch[0].trim() : taxAmount.currency;
+    // Check if currency is suffix (e.g. "1.350,00 €")
+    const isSuffix = formattedBase.match(/[^\d.,\s]+$/) && !formattedBase.match(/^[^\d.,\s]+/);
+    const fmtTotal = isSuffix ? totalStr + ' ' + currency : currency + totalStr;
+    const fmtBase = isSuffix ? baseStr + ' ' + currency : currency + baseStr;
+    const fmtTax = isSuffix ? taxStr + ' ' + currency : currency + taxStr;
+
+    const perNight = total / nights;
+    const perNightStr = formatPrice(Math.round(perNight));
+    const fmtPerNight = isSuffix ? perNightStr + ' ' + currency : currency + perNightStr;
+
+    // Build the tax-inclusive display element
+    const taxDiv = document.createElement('div');
+    taxDiv.className = 'exec-detail-tax';
+
+    let html = `<span class="exec-tax-total">${fmtTotal}</span> w/ Tax`;
+    if (nights > 1) {
+      html += ` <span class="exec-tax-per-night">(${fmtPerNight}/night)</span>`;
+    }
+    html += `<br><span class="exec-detail-tax-breakdown">From ${fmtBase} + Taxes ${fmtTax}</span>`;
+    taxDiv.innerHTML = html;
+
+    // Insert after the price area — try multiple selectors
+    const priceArea = roomEl.querySelector('[class*="price"]')
+      || roomEl.querySelector('[class*="amount"]')
+      || roomEl.querySelector('.hotel-accommodation__top-infos');
+    if (priceArea) {
+      priceArea.insertAdjacentElement('afterend', taxDiv);
+    } else {
+      roomEl.appendChild(taxDiv);
+    }
+  });
 }
 
 // ==================== SHOW ALL RATES ====================
@@ -1609,6 +1713,8 @@ function startObserver() {
       );
       if (needsReinject) injectAllRatePanels();
     }
+    // Detail page tax-inclusive prices: inject on new rooms
+    addTaxToDetailPageRooms();
     // Re-entrancy guard: resume observing after processing
     observer.observe(document.body, { subtree: true, childList: true });
   });
@@ -1638,6 +1744,7 @@ function init() {
     showAllRatesRetryCount = 0;
     injectAllRatePanels();
   }
+  addTaxToDetailPageRooms();
   startObserver();
 }
 
@@ -1655,8 +1762,9 @@ init();
     document.querySelectorAll('[data-exec-tax-processed]').forEach(el => {
       el.removeAttribute('data-exec-tax-processed');
     });
-    // Clean up show-all-rates panels on route change
+    // Clean up injected panels on route change
     removeAllRatePanels();
+    document.querySelectorAll('.exec-detail-tax').forEach(el => el.remove());
     showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') === 'true';
     const isTarget = /all\.accor\.com\/booking/i.test(location.href);
     stopObserver();
