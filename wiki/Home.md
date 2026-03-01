@@ -11,6 +11,7 @@ A Chrome extension (Manifest V3) that enhances the Accor hotel booking website w
 | **[Page Bridge Deep Dive](Page-Bridge-Deep-Dive)** | MAIN world bridge — loyalty tier detection across 6 sources, Apollo cache extraction, Vue/Nuxt introspection, retry logic, diagnostics |
 | **[Data Pipeline & Monthly Update Workflow](Data-Pipeline-&-Monthly-Update-Workflow)** | Monthly extraction process, bookmarklet architecture, API key capture, data file formats, name matching algorithm |
 | **[API Integration & Hotel ID Resolution](API-Integration-&-Hotel-ID-Resolution)** | Accor Catalog API reference, hotel ID resolution pipeline, normalization, known mismatch patterns, Apollo cache structure |
+| **[Product Specification & Complexity Analysis](Product-Specification-&-Complexity-Analysis)** | Feature inventory by complexity, effort distribution, rebuild phases with dependencies, complexity ratings, potential improvements |
 
 ## Quick Reference
 
