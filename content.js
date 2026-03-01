@@ -1301,6 +1301,8 @@ function addTaxInclusivePrice(card) {
     return;
   }
 
+  sendPriceSnapshot(card, data);
+
   const total = data.basePrice + data.tax;
   const perNight = total / data.nights;
   const basePriceStr = formatPrice(data.basePrice);
@@ -1342,6 +1344,89 @@ function getNightsFromUrl() {
     if (diff > 0) return Math.round(diff);
   }
   return 1;
+}
+
+// ==================== SUPABASE DATA COLLECTION ====================
+function getDatesFromUrl() {
+  const params = new URLSearchParams(location.search);
+  return { checkin: params.get('dateIn') || null, checkout: params.get('dateOut') || null };
+}
+
+function getCityFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const dest = params.get('destination');
+  if (dest) return dest;
+  const parts = location.pathname.split('/').filter(Boolean);
+  if (parts.length >= 4 && parts[0] === 'booking' && parts[1] === 'search') return parts[3] || null;
+  return null;
+}
+
+function sendPriceSnapshot(card, priceData) {
+  try {
+    const hotelId = card.getAttribute('data-hotel-id') || 'unknown';
+    const nameEl = card.querySelector('[class*="hotel-name"]') || card.querySelector('h2') || card.querySelector('h3');
+    const hotelName = nameEl ? nameEl.textContent.trim() : null;
+    const dates = getDatesFromUrl();
+    const total = priceData.basePrice + priceData.tax;
+    chrome.runtime.sendMessage({
+      type: 'PRICE_SNAPSHOT',
+      data: {
+        hotel_id: hotelId,
+        hotel_name: hotelName,
+        city: getCityFromUrl(),
+        currency: priceData.currency,
+        base_price: priceData.basePrice,
+        tax_amount: priceData.tax,
+        total_price: total,
+        per_night: Math.round((total / priceData.nights) * 100) / 100,
+        nights: priceData.nights,
+        checkin: dates.checkin,
+        checkout: dates.checkout,
+        has_lounge: EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId),
+        has_breakfast: FREE_BREAKFAST_HOTEL_IDS.has(hotelId),
+        page_url: location.href
+      }
+    });
+  } catch (e) { dbg('sendPriceSnapshot error:', e); }
+}
+
+function sendRateSnapshots(offers, hotelId, nights) {
+  try {
+    const dates = getDatesFromUrl();
+    const batch = [];
+    for (const offer of offers) {
+      const mainPrice = offer.pricing && offer.pricing.main;
+      const memberPrice = (mainPrice && mainPrice.amount) || null;
+      const publicPrice = (offer.pricing && offer.pricing.alternative && offer.pricing.alternative.amount) || null;
+      const taxText = (offer.pricing && offer.pricing.formattedTaxType) || '';
+      const taxParsed = parseCurrencyAmount(taxText);
+      const taxAmount = taxParsed ? taxParsed.amount : null;
+      const total = (memberPrice && taxAmount != null) ? memberPrice + taxAmount : memberPrice;
+      const formattedBase = (mainPrice && mainPrice.formattedAmount) || '';
+      const currencyMatch = formattedBase.match(/([^\d.,\s]+)/);
+      const policies = (mainPrice && mainPrice.simplifiedPolicies) || {};
+      batch.push({
+        hotel_id: hotelId,
+        room_name: (offer.accommodation && offer.accommodation.name) || null,
+        rate_name: (offer.resolvedRate && offer.resolvedRate.label) || 'Standard Rate',
+        rate_type: offer.type || null,
+        member_price: memberPrice,
+        public_price: publicPrice,
+        tax_amount: taxAmount,
+        total_price: total,
+        meal_plan: (offer.mealPlan && offer.mealPlan.label) || null,
+        cancellation: (policies.cancellation && policies.cancellation.label) || null,
+        currency: currencyMatch ? currencyMatch[1].trim() : null,
+        nights: nights,
+        checkin: dates.checkin,
+        checkout: dates.checkout,
+        page_url: location.href
+      });
+    }
+    if (batch.length > 0) {
+      chrome.runtime.sendMessage({ type: 'RATE_SNAPSHOT_BATCH', data: batch });
+    }
+  } catch (e) { dbg('sendRateSnapshots error:', e); }
 }
 
 // ==================== DETAIL PAGE TAX-INCLUSIVE PRICE ====================
@@ -1959,6 +2044,8 @@ async function injectAllRatePanels() {
 
     const offers = getOffersForRoom(roomEl, cache, validOfferIds, offerIndex);
     if (offers.length === 0) return;
+
+    sendRateSnapshots(offers, getHotelIdFromUrl() || 'unknown', nights);
 
     const panel = buildRatePanel(offers, nights);
     // Try multiple insertion points
