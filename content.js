@@ -1,8 +1,10 @@
-console.log('[ExecLounge] content.js loaded on:', window.location.href);
-// Accor Executive Lounge Highlighter - content.js v2.3 Global
+// Accor Executive Lounge Highlighter - content.js v2.4 Global
 // Highlights hotel cards with an Executive Lounge with a thick red border.
 // Hotel IDs populated from monthly lounge extraction data.
 // Run the "Extract All Lounge Hotels" bookmarklet to get updated IDs.
+const DEBUG = false;
+function dbg(...args) { if (DEBUG) console.log('[ExecLounge]', ...args); }
+dbg('content.js loaded on:', window.location.href);
 
 const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   // ===== AFRICA =====
@@ -1109,7 +1111,7 @@ function highlightCard(card) {
   card.appendChild(badge);
   // Parse price data for this card
   const priceData = parsePriceData(card);
-  if (priceData) console.log('[ExecLounge] Price data:', hotelId, priceData);
+  if (priceData) dbg('Price data:', hotelId, priceData);
 }
 
 function addBreakfastBadge(card) {
@@ -1196,7 +1198,7 @@ function injectDetailPageBadges() {
     wrapper.appendChild(loyaltyBadge);
   }
 
-  console.log('[ExecLounge] Detail page badges injected for hotel', hotelId,
+  dbg('Detail page badges injected for hotel', hotelId,
     hasLounge ? '+Lounge' : '', hasBreakfast ? '+Breakfast' : '');
 }
 
@@ -1295,7 +1297,7 @@ function addTaxInclusivePrice(card) {
   const data = parsePriceData(card);
   if (!data) {
     const hotelId = card.getAttribute('data-hotel-id') || 'unknown';
-    console.debug('[ExecLounge] No tax data for hotel', hotelId, ', skipping');
+    dbg('No tax data for hotel', hotelId, ', skipping');
     return;
   }
 
@@ -1446,7 +1448,7 @@ function extractApolloCacheViaPageScript() {
   return new Promise((resolve) => {
     const timeout = setTimeout(() => {
       document.removeEventListener('exec-response-cache', handler);
-      console.warn('[ExecLounge] Cache request timed out');
+      dbg('Cache request timed out');
       resolve(null);
     }, 8000);
     function handler(e) {
@@ -1455,7 +1457,7 @@ function extractApolloCacheViaPageScript() {
       try {
         const data = JSON.parse(e.detail);
         if (data.error) {
-          console.warn('[ExecLounge] Bridge error:', data.error, data.diag || '');
+          dbg('Bridge error:', data.error, data.diag || '');
           resolve(null);
         } else {
           resolve(data.cache || null);
@@ -1687,7 +1689,7 @@ function injectBenefitsBox() {
     const awardsModule = document.querySelector('[data-testid="conversational-module"]');
     if (awardsModule && awardsModule.parentNode) {
       awardsModule.parentNode.insertBefore(box, awardsModule);
-      console.log('[ExecLounge] Benefits box injected above awards toggle');
+      dbg('Benefits box injected above awards toggle');
       return;
     }
     const detailBadges = document.getElementById('exec-detail-badges');
@@ -1708,7 +1710,7 @@ function injectBenefitsBox() {
   const topbar = document.querySelector('.result-list__topbar');
   if (topbar) {
     topbar.insertAdjacentElement('afterend', box);
-    console.log('[ExecLounge] Benefits box injected on search page');
+    dbg('Benefits box injected on search page');
     return;
   }
   // Fallback: after toggle wrapper
@@ -1730,78 +1732,77 @@ function getPageOfferIds() {
   return ids;
 }
 
-function getOffersForRoom(roomEl, cache, validOfferIds) {
+// Pre-index all BestOfferInfo entries by accommodation ref, code, and name (called once per cache)
+function buildOfferIndex(cache) {
+  const byRef = new Map();   // accommodation.__ref → [offers]
+  const byCode = new Map();  // accommodation.code → [offers]
+  const byName = new Map();  // accommodation.name → [offers]
+  for (const k of Object.keys(cache)) {
+    if (!k.startsWith('BestOfferInfo:')) continue;
+    const v = cache[k];
+    if (!v.accommodation) continue;
+    const rateRef = (v.rate && v.rate.__ref) || '';
+    const rateInfo = cache[rateRef] || {};
+    const entry = Object.assign({}, v, { resolvedRate: rateInfo, cacheKey: k });
+    const ref = v.accommodation.__ref;
+    if (ref) { if (!byRef.has(ref)) byRef.set(ref, []); byRef.get(ref).push(entry); }
+    const code = v.accommodation.code;
+    if (code) { if (!byCode.has(code)) byCode.set(code, []); byCode.get(code).push(entry); }
+    const name = v.accommodation.name;
+    if (name) { if (!byName.has(name)) byName.set(name, []); byName.get(name).push(entry); }
+  }
+  return { byRef, byCode, byName };
+}
+
+function getOffersForRoom(roomEl, cache, validOfferIds, offerIndex) {
   const offerClass = [...roomEl.classList].find(c => c.startsWith('hotel-offer-'));
   if (!offerClass) {
-    console.log('[ExecLounge] No hotel-offer- class on room. All classes:', [...roomEl.classList]);
+    dbg('No hotel-offer- class on room. All classes:', [...roomEl.classList]);
     return [];
   }
   const bestOfferId = offerClass.replace('hotel-offer-', '');
   const bestOffer = cache['BestOfferInfo:' + bestOfferId];
   if (!bestOffer || !bestOffer.accommodation) {
-    console.log('[ExecLounge] No BestOfferInfo:' + bestOfferId, 'in cache');
+    dbg('No BestOfferInfo:' + bestOfferId, 'in cache');
     return [];
   }
 
-  // Use accommodation ref for precise matching (not just name which can collide across hotels)
   const accommRef = (bestOffer.accommodation && bestOffer.accommodation.__ref) || null;
   const accommCode = (bestOffer.accommodation && bestOffer.accommodation.code) || null;
   const roomName = bestOffer.accommodation.name;
 
-  // Get hotel ID from URL for extra filtering
-  const hotelIdMatch = location.pathname.match(/\/hotel\/([A-Za-z0-9]+)/i);
-  const pageHotelId = hotelIdMatch ? hotelIdMatch[1] : null;
+  dbg('Room match criteria — ref:', accommRef, 'code:', accommCode, 'name:', roomName);
 
-  console.log('[ExecLounge] Room match criteria — ref:', accommRef, 'code:', accommCode, 'name:', roomName, 'hotelId:', pageHotelId);
-
-  // Log first offer structure for debugging
-  console.log('[ExecLounge] Sample BestOfferInfo keys:', Object.keys(bestOffer));
-  if (bestOffer.accommodation) console.log('[ExecLounge] accommodation keys:', Object.keys(bestOffer.accommodation));
-
-  const allOffers = Object.entries(cache)
-    .filter(([k, v]) => {
-      if (!k.startsWith('BestOfferInfo:')) return false;
-      if (!v.accommodation) return false;
-
-      // Match by accommodation ref (most precise — unique per room type per hotel)
-      if (accommRef && v.accommodation.__ref) {
-        return v.accommodation.__ref === accommRef;
+  // Use pre-built index for O(1) lookup instead of scanning entire cache
+  let allOffers;
+  if (accommRef && offerIndex.byRef.has(accommRef)) {
+    allOffers = offerIndex.byRef.get(accommRef);
+  } else if (accommCode && offerIndex.byCode.has(accommCode)) {
+    allOffers = offerIndex.byCode.get(accommCode);
+  } else if (roomName && offerIndex.byName.has(roomName)) {
+    // Filter by valid page offer IDs or hotel match to prevent cross-hotel collisions
+    const hotelIdMatch = location.pathname.match(/\/hotel\/([A-Za-z0-9]+)/i);
+    const pageHotelId = hotelIdMatch ? hotelIdMatch[1] : null;
+    allOffers = offerIndex.byName.get(roomName).filter(o => {
+      const offerId = o.cacheKey.replace('BestOfferInfo:', '');
+      if (validOfferIds && validOfferIds.has(offerId)) return true;
+      if (pageHotelId && o.hotel) {
+        const offerHotelCode = (typeof o.hotel === 'string') ? o.hotel :
+          (o.hotel.code || o.hotel.id || (o.hotel.__ref || '').replace(/.*:/, ''));
+        if (offerHotelCode === pageHotelId) return true;
       }
-      // Fallback: match by accommodation code
-      if (accommCode && v.accommodation.code) {
-        return v.accommodation.code === accommCode;
-      }
-      // Last resort: match by name BUT only if the offer ID is on this page
-      // (prevents cross-hotel matches)
-      if (v.accommodation.name === roomName) {
-        const offerId = k.replace('BestOfferInfo:', '');
-        // Accept if it's one of the page's offer IDs, OR if it shares a hotel ref
-        if (validOfferIds && validOfferIds.has(offerId)) return true;
-        // Check if this offer references the same hotel
-        if (pageHotelId && v.hotel) {
-          const offerHotelCode = (typeof v.hotel === 'string') ? v.hotel :
-            (v.hotel.code || v.hotel.id || (v.hotel.__ref || '').replace(/.*:/, ''));
-          if (offerHotelCode === pageHotelId) return true;
-        }
-        // If no hotel field, cautiously include it (same-name match)
-        if (!v.hotel) return true;
-        return false;
-      }
+      if (!o.hotel) return true;
       return false;
-    })
-    .map(([k, v]) => {
-      const rateRef = (v.rate && v.rate.__ref) || '';
-      const rateKey = rateRef;
-      const rateInfo = cache[rateKey] || {};
-      return Object.assign({}, v, { resolvedRate: rateInfo, cacheKey: k });
     });
+  } else {
+    allOffers = [];
+  }
 
-  console.log('[ExecLounge] Found', allOffers.length, 'raw offers for', roomName);
+  dbg('Found', allOffers.length, 'raw offers for', roomName);
 
   // Deduplicate by rate label + price
   const seen = new Set();
   const unique = allOffers.filter(o => {
-    // Skip offers with no pricing (phantom/invalid)
     if (!o.pricing || !o.pricing.main || !o.pricing.main.amount) return false;
     const rateLabel = (o.resolvedRate && o.resolvedRate.label) || '';
     const amount = o.pricing.main.amount || 0;
@@ -1819,7 +1820,7 @@ function getOffersForRoom(roomEl, cache, validOfferIds) {
     return aPrice - bPrice;
   });
 
-  console.log('[ExecLounge] Returning', unique.length, 'unique offers for', roomName);
+  dbg('Returning', unique.length, 'unique offers for', roomName);
   return unique;
 }
 
@@ -1928,67 +1929,35 @@ let showAllRatesRetryCount = 0;
 const SHOW_ALL_RATES_MAX_RETRIES = 3;
 
 async function injectAllRatePanels() {
-  console.log('[ExecLounge] injectAllRatePanels() called');
+  dbg('injectAllRatePanels() called');
   const cache = await extractApolloCacheViaPageScript();
   if (!cache) {
-    console.warn('[ExecLounge] Apollo cache returned null, retry', showAllRatesRetryCount);
+    dbg('Apollo cache returned null, retry', showAllRatesRetryCount);
     if (showAllRatesRetryCount < SHOW_ALL_RATES_MAX_RETRIES) {
       showAllRatesRetryCount++;
       setTimeout(() => {
         if (showAllRatesActive) injectAllRatePanels();
       }, 500);
     } else {
-      console.error('[ExecLounge] Apollo cache not available after retries');
+      dbg('Apollo cache not available after retries');
     }
     return;
   }
   showAllRatesRetryCount = 0;
 
-  // Debug: log ALL unique cache key prefixes to discover the naming pattern
-  const cacheKeys = Object.keys(cache);
-  const keyPrefixes = {};
-  cacheKeys.forEach(k => {
-    const prefix = k.split(':')[0] || k.split('.')[0] || k;
-    keyPrefixes[prefix] = (keyPrefixes[prefix] || 0) + 1;
-  });
-  console.log('[ExecLounge] Cache has', cacheKeys.length, 'keys. Key prefixes:', keyPrefixes);
-  console.log('[ExecLounge] Sample keys:', cacheKeys.slice(0, 50));
-
-  // Look for keys containing pricing/offer/room-related terms
-  const interestingKeys = cacheKeys.filter(k => /offer|room|accom|rate|price|pric|best|booking/i.test(k));
-  console.log('[ExecLounge] Interesting keys:', interestingKeys.slice(0, 30));
-
-  // If we find interesting keys, log a sample value
-  if (interestingKeys.length > 0) {
-    console.log('[ExecLounge] Sample value for', interestingKeys[0], ':', JSON.stringify(cache[interestingKeys[0]]).slice(0, 500));
-  }
-
-  // Also log the first few values to understand the structure
-  const firstKeys = cacheKeys.slice(0, 5);
-  firstKeys.forEach(k => {
-    console.log('[ExecLounge] Key:', k, 'Value:', JSON.stringify(cache[k]).slice(0, 300));
-  });
-
-  // Collect valid offer IDs from the current page
+  // Pre-index all offers once (O(n) scan), then O(1) lookups per room
+  const offerIndex = buildOfferIndex(cache);
   const validOfferIds = getPageOfferIds();
-  console.log('[ExecLounge] Valid page offer IDs:', [...validOfferIds]);
-
-  // Get nights from URL
   const nights = getNightsFromUrl();
-
-  // Use the same selector that found the rooms container for the button
   const roomSelector = findRoomsSelector();
   const rooms = document.querySelectorAll(roomSelector);
-  console.log('[ExecLounge] Found', rooms.length, 'rooms with selector:', roomSelector);
 
   rooms.forEach((roomEl, i) => {
     if (roomEl.querySelector('.ext-all-rates-panel')) return;
     if (roomEl.classList.contains('hotel-accommodation--selected')) return;
     if (roomEl.offsetHeight === 0) return;
 
-    console.log('[ExecLounge] Room', i, 'classes:', [...roomEl.classList]);
-    const offers = getOffersForRoom(roomEl, cache, validOfferIds);
-    console.log('[ExecLounge] Room', i, 'offers found:', offers.length);
+    const offers = getOffersForRoom(roomEl, cache, validOfferIds, offerIndex);
     if (offers.length === 0) return;
 
     const panel = buildRatePanel(offers, nights);
@@ -2000,8 +1969,6 @@ async function injectAllRatePanels() {
     if (topInfos) {
       topInfos.insertAdjacentElement('afterend', panel);
     } else {
-      console.log('[ExecLounge] No top-infos found, appending to room. Children:',
-        [...roomEl.children].map(c => c.className).slice(0, 5));
       roomEl.appendChild(panel);
     }
   });
@@ -2011,8 +1978,10 @@ function removeAllRatePanels() {
   document.querySelectorAll('.ext-all-rates-panel').forEach(el => el.remove());
 }
 
+let _isDetailPageCached = null;
 function isHotelDetailPage() {
-  return /\/hotel\/[A-Za-z0-9]+/i.test(location.pathname);
+  if (_isDetailPageCached === null) _isDetailPageCached = /\/hotel\/[A-Za-z0-9]+/i.test(location.pathname);
+  return _isDetailPageCached;
 }
 
 const ROOM_SELECTORS = [
@@ -2025,9 +1994,11 @@ const ROOM_SELECTORS = [
   '[class*="hotel-offer"]',
 ];
 
+let _cachedRoomSelector = null;
 function findRoomsSelector() {
+  if (_cachedRoomSelector && document.querySelector(_cachedRoomSelector)) return _cachedRoomSelector;
   for (const sel of ROOM_SELECTORS) {
-    if (document.querySelector(sel)) return sel;
+    if (document.querySelector(sel)) return (_cachedRoomSelector = sel);
   }
   return '.hotel-accommodation';
 }
@@ -2036,7 +2007,7 @@ function findRoomsContainer() {
   for (const sel of ROOM_SELECTORS) {
     const el = document.querySelector(sel);
     if (el) {
-      console.log('[ExecLounge] Found rooms container with selector:', sel, el);
+      dbg('Found rooms container with selector:', sel);
       return el;
     }
   }
@@ -2049,9 +2020,7 @@ function injectShowAllRatesButton() {
 
   const roomsContainer = findRoomsContainer();
   if (!roomsContainer) {
-    console.debug('[ExecLounge] No rooms container found yet. DOM classes on page:',
-      [...new Set([...document.querySelectorAll('[class]')].flatMap(el => [...el.classList]).filter(c => /room|accom|offer|rate|hotel/i.test(c)))].slice(0, 30)
-    );
+    dbg('No rooms container found yet');
     return;
   }
 
@@ -2067,7 +2036,7 @@ function injectShowAllRatesButton() {
 
   roomsContainer.parentNode.insertBefore(wrapper, roomsContainer);
   updateShowAllRatesButton();
-  console.log('[ExecLounge] Show All Rates button injected');
+  dbg('Show All Rates button injected');
 }
 
 function updateShowAllRatesButton() {
@@ -2084,7 +2053,7 @@ function updateShowAllRatesButton() {
 
 function toggleShowAllRates() {
   showAllRatesActive = !showAllRatesActive;
-  console.log('[ExecLounge] Toggle Show All Rates:', showAllRatesActive);
+  dbg('Toggle Show All Rates:', showAllRatesActive);
   sessionStorage.setItem('execShowAllRatesActive', showAllRatesActive.toString());
   updateShowAllRatesButton();
   if (showAllRatesActive) {
@@ -2195,61 +2164,72 @@ function injectToggleButton() {
 
 // ==================== MUTATION OBSERVER ====================
 let observer = null;
-function startObserver() {
-  if (observer) return;
-  observer = new MutationObserver((mutations) => {
-    // Re-entrancy guard: pause observer while processing to prevent feedback loops
-    observer.disconnect();
-    for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeType !== Node.ELEMENT_NODE) continue;
-        if (node.classList && node.classList.contains('result-list-item') && node.hasAttribute('data-hotel-id')) {
-          highlightCard(node);
-          addBreakfastBadge(node);
-          applyFilterToCard(node);
-          addTaxInclusivePrice(node);
-          const nodePriceData = parsePriceData(node);
-          if (nodePriceData) console.log('[ExecLounge] Price data:', node.getAttribute('data-hotel-id'), nodePriceData);
-        }
-        if (node.querySelectorAll) {
-          node.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
-            highlightCard(card);
-            addBreakfastBadge(card);
-            applyFilterToCard(card);
-            addTaxInclusivePrice(card);
-            const cardPriceData = parsePriceData(card);
-            if (cardPriceData) console.log('[ExecLounge] Price data:', card.getAttribute('data-hotel-id'), cardPriceData);
-          });
-        }
+let observerDebounceTimer = null;
+let pendingMutations = [];
+
+function processMutations() {
+  observer.disconnect();
+  // Process accumulated mutations for new hotel cards
+  for (const mutation of pendingMutations) {
+    for (const node of mutation.addedNodes) {
+      if (node.nodeType !== Node.ELEMENT_NODE) continue;
+      if (node.classList && node.classList.contains('result-list-item') && node.hasAttribute('data-hotel-id')) {
+        highlightCard(node);
+        addBreakfastBadge(node);
+        applyFilterToCard(node);
+        addTaxInclusivePrice(node);
+      }
+      if (node.querySelectorAll) {
+        node.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
+          highlightCard(card);
+          addBreakfastBadge(card);
+          applyFilterToCard(card);
+          addTaxInclusivePrice(card);
+        });
       }
     }
-    // Update counter when new cards are added
-    updateCounter();
-    // Try to inject toggle button if it hasn't been placed yet
-    if (!document.getElementById('exec-lounge-toggle-btn')) {
-      injectToggleButton();
-    }
-    // Show All Rates: inject button and re-inject panels for new rooms
-    if (!document.getElementById('show-all-rates-btn')) {
-      injectShowAllRatesButton();
-    }
-    if (showAllRatesActive) {
-      const rooms = document.querySelectorAll('.hotel-accommodation');
-      const needsReinject = [...rooms].some(r =>
-        !r.querySelector('.ext-all-rates-panel') &&
-        !r.classList.contains('hotel-accommodation--selected') &&
-        r.offsetHeight > 0
-      );
-      if (needsReinject) injectAllRatePanels();
-    }
-    // Detail page: badges, tax-inclusive prices, and loyalty
+  }
+  pendingMutations = [];
+  // Update counter when new cards are added
+  updateCounter();
+  // Try to inject toggle button if it hasn't been placed yet
+  if (!document.getElementById('exec-lounge-toggle-btn')) {
+    injectToggleButton();
+  }
+  // Show All Rates: inject button and re-inject panels for new rooms
+  if (!document.getElementById('show-all-rates-btn')) {
+    injectShowAllRatesButton();
+  }
+  if (showAllRatesActive) {
+    const rooms = document.querySelectorAll(findRoomsSelector());
+    const needsReinject = [...rooms].some(r =>
+      !r.querySelector('.ext-all-rates-panel') &&
+      !r.classList.contains('hotel-accommodation--selected') &&
+      r.offsetHeight > 0
+    );
+    if (needsReinject) injectAllRatePanels();
+  }
+  // Detail page: badges, tax-inclusive prices, and loyalty
+  if (isHotelDetailPage()) {
     injectDetailPageBadges();
     addTaxToDetailPageRooms();
     injectLoyaltyBadge();
     injectBenefitsBox();
-    if (isHotelDetailPage() && detectedLoyaltyTier) markUpgradeEligibleRooms();
-    // Re-entrancy guard: resume observing after processing
-    observer.observe(document.body, { subtree: true, childList: true });
+    if (detectedLoyaltyTier) markUpgradeEligibleRooms();
+  }
+  // Resume observing
+  observer.observe(document.body, { subtree: true, childList: true });
+}
+
+function startObserver() {
+  if (observer) return;
+  observer = new MutationObserver((mutations) => {
+    pendingMutations.push(...mutations);
+    if (observerDebounceTimer) return;
+    observerDebounceTimer = requestAnimationFrame(() => {
+      observerDebounceTimer = null;
+      processMutations();
+    });
   });
   observer.observe(document.body, { subtree: true, childList: true });
 }
@@ -2265,7 +2245,7 @@ function stopObserver() {
 function init() {
   // Only run on booking pages
   if (!/\/booking\//i.test(location.pathname)) return;
-  console.log('[ExecLounge] init() running - found booking page');
+  dbg('init() running - found booking page');
   loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
   showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') !== 'false';
   injectStyles();
@@ -2300,6 +2280,9 @@ init();
     document.querySelectorAll('[data-exec-tax-processed]').forEach(el => {
       el.removeAttribute('data-exec-tax-processed');
     });
+    // Invalidate caches on route change
+    _isDetailPageCached = null;
+    _cachedRoomSelector = null;
     // Clean up injected panels on route change
     removeAllRatePanels();
     document.querySelectorAll('.exec-detail-tax').forEach(el => el.remove());
