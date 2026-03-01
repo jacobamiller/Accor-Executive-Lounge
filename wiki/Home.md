@@ -12,22 +12,25 @@ A Chrome extension (Manifest V3) that enhances the Accor hotel booking website w
 | **[Data Pipeline & Monthly Update Workflow](Data-Pipeline-&-Monthly-Update-Workflow)** | Monthly extraction process, bookmarklet architecture, API key capture, data file formats, name matching algorithm |
 | **[API Integration & Hotel ID Resolution](API-Integration-&-Hotel-ID-Resolution)** | Accor Catalog API reference, hotel ID resolution pipeline, normalization, known mismatch patterns, Apollo cache structure |
 | **[Product Specification & Complexity Analysis](Product-Specification-&-Complexity-Analysis)** | Feature inventory by complexity, effort distribution, rebuild phases with dependencies, complexity ratings, potential improvements |
+| **[Supabase Data Pipeline](Supabase-Data-Pipeline)** | Supabase setup, schema, RLS policies, background worker batching, data collection hooks, price/rate snapshot tables, example queries |
 
 ## Quick Reference
 
 ```
-Extension v2.3 | Manifest V3 | Zero build tools
+Extension v2.5 | Manifest V3 | Zero build tools
 309 lounge hotels | 3,759 breakfast hotels | 6 loyalty tiers
-2 scripts | 4 custom events | 1 MutationObserver
+3 scripts | 4 custom events | 1 MutationObserver | Supabase backend
 ```
 
 ### Key Files
 
 | File | Lines | World | Role |
 |------|-------|-------|------|
-| `manifest.json` | 23 | — | Extension configuration |
-| `content.js` | 2,315 | ISOLATED | All DOM manipulation and UI |
-| `page-bridge.js` | 571 | MAIN | Vue/Apollo/Nuxt data access |
+| `manifest.json` | 28 | — | Extension configuration |
+| `content.js` | ~2,400 | ISOLATED | All DOM manipulation and UI |
+| `page-bridge.js` | 573 | MAIN | Vue/Apollo/Nuxt data access |
+| `background.js` | 88 | Service Worker | Supabase data batching |
+| `config.js` | 5 | — | Supabase connection config |
 
 ### Features at a Glance
 
@@ -41,3 +44,4 @@ Extension v2.3 | Manifest V3 | Zero build tools
 | Loyalty tier badge | In toggle bar | In header badges |
 | Benefits box | General tier info | Hotel-specific |
 | Upgrade eligibility | — | Purple indicators |
+| Price data collection | Auto-capture | Auto-capture |
