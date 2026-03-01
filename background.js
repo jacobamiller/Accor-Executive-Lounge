@@ -90,4 +90,64 @@ chrome.runtime.onSuspend && chrome.runtime.onSuspend.addListener(() => {
   }
 });
 
+// ==================== HOTEL DATA SYNC ====================
+const SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+async function fetchHotelIds(table, idColumn) {
+  const ids = [];
+  let offset = 0;
+  const limit = 1000;
+  while (true) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/${table}?select=${idColumn}&${idColumn}=not.is.null&offset=${offset}&limit=${limit}`,
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    if (!res.ok) break;
+    const rows = await res.json();
+    if (rows.length === 0) break;
+    for (const r of rows) if (r[idColumn]) ids.push(r[idColumn]);
+    offset += limit;
+    if (rows.length < limit) break;
+  }
+  return ids;
+}
+
+async function syncHotelData() {
+  try {
+    const loungeIds = await fetchHotelIds('lounge_hotels', 'hotel_id');
+    const breakfastIds = await fetchHotelIds('breakfast_hotels', 'hotel_id');
+    if (loungeIds.length > 0 || breakfastIds.length > 0) {
+      await chrome.storage.local.set({
+        accorLoungeIds: loungeIds,
+        accorBreakfastIds: breakfastIds,
+        accorHotelSyncTime: Date.now()
+      });
+    }
+  } catch (e) {
+    console.warn('[Supabase] Hotel data sync failed:', e);
+  }
+}
+
+async function syncIfNeeded() {
+  const result = await chrome.storage.local.get('accorHotelSyncTime');
+  const lastSync = result.accorHotelSyncTime || 0;
+  if (Date.now() - lastSync > SYNC_INTERVAL_MS) {
+    syncHotelData();
+  }
+}
+
+// Respond to content.js requesting hotel data
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.type === 'GET_HOTEL_DATA') {
+    chrome.storage.local.get(['accorLoungeIds', 'accorBreakfastIds']).then(result => {
+      sendResponse({
+        loungeIds: result.accorLoungeIds || null,
+        breakfastIds: result.accorBreakfastIds || null
+      });
+    });
+    return true; // async response
+  }
+});
+
 ensureUserId();
+syncIfNeeded();

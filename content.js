@@ -6,7 +6,9 @@ const DEBUG = false;
 function dbg(...args) { if (DEBUG) console.log('[ExecLounge]', ...args); }
 dbg('content.js loaded on:', window.location.href);
 
-const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
+// These hardcoded Sets are fallbacks. On startup, we try to load fresh data
+// from chrome.storage.local (synced from Supabase by background.js).
+let EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
   // ===== AFRICA =====
   // Ghana (1 hotels)
   'B4P0', // Mövenpick Ambassador Hotel Accr
@@ -321,7 +323,7 @@ const EXECUTIVE_LOUNGE_HOTEL_IDS = new Set([
 // Hotel IDs offering complimentary breakfast for Platinum/Diamond members.
 // Populated from data/breakfast/YYYY-MM.json via Bookmarklet 2.
 // TODO: Run "Extract All Breakfast Hotels" bookmarklet and populate (~7,400+ hotels)
-const FREE_BREAKFAST_HOTEL_IDS = new Set([
+let FREE_BREAKFAST_HOTEL_IDS = new Set([
   // 3759 hotels from data/breakfast/2026-03.json (7403 total, 3759 unique IDs)
   // Updated: 2026-02-27
   '0338', '0340', '0341', '0343', '0344', '0345', '0348', '0351', '0354', '0355',
@@ -2375,6 +2377,21 @@ function init() {
   loyaltyDetectionDone = detectedLoyaltyTier !== null;
   detectAndCacheLoyaltyTier(); // async, non-blocking
 }
+
+// Load fresh hotel data from background.js cache (synced from Supabase)
+try {
+  chrome.runtime.sendMessage({ type: 'GET_HOTEL_DATA' }, (response) => {
+    if (chrome.runtime.lastError || !response) return;
+    if (response.loungeIds && response.loungeIds.length > 0) {
+      EXECUTIVE_LOUNGE_HOTEL_IDS = new Set(response.loungeIds);
+      dbg('Loaded', EXECUTIVE_LOUNGE_HOTEL_IDS.size, 'lounge IDs from Supabase cache');
+    }
+    if (response.breakfastIds && response.breakfastIds.length > 0) {
+      FREE_BREAKFAST_HOTEL_IDS = new Set(response.breakfastIds);
+      dbg('Loaded', FREE_BREAKFAST_HOTEL_IDS.size, 'breakfast IDs from Supabase cache');
+    }
+  });
+} catch (e) { /* fallback to hardcoded Sets */ }
 
 init();
 
