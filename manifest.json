@@ -1,7 +1,7 @@
 {
               "manifest_version": 3,
               "name": "Accor Executive Lounge Highlighter",
-              "version": "2.5",
+              "version": "2.6",
               "description": "Highlights Accor hotels globally that have an Executive Lounge with a red border and badge on search results.",
               "incognito": "spanning",
               "permissions": ["storage"],
@@ -9,6 +9,10 @@
                               "https://all.accor.com/*",
                               "https://nkikqvujmhiahryrdgxr.supabase.co/*"
               ],
+              "action": {
+                              "default_popup": "popup.html",
+                              "default_title": "Accor Rate History"
+              },
               "background": {
                               "service_worker": "background.js"
               },

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 620px; min-height: 400px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 12px; color: #333; background: #f8f9fa; }
+.header { background: #1a1a2e; color: #fff; padding: 10px 14px; font-size: 14px; font-weight: 600; }
+.tabs { display: flex; border-bottom: 2px solid #e0e0e0; background: #fff; }
+.tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; font-weight: 600; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.tab.active { color: #e63946; border-bottom-color: #e63946; }
+.tab:hover { background: #f0f0f0; }
+.filters { display: flex; gap: 6px; padding: 8px 10px; background: #fff; border-bottom: 1px solid #e0e0e0; align-items: center; }
+.filters input { padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; }
+.filters input[type="text"] { width: 120px; }
+.filters input[type="date"] { width: 120px; }
+.btn { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
+.btn-export { background: #0e8a16; color: #fff; }
+.btn-export:hover { background: #0b7013; }
+.btn-load { background: #1a73e8; color: #fff; width: 100%; padding: 8px; margin-top: 4px; }
+.btn-load:hover { background: #1557b0; }
+.table-wrap { overflow-x: auto; padding: 0 10px 10px; }
+table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 8px; font-size: 11px; }
+th { background: #f0f0f0; padding: 6px 8px; text-align: left; font-weight: 600; white-space: nowrap; border-bottom: 2px solid #ddd; position: sticky; top: 0; }
+td { padding: 5px 8px; border-bottom: 1px solid #eee; white-space: nowrap; }
+tr:hover td { background: #f5f8ff; }
+.status { padding: 8px 10px; color: #666; text-align: center; }
+.error { color: #e63946; }
+.rates-detail { font-size: 10px; color: #555; white-space: normal; max-width: 400px; }
+.expand-btn { cursor: pointer; color: #1a73e8; text-decoration: underline; }
+.lounge-yes { color: #e63946; font-weight: 600; }
+.breakfast-yes { color: #0e8a16; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="header">Accor Executive Lounge — Rate History</div>
+<div class="tabs">
+  <div class="tab active" data-tab="prices">Prices</div>
+  <div class="tab" data-tab="rates">Rates</div>
+</div>
+<div class="filters">
+  <input type="text" id="filterHotel" placeholder="Hotel ID or name">
+  <input type="date" id="filterFrom">
+  <input type="date" id="filterTo">
+  <button class="btn btn-export" id="btnExport">Export CSV</button>
+</div>
+<div class="table-wrap">
+  <div id="status" class="status">Loading...</div>
+  <table id="dataTable" style="display:none"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
+  <button class="btn btn-load" id="btnLoadMore" style="display:none">Load More</button>
+</div>
+<script src="config.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

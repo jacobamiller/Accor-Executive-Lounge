@@ -1096,6 +1096,30 @@ function injectStyles() {
     .exec-benefit-check {
       font-size: 13px;
     }
+    .exec-promo-badge {
+      position: absolute;
+      right: 4px;
+      background: #ff6b00;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      z-index: 10;
+      pointer-events: none;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      min-width: 126px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .exec-public-price {
+      text-decoration: line-through;
+      color: #999;
+      font-size: 0.9em;
+      font-weight: 400;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -1131,11 +1155,37 @@ function addBreakfastBadge(card) {
   card.appendChild(badge);
 }
 
+function addPromoBadge(card) {
+  if (card.getAttribute('data-exec-promo-processed') === 'true') return;
+  card.setAttribute('data-exec-promo-processed', 'true');
+  const promoSelectors = ['[class*="red-hot"]', '[class*="flash-sale"]', '[class*="special-offer"]', '[class*="promo"]', '[class*="deal-badge"]', '[class*="offer-badge"]'];
+  let promoText = null;
+  for (const sel of promoSelectors) {
+    const el = card.querySelector(sel);
+    if (el && el.textContent.trim()) { promoText = el.textContent.trim(); break; }
+  }
+  if (!promoText) {
+    const match = card.textContent.match(/red\s*hot|flash\s*sale|special\s*offer|limited\s*time|exclusive\s*deal/i);
+    if (match) promoText = match[0];
+  }
+  if (!promoText) return;
+  card.setAttribute('data-exec-promo-text', promoText);
+  const badge = document.createElement('div');
+  badge.className = 'exec-promo-badge';
+  badge.textContent = promoText;
+  let top = 4;
+  if (card.querySelector('.exec-lounge-badge')) top += 18;
+  if (card.querySelector('.free-breakfast-badge')) top += 18;
+  badge.style.top = top + 'px';
+  card.appendChild(badge);
+}
+
 function highlightCards(root) {
   const cards = (root || document).querySelectorAll('div.result-list-item[data-hotel-id]');
   cards.forEach(card => {
     highlightCard(card);
     addBreakfastBadge(card);
+    addPromoBadge(card);
     addTaxInclusivePrice(card);
   });
 }
@@ -1276,11 +1326,20 @@ function parsePriceData(card) {
     const nights = parseInt(nightsMatch[1], 10);
     if (isNaN(nights) || nights < 1) return null;
 
+    // Extract public (non-member) price if available
+    let publicPrice = null;
+    const publicSelectors = ['[class*="crossed"]', '[class*="barred"]', '[class*="public-price"]', 'del', 's'];
+    for (const sel of publicSelectors) {
+      const el = card.querySelector(sel);
+      if (el) { const r = parseCurrencyAmount(el.textContent.trim()); if (r) { publicPrice = r.amount; break; } }
+    }
+
     return {
       basePrice: priceResult.amount,
       tax: taxResult.amount,
       nights,
       currency: priceResult.currency,
+      publicPrice,
       raw: { priceText, taxText, nightsText }
     };
   } catch (e) {
@@ -1319,6 +1378,15 @@ function addTaxInclusivePrice(card) {
     offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax <span class="exec-tax-per-night">(${data.currency}${perNightStr}/night)</span>`;
   } else {
     offerPrice.innerHTML = `Total: <span class="exec-tax-total">${data.currency}${totalStr}</span> w/ Tax`;
+  }
+
+  // Show public (non-member) price if available
+  if (data.publicPrice && data.publicPrice > data.basePrice) {
+    const publicStr = formatPrice(data.publicPrice);
+    const publicEl = document.createElement('span');
+    publicEl.className = 'exec-public-price';
+    publicEl.textContent = ` Was ${data.currency}${publicStr}`;
+    offerPrice.appendChild(publicEl);
   }
 
   // Replace tax details with "From $XX + Taxes $YY"
@@ -1409,6 +1477,8 @@ function sendPriceSnapshot(card, priceData) {
         checkout: dates.checkout,
         has_lounge: EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId),
         has_breakfast: FREE_BREAKFAST_HOTEL_IDS.has(hotelId),
+        public_price: priceData.publicPrice,
+        promo_text: card.getAttribute('data-exec-promo-text') || null,
         page_url: location.href
       }
     });
@@ -2295,6 +2365,7 @@ function processMutations() {
       if (node.classList && node.classList.contains('result-list-item') && node.hasAttribute('data-hotel-id')) {
         highlightCard(node);
         addBreakfastBadge(node);
+        addPromoBadge(node);
         applyFilterToCard(node);
         addTaxInclusivePrice(node);
       }
@@ -2302,6 +2373,7 @@ function processMutations() {
         node.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
           highlightCard(card);
           addBreakfastBadge(card);
+          addPromoBadge(card);
           applyFilterToCard(card);
           addTaxInclusivePrice(card);
         });
