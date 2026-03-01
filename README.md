@@ -20,23 +20,26 @@ When you search for hotels on [all.accor.com/booking](https://all.accor.com/book
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `manifest.json` | Chrome extension manifest (v3) |
-| `content.js` | Content script — highlights matching hotel cards |
-| `MONTHLY_UPDATE_GUIDE.md` | Operational guide for monthly data updates |
-| `data/lounge/` | Monthly snapshots of lounge hotel data (JSON) |
+| File | Lines | Purpose |
+|------|-------|---------|
+| `manifest.json` | 23 | Chrome extension manifest (v3) |
+| `content.js` | 2,315 | Main content script — all DOM manipulation and UI (ISOLATED world) |
+| `page-bridge.js` | 571 | Page bridge — Vue/Apollo/Nuxt data access (MAIN world) |
+| `MONTHLY_UPDATE_GUIDE.md` | — | Operational guide for monthly data updates |
+| `data/lounge/` | — | Monthly snapshots of lounge hotel data (309 hotels, 14 fields) |
+| `data/breakfast/` | — | Monthly snapshots of breakfast hotel data (7,400+ hotels, 7 fields) |
 
 ## Documentation
 
-📖 For detailed architecture docs, data flow diagrams, and technical deep-dives, see the **[Wiki](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki)**.
+For detailed architecture docs, data flow diagrams, and technical deep-dives, see the **[Wiki](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki)** or the `wiki/` directory.
 
 | Wiki Page | What It Covers |
 |-----------|---------------|
-| [Architecture Overview](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki/Architecture-Overview) | System context, component diagrams, manifest & content script breakdown |
-| [Content Script Deep Dive](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki/Content-Script-Deep-Dive) | Function-by-function analysis, performance, error handling |
-| [Data Pipeline & Monthly Update Workflow](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki/Data-Pipeline-&-Monthly-Update-Workflow) | Extraction process, data formats, update steps |
-| [API Integration & Hotel ID Resolution](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki/API-Integration-&-Hotel-ID-Resolution) | Accor Catalog API, fuzzy matching, known mismatch patterns |
+| [Architecture Overview](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki/Architecture-Overview) | System context, two-script architecture, inter-script communication, feature map, initialization flow |
+| [Content Script Deep Dive](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki/Content-Script-Deep-Dive) | Function-by-function analysis, price parsing, rate panels, MutationObserver, SPA routing |
+| [Page Bridge Deep Dive](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki/Page-Bridge-Deep-Dive) | MAIN world bridge, loyalty tier detection (6 sources), Apollo cache extraction, diagnostics |
+| [Data Pipeline & Monthly Update Workflow](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki/Data-Pipeline-&-Monthly-Update-Workflow) | Extraction process, bookmarklet architecture, data formats, name matching |
+| [API Integration & Hotel ID Resolution](https://github.com/jacobamiller/Accor-Executive-Lounge/wiki/API-Integration-&-Hotel-ID-Resolution) | Accor Catalog API reference, hotel ID resolution, known mismatch patterns, Apollo cache structure |
 
 ## How It Works
 
