@@ -7,7 +7,7 @@
               "permissions": ["storage"],
               "host_permissions": [
                               "https://all.accor.com/*",
-                              "https://*.supabase.co/*"
+                              "https://nkikqvujmhiahryrdgxr.supabase.co/*"
               ],
               "background": {
                               "service_worker": "background.js"
