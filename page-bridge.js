@@ -617,8 +617,8 @@ function findKey(obj, key) {
 }
 
 // ==================== AUTO-FETCH FULL DATE RANGE ====================
-let _calFetchedRanges = {}; // "hotelId|nbAdults" -> Set of "YYYY-MM-DD" week starts already fetched
-let _calFetchInFlight = false;
+let _calFetchedRanges = {}; // key -> Set of "YYYY-MM-DD" week starts already fetched
+let _calFetchInFlight = {}; // key -> boolean
 
 function dateStr(d) {
   return d.toISOString().slice(0, 10);
@@ -647,12 +647,19 @@ async function fetchCalendarRange(fetchUrl, fetchOpts, reqBody, from, to) {
   } catch (e) { console.warn('[AccorExt] auto-fetch error:', e, from, to); }
 }
 
+function calFetchKey(vars) {
+  // Build key from all variables except from/to so different nights/adults are tracked separately
+  const parts = Object.keys(vars).sort().filter(k => k !== 'from' && k !== 'to')
+    .map(k => k + '=' + JSON.stringify(vars[k]));
+  return parts.join('&');
+}
+
 async function autoFetchFullRange(fetchUrl, fetchOpts, reqBody) {
-  if (_calFetchInFlight) return;
-  _calFetchInFlight = true;
+  const vars = reqBody.variables;
+  const key = calFetchKey(vars);
+  if (_calFetchInFlight[key]) return;
+  _calFetchInFlight[key] = true;
   try {
-    const vars = reqBody.variables;
-    const key = (vars.hotelId || '') + '|' + (vars.nbAdults || 1);
     if (!_calFetchedRanges[key]) _calFetchedRanges[key] = new Set();
     const fetched = _calFetchedRanges[key];
 
@@ -667,9 +674,9 @@ async function autoFetchFullRange(fetchUrl, fetchOpts, reqBody) {
 
     // Filter out already-fetched weeks
     const needed = weeks.filter(w => !fetched.has(w));
-    if (needed.length === 0) { _calFetchInFlight = false; return; }
+    if (needed.length === 0) { _calFetchInFlight[key] = false; return; }
 
-    console.log('[AccorExt] Auto-fetching', needed.length, 'additional week(s) for', key);
+    console.log('[AccorExt] Auto-fetching', needed.length, 'week(s) for', key);
 
     for (const weekStart of needed) {
       fetched.add(weekStart);
@@ -677,14 +684,13 @@ async function autoFetchFullRange(fetchUrl, fetchOpts, reqBody) {
       const we = new Date(ws);
       we.setDate(we.getDate() + 6);
       await fetchCalendarRange(fetchUrl, fetchOpts, reqBody, weekStart, dateStr(we));
-      // Small delay to avoid hammering the API
       await new Promise(r => setTimeout(r, 300));
     }
     console.log('[AccorExt] Auto-fetch complete for', key);
   } catch (e) {
     console.warn('[AccorExt] autoFetchFullRange error:', e);
   }
-  _calFetchInFlight = false;
+  _calFetchInFlight[key] = false;
 }
 
 // Intercept fetch
