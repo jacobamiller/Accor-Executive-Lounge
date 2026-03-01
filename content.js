@@ -1418,7 +1418,8 @@ function sendPriceSnapshot(card, priceData) {
 function sendRateSnapshots(offers, hotelId, nights) {
   try {
     const dates = getDatesFromUrl();
-    const batch = [];
+    const rates = [];
+    let currency = null;
     for (const offer of offers) {
       const mainPrice = offer.pricing && offer.pricing.main;
       const memberPrice = (mainPrice && mainPrice.amount) || null;
@@ -1428,28 +1429,34 @@ function sendRateSnapshots(offers, hotelId, nights) {
       const taxAmount = taxParsed ? taxParsed.amount : null;
       const total = (memberPrice && taxAmount != null) ? memberPrice + taxAmount : memberPrice;
       const formattedBase = (mainPrice && mainPrice.formattedAmount) || '';
-      const currencyMatch = formattedBase.match(/([^\d.,\s]+)/);
+      if (!currency) { const m = formattedBase.match(/([^\d.,\s]+)/); if (m) currency = m[1].trim(); }
       const policies = (mainPrice && mainPrice.simplifiedPolicies) || {};
-      batch.push({
-        hotel_id: hotelId,
-        room_name: (offer.accommodation && offer.accommodation.name) || null,
-        rate_name: (offer.resolvedRate && offer.resolvedRate.label) || 'Standard Rate',
-        rate_type: offer.type || null,
-        member_price: memberPrice,
-        public_price: publicPrice,
-        tax_amount: taxAmount,
-        total_price: total,
-        meal_plan: (offer.mealPlan && offer.mealPlan.label) || null,
-        cancellation: (policies.cancellation && policies.cancellation.label) || null,
-        currency: currencyMatch ? currencyMatch[1].trim() : null,
-        nights: nights,
-        checkin: dates.checkin,
-        checkout: dates.checkout,
-        page_url: location.href
+      rates.push({
+        room: (offer.accommodation && offer.accommodation.name) || null,
+        rate: (offer.resolvedRate && offer.resolvedRate.label) || 'Standard Rate',
+        type: offer.type || null,
+        member: memberPrice,
+        public: publicPrice,
+        tax: taxAmount,
+        total: total,
+        meal: (offer.mealPlan && offer.mealPlan.label) || null,
+        cancel: (policies.cancellation && policies.cancellation.label) || null
       });
     }
-    if (batch.length > 0) {
-      chrome.runtime.sendMessage({ type: 'RATE_SNAPSHOT_BATCH', data: batch });
+    if (rates.length > 0) {
+      chrome.runtime.sendMessage({
+        type: 'RATE_SNAPSHOT',
+        data: {
+          hotel_id: hotelId,
+          currency: currency,
+          nights: nights,
+          checkin: dates.checkin,
+          checkout: dates.checkout,
+          num_rates: rates.length,
+          rates: rates,
+          page_url: location.href
+        }
+      });
     }
   } catch (e) { dbg('sendRateSnapshots error:', e); }
 }
@@ -1735,7 +1742,7 @@ function injectBenefitsBox() {
     header.className = 'exec-benefits-header';
     const title = document.createElement('span');
     title.className = 'exec-benefits-title';
-    title.textContent = 'Log in to check your status and benefits';
+    title.textContent = 'Log in or refresh to check your status and benefits';
     header.appendChild(title);
     box.appendChild(header);
   } else {
@@ -2326,9 +2333,10 @@ function processMutations() {
     injectDetailPageBadges();
     addTaxToDetailPageRooms();
     injectLoyaltyBadge();
-    injectBenefitsBox();
     if (detectedLoyaltyTier) markUpgradeEligibleRooms();
   }
+  // Benefits box on both search and detail pages
+  injectBenefitsBox();
   // Resume observing
   observer.observe(document.body, { subtree: true, childList: true });
 }
