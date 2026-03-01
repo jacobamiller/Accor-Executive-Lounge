@@ -62,6 +62,7 @@ async function flushToSupabase() {
   }
 
   if (calendarBuffer.length > 0) {
+    console.log('[AccorExt] bg: flushing', calendarBuffer.length, 'calendar retries to Supabase');
     const batch = calendarBuffer.splice(0, MAX_BATCH_SIZE);
     const rows = batch.map(row => ({ ...row, user_id: uid }));
     const ok = await postToSupabase('calendar_snapshots', rows).catch(() => false);
@@ -80,8 +81,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     scheduleFlush();
     sendResponse({ ok: true });
   } else if (msg.type === 'CALENDAR_SNAPSHOT') {
-    calendarBuffer.push(msg.data);
-    scheduleFlush();
+    console.log('[AccorExt] bg: calendar snapshot received, hotel:', msg.data.hotel_id, 'entries:', msg.data.calendar_data ? msg.data.calendar_data.length : 0);
+    // Flush calendar immediately — don't risk service worker dying before the 30s timer
+    ensureUserId().then(uid => {
+      const row = { ...msg.data, user_id: uid };
+      console.log('[AccorExt] bg: flushing calendar to Supabase now...');
+      postToSupabase('calendar_snapshots', [row]).then(ok => {
+        console.log('[AccorExt] bg: calendar flush', ok ? 'OK' : 'FAILED');
+        if (!ok) {
+          calendarBuffer.push(msg.data);
+          scheduleFlush();
+        }
+      });
+    });
     sendResponse({ ok: true });
   }
   return false;

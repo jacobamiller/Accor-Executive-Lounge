@@ -572,19 +572,119 @@ document.addEventListener('exec-request-cache', () => {
 // ==================== PRICE CALENDAR INTERCEPT ====================
 function handleCalendarResponse(reqBodyStr, responseText) {
   try {
-    if (!reqBodyStr || !reqBodyStr.includes('"PriceCalendar"')) return;
     const reqBody = JSON.parse(reqBodyStr);
     const json = JSON.parse(responseText);
-    console.log('[AccorExt] PriceCalendar intercepted, calendar entries:',
-      json.data && json.data.hotelOffers && json.data.hotelOffers.calendar && json.data.hotelOffers.calendar.length);
+    // Log top-level keys to help debug response structure
+    const topKeys = json.data ? Object.keys(json.data) : [];
+    console.log('[AccorExt] Calendar response keys:', topKeys);
+    // Try multiple paths for the calendar array
+    let calendar = null;
+    if (json.data) {
+      if (json.data.hotelOffers && json.data.hotelOffers.calendar) {
+        calendar = json.data.hotelOffers.calendar;
+      } else if (json.data.hotelOffers && json.data.hotelOffers.hotelOffers && json.data.hotelOffers.hotelOffers.calendar) {
+        calendar = json.data.hotelOffers.hotelOffers.calendar;
+      } else if (json.data.calendar) {
+        calendar = json.data.calendar;
+      }
+      // Deep search: find any array named 'calendar' in the response
+      if (!calendar) {
+        const found = findKey(json.data, 'calendar');
+        if (Array.isArray(found)) calendar = found;
+      }
+    }
+    console.log('[AccorExt] PriceCalendar entries:', calendar ? calendar.length : 0,
+      calendar && calendar[0] ? 'first keys: ' + Object.keys(calendar[0]).join(',') : '(empty)');
+    if (!calendar || !calendar.length) return;
     document.dispatchEvent(new CustomEvent('exec-calendar-data', {
       detail: JSON.stringify({
         variables: reqBody.variables,
         hotel: json.data && json.data.hotel,
-        calendar: json.data && json.data.hotelOffers && json.data.hotelOffers.calendar
+        calendar: calendar
       })
     }));
   } catch (e) { console.warn('[AccorExt] calendar parse error:', e); }
+}
+
+function findKey(obj, key) {
+  if (!obj || typeof obj !== 'object') return null;
+  if (obj[key] !== undefined) return obj[key];
+  for (const k of Object.keys(obj)) {
+    const result = findKey(obj[k], key);
+    if (result !== null) return result;
+  }
+  return null;
+}
+
+// ==================== AUTO-FETCH FULL DATE RANGE ====================
+let _calFetchedRanges = {}; // "hotelId|nbAdults" -> Set of "YYYY-MM-DD" week starts already fetched
+let _calFetchInFlight = false;
+
+function dateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function generateWeekStarts(rangeStart, rangeEnd) {
+  // Generate weekly start dates covering rangeStart..rangeEnd
+  const starts = [];
+  const cur = new Date(rangeStart);
+  while (cur <= rangeEnd) {
+    starts.push(dateStr(cur));
+    cur.setDate(cur.getDate() + 7);
+  }
+  return starts;
+}
+
+async function fetchCalendarRange(fetchUrl, fetchOpts, reqBody, from, to) {
+  const body = JSON.parse(JSON.stringify(reqBody));
+  body.variables = { ...body.variables, from: from, to: to };
+  const opts = { ...fetchOpts, body: JSON.stringify(body) };
+  try {
+    const res = await _origFetch.call(window, fetchUrl, opts);
+    if (!res.ok) { console.warn('[AccorExt] auto-fetch failed:', res.status, from, to); return; }
+    const text = await res.text();
+    handleCalendarResponse(JSON.stringify(body), text);
+  } catch (e) { console.warn('[AccorExt] auto-fetch error:', e, from, to); }
+}
+
+async function autoFetchFullRange(fetchUrl, fetchOpts, reqBody) {
+  if (_calFetchInFlight) return;
+  _calFetchInFlight = true;
+  try {
+    const vars = reqBody.variables;
+    const key = (vars.hotelId || '') + '|' + (vars.nbAdults || 1);
+    if (!_calFetchedRanges[key]) _calFetchedRanges[key] = new Set();
+    const fetched = _calFetchedRanges[key];
+
+    // Mark the original request's range as fetched
+    if (vars.from) fetched.add(vars.from);
+
+    // Target range: 1 month before today → 2 months after today
+    const now = new Date();
+    const rangeStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const rangeEnd = new Date(now.getFullYear(), now.getMonth() + 3, 0);
+    const weeks = generateWeekStarts(rangeStart, rangeEnd);
+
+    // Filter out already-fetched weeks
+    const needed = weeks.filter(w => !fetched.has(w));
+    if (needed.length === 0) { _calFetchInFlight = false; return; }
+
+    console.log('[AccorExt] Auto-fetching', needed.length, 'additional week(s) for', key);
+
+    for (const weekStart of needed) {
+      fetched.add(weekStart);
+      const ws = new Date(weekStart);
+      const we = new Date(ws);
+      we.setDate(we.getDate() + 6);
+      await fetchCalendarRange(fetchUrl, fetchOpts, reqBody, weekStart, dateStr(we));
+      // Small delay to avoid hammering the API
+      await new Promise(r => setTimeout(r, 300));
+    }
+    console.log('[AccorExt] Auto-fetch complete for', key);
+  } catch (e) {
+    console.warn('[AccorExt] autoFetchFullRange error:', e);
+  }
+  _calFetchInFlight = false;
 }
 
 // Intercept fetch
@@ -592,14 +692,31 @@ const _origFetch = window.fetch;
 window.fetch = function(url, opts) {
   const result = _origFetch.apply(this, arguments);
   try {
-    if (opts && opts.body && typeof opts.body === 'string' && opts.body.includes('"PriceCalendar"')) {
-      const bodyStr = opts.body;
+    let bodyStr = null;
+    if (opts && opts.body) {
+      if (typeof opts.body === 'string') bodyStr = opts.body;
+      else if (opts.body instanceof Blob) { /* can't read sync */ }
+    }
+    // Log any GraphQL operation for debugging
+    if (bodyStr && bodyStr.includes('operationName')) {
+      const opMatch = bodyStr.match(/"operationName"\s*:\s*"([^"]+)"/);
+      if (opMatch) console.log('[AccorExt] fetch GraphQL op:', opMatch[1]);
+    }
+    if (bodyStr && (bodyStr.includes('"PriceCalendar"') || bodyStr.includes('"priceCalendar"') || bodyStr.includes('"Calendar"'))) {
+      console.log('[AccorExt] Calendar fetch intercepted, body length:', bodyStr.length);
       result.then(res => {
         const clone = res.clone();
-        clone.text().then(text => handleCalendarResponse(bodyStr, text)).catch(() => {});
-      }).catch(() => {});
+        clone.text().then(text => {
+          handleCalendarResponse(bodyStr, text);
+          // Trigger auto-fetch of surrounding weeks
+          try {
+            const reqBody = JSON.parse(bodyStr);
+            autoFetchFullRange(url, opts, reqBody);
+          } catch (e) { console.warn('[AccorExt] auto-fetch trigger error:', e); }
+        }).catch(e => console.warn('[AccorExt] clone.text error:', e));
+      }).catch(e => console.warn('[AccorExt] result.then error:', e));
     }
-  } catch (e) {}
+  } catch (e) { console.warn('[AccorExt] fetch intercept error:', e); }
   return result;
 };
 
@@ -611,10 +728,12 @@ XMLHttpRequest.prototype.open = function(method, url) {
   return _origXHROpen.apply(this, arguments);
 };
 XMLHttpRequest.prototype.send = function(body) {
-  if (body && typeof body === 'string' && body.includes('"PriceCalendar"')) {
+  if (body && typeof body === 'string' &&
+      (body.includes('"PriceCalendar"') || body.includes('"priceCalendar"') || body.includes('"Calendar"'))) {
+    console.log('[AccorExt] Calendar XHR intercepted');
     const bodyStr = body;
     this.addEventListener('load', function() {
-      try { handleCalendarResponse(bodyStr, this.responseText); } catch (e) {}
+      try { handleCalendarResponse(bodyStr, this.responseText); } catch (e) { console.warn('[AccorExt] XHR calendar error:', e); }
     });
   }
   return _origXHRSend.apply(this, arguments);
