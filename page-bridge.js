@@ -569,4 +569,28 @@ document.addEventListener('exec-request-cache', () => {
   tryExtractCache(15); // retry up to 15 times (7.5 seconds)
 });
 
+// ==================== PRICE CALENDAR FETCH INTERCEPTOR ====================
+const _origFetch = window.fetch;
+window.fetch = function(url, opts) {
+  const result = _origFetch.apply(this, arguments);
+  try {
+    if (opts && opts.body && typeof opts.body === 'string' && opts.body.includes('"PriceCalendar"')) {
+      const reqBody = JSON.parse(opts.body);
+      result.then(res => {
+        const clone = res.clone();
+        clone.json().then(json => {
+          document.dispatchEvent(new CustomEvent('exec-calendar-data', {
+            detail: JSON.stringify({
+              variables: reqBody.variables,
+              hotel: json.data && json.data.hotel,
+              calendar: json.data && json.data.hotelOffers && json.data.hotelOffers.calendar
+            })
+          }));
+        }).catch(() => {});
+      }).catch(() => {});
+    }
+  } catch (e) {}
+  return result;
+};
+
 pbDbg(' page-bridge.js loaded in MAIN world');
