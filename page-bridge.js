@@ -569,28 +569,55 @@ document.addEventListener('exec-request-cache', () => {
   tryExtractCache(15); // retry up to 15 times (7.5 seconds)
 });
 
-// ==================== PRICE CALENDAR FETCH INTERCEPTOR ====================
+// ==================== PRICE CALENDAR INTERCEPT ====================
+function handleCalendarResponse(reqBodyStr, responseText) {
+  try {
+    if (!reqBodyStr || !reqBodyStr.includes('"PriceCalendar"')) return;
+    const reqBody = JSON.parse(reqBodyStr);
+    const json = JSON.parse(responseText);
+    console.log('[AccorExt] PriceCalendar intercepted, calendar entries:',
+      json.data && json.data.hotelOffers && json.data.hotelOffers.calendar && json.data.hotelOffers.calendar.length);
+    document.dispatchEvent(new CustomEvent('exec-calendar-data', {
+      detail: JSON.stringify({
+        variables: reqBody.variables,
+        hotel: json.data && json.data.hotel,
+        calendar: json.data && json.data.hotelOffers && json.data.hotelOffers.calendar
+      })
+    }));
+  } catch (e) { console.warn('[AccorExt] calendar parse error:', e); }
+}
+
+// Intercept fetch
 const _origFetch = window.fetch;
 window.fetch = function(url, opts) {
   const result = _origFetch.apply(this, arguments);
   try {
     if (opts && opts.body && typeof opts.body === 'string' && opts.body.includes('"PriceCalendar"')) {
-      const reqBody = JSON.parse(opts.body);
+      const bodyStr = opts.body;
       result.then(res => {
         const clone = res.clone();
-        clone.json().then(json => {
-          document.dispatchEvent(new CustomEvent('exec-calendar-data', {
-            detail: JSON.stringify({
-              variables: reqBody.variables,
-              hotel: json.data && json.data.hotel,
-              calendar: json.data && json.data.hotelOffers && json.data.hotelOffers.calendar
-            })
-          }));
-        }).catch(() => {});
+        clone.text().then(text => handleCalendarResponse(bodyStr, text)).catch(() => {});
       }).catch(() => {});
     }
   } catch (e) {}
   return result;
+};
+
+// Intercept XMLHttpRequest (fallback if site uses XHR instead of fetch)
+const _origXHROpen = XMLHttpRequest.prototype.open;
+const _origXHRSend = XMLHttpRequest.prototype.send;
+XMLHttpRequest.prototype.open = function(method, url) {
+  this._accorUrl = url;
+  return _origXHROpen.apply(this, arguments);
+};
+XMLHttpRequest.prototype.send = function(body) {
+  if (body && typeof body === 'string' && body.includes('"PriceCalendar"')) {
+    const bodyStr = body;
+    this.addEventListener('load', function() {
+      try { handleCalendarResponse(bodyStr, this.responseText); } catch (e) {}
+    });
+  }
+  return _origXHRSend.apply(this, arguments);
 };
 
 pbDbg(' page-bridge.js loaded in MAIN world');
