@@ -67,8 +67,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     priceBuffer.push(msg.data);
     scheduleFlush();
     sendResponse({ ok: true });
-  } else if (msg.type === 'RATE_SNAPSHOT_BATCH') {
-    rateBuffer.push(...msg.data);
+  } else if (msg.type === 'RATE_SNAPSHOT') {
+    rateBuffer.push(msg.data);
     scheduleFlush();
     sendResponse({ ok: true });
   }
