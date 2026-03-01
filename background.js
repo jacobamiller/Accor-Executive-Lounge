@@ -8,6 +8,7 @@ const MAX_BATCH_SIZE = 50;
 let userId = null;
 let priceBuffer = [];
 let rateBuffer = [];
+let calendarBuffer = [];
 let flushTimer = null;
 
 // ==================== USER ID ====================
@@ -59,6 +60,13 @@ async function flushToSupabase() {
     const ok = await postToSupabase('rate_snapshots', rows).catch(() => false);
     if (!ok) rateBuffer.unshift(...batch);
   }
+
+  if (calendarBuffer.length > 0) {
+    const batch = calendarBuffer.splice(0, MAX_BATCH_SIZE);
+    const rows = batch.map(row => ({ ...row, user_id: uid }));
+    const ok = await postToSupabase('calendar_snapshots', rows).catch(() => false);
+    if (!ok) calendarBuffer.unshift(...batch);
+  }
 }
 
 // ==================== MESSAGE HANDLER ====================
@@ -69,6 +77,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ ok: true });
   } else if (msg.type === 'RATE_SNAPSHOT') {
     rateBuffer.push(msg.data);
+    scheduleFlush();
+    sendResponse({ ok: true });
+  } else if (msg.type === 'CALENDAR_SNAPSHOT') {
+    calendarBuffer.push(msg.data);
     scheduleFlush();
     sendResponse({ ok: true });
   }
@@ -85,7 +97,7 @@ function scheduleFlush() {
 
 // Flush before service worker goes idle
 chrome.runtime.onSuspend && chrome.runtime.onSuspend.addListener(() => {
-  if (priceBuffer.length > 0 || rateBuffer.length > 0) {
+  if (priceBuffer.length > 0 || rateBuffer.length > 0 || calendarBuffer.length > 0) {
     flushToSupabase();
   }
 });

@@ -1531,6 +1531,27 @@ function sendRateSnapshots(offers, hotelId, nights) {
   } catch (e) { dbg('sendRateSnapshots error:', e); }
 }
 
+// ==================== PRICE CALENDAR DATA ====================
+document.addEventListener('exec-calendar-data', (e) => {
+  try {
+    const { variables, hotel, calendar } = JSON.parse(e.detail);
+    if (!calendar || !calendar.length) return;
+    chrome.runtime.sendMessage({
+      type: 'CALENDAR_SNAPSHOT',
+      data: {
+        hotel_id: variables.hotelId,
+        hotel_name: hotel && hotel.name,
+        currency: variables.currency,
+        date_from: variables.from,
+        date_to: variables.to,
+        nb_adults: variables.nbAdults,
+        calendar_data: calendar,
+        page_url: location.href
+      }
+    });
+  } catch (err) { dbg('calendar data error:', err); }
+});
+
 // ==================== DETAIL PAGE TAX-INCLUSIVE PRICE ====================
 // Helper: detect currency format (prefix vs suffix) and build formatter
 function buildCurrencyFormatter(formattedAmount) {
