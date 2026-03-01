@@ -5,6 +5,13 @@ let allData = [];
 let offset = 0;
 const PAGE_SIZE = 50;
 
+// Calendar state
+let calendarSnapshots = [];
+let calHotels = [];
+let calSelectedHotel = null;
+let calRangeStart = null; // Date: start of 3-month window
+let calHotelsLoaded = false;
+
 const PRICE_COLS = [
   { key: 'captured_at', label: 'Date', fmt: v => v ? new Date(v).toLocaleDateString() : '' },
   { key: 'hotel_id', label: 'ID' },
@@ -52,6 +59,19 @@ async function init() {
   document.getElementById('filterHotel').addEventListener('input', debounce(reload, 400));
   document.getElementById('filterFrom').addEventListener('change', reload);
   document.getElementById('filterTo').addEventListener('change', reload);
+  // Calendar controls
+  document.getElementById('calHotel').addEventListener('change', function() {
+    calSelectedHotel = this.value;
+    filterAndRender();
+  });
+  document.getElementById('calPrev').addEventListener('click', () => {
+    calRangeStart.setMonth(calRangeStart.getMonth() - 1);
+    renderCalendar();
+  });
+  document.getElementById('calNext').addEventListener('click', () => {
+    calRangeStart.setMonth(calRangeStart.getMonth() + 1);
+    renderCalendar();
+  });
   await loadData();
 }
 
@@ -63,7 +83,17 @@ function debounce(fn, ms) {
 function switchTab(tab) {
   activeTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  reload();
+  if (tab === 'calendar') {
+    document.querySelector('.table-wrap').style.display = 'none';
+    document.querySelector('.filters').style.display = 'none';
+    document.getElementById('calendarWrap').style.display = 'block';
+    loadCalendar();
+  } else {
+    document.querySelector('.table-wrap').style.display = '';
+    document.querySelector('.filters').style.display = '';
+    document.getElementById('calendarWrap').style.display = 'none';
+    reload();
+  }
 }
 
 function reload() { offset = 0; allData = []; loadData(); }
@@ -239,6 +269,257 @@ function csvFromRows(rows, keys) {
     return (s.includes(',') || s.includes('"') || s.includes('\n')) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   return keys.join(',') + '\n' + rows.map(r => keys.map(k => escape(r[k])).join(',')).join('\n');
+}
+
+// ==================== CALENDAR ====================
+function initCalRange() {
+  if (!calRangeStart) {
+    calRangeStart = new Date();
+    calRangeStart.setMonth(calRangeStart.getMonth() - 1);
+    calRangeStart.setDate(1);
+  }
+}
+
+let allCalSnapshots = []; // full cache of all calendar snapshots
+
+async function loadCalendar() {
+  initCalRange();
+  if (calHotelsLoaded) { filterAndRender(); return; }
+  const calSt = document.getElementById('calStatus');
+  if (calSt) calSt.textContent = 'Loading calendar data...';
+  try {
+    // Single query — fetch all snapshots at once (typical volume is <200 rows)
+    let url = `${SUPABASE_URL}/rest/v1/calendar_snapshots?user_id=eq.${userId}&order=captured_at.desc&limit=500`;
+    const res = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    if (!res.ok) throw new Error('calendar_snapshots query: ' + res.status + ' ' + (await res.text().catch(() => '')));
+    allCalSnapshots = await res.json();
+    if (allCalSnapshots.length === 0) {
+      if (calSt) calSt.textContent = 'No calendar data yet. Browse hotel search pages on all.accor.com to capture prices.';
+      return;
+    }
+    // Build hotel dropdown from data
+    const hotelMap = new Map();
+    for (const r of allCalSnapshots) {
+      if (r.hotel_id && !hotelMap.has(r.hotel_id)) {
+        hotelMap.set(r.hotel_id, r.hotel_name || r.hotel_id);
+      }
+    }
+    calHotels = Array.from(hotelMap, ([id, name]) => ({ id, name }));
+    const select = document.getElementById('calHotel');
+    select.innerHTML = calHotels.map(h => `<option value="${h.id}">${h.name} (${h.id})</option>`).join('');
+    calSelectedHotel = calHotels[0].id;
+    calHotelsLoaded = true;
+    filterAndRender();
+  } catch (e) {
+    const calStErr = document.getElementById('calStatus');
+    if (calStErr) { calStErr.textContent = 'Calendar error: ' + e.message; calStErr.style.color = '#e63946'; }
+  }
+}
+
+function filterAndRender() {
+  calendarSnapshots = allCalSnapshots.filter(s => s.hotel_id === calSelectedHotel);
+  let totalEntries = 0;
+  let lastUpdate = null;
+  for (const s of calendarSnapshots) {
+    if (Array.isArray(s.calendar_data)) totalEntries += s.calendar_data.length;
+    if (s.captured_at && (!lastUpdate || s.captured_at > lastUpdate)) lastUpdate = s.captured_at;
+  }
+  const ts = lastUpdate ? new Date(lastUpdate).toLocaleString() : '—';
+  const calSt = document.getElementById('calStatus');
+  if (calSt) calSt.textContent = calendarSnapshots.length + ' snapshots, ' + totalEntries + ' entries · Last update: ' + ts;
+  renderCalendar();
+}
+
+async function loadCalendarData() {
+  calSelectedHotel = document.getElementById('calHotel').value;
+  filterAndRender();
+}
+
+function calRangeEnd() {
+  const end = new Date(calRangeStart);
+  end.setMonth(end.getMonth() + 4);
+  end.setDate(0);
+  return end;
+}
+
+function priceColor(normalized) {
+  // 0 = cheapest (green hue 120), 1 = most expensive (red hue 0)
+  const hue = Math.round(120 - normalized * 120);
+  return `hsl(${hue},70%,45%)`;
+}
+
+function extractPerNight(entry) {
+  let total = null;
+  if (entry.offer && entry.offer.pricing) {
+    const p = entry.offer.pricing;
+    if (p.main && p.main.formattedAmount) {
+      total = parseFloat(p.main.formattedAmount.replace(/[^0-9.]/g, ''));
+    } else if (p.totalAmount != null) {
+      total = parseFloat(p.totalAmount);
+    }
+  }
+  if (total == null || total <= 0) return null;
+  let nights = 1;
+  if (entry.offer && entry.offer.lengthOfStay && entry.offer.lengthOfStay.value) {
+    nights = parseInt(entry.offer.lengthOfStay.value) || 1;
+  }
+  return Math.round((total / nights) * 100) / 100;
+}
+
+function renderCalendar() {
+  const container = document.getElementById('calHeatmap');
+  container.innerHTML = '';
+  const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const s = calRangeStart;
+  const endDate = calRangeEnd();
+  document.getElementById('calMonthLabel').textContent =
+    MN[s.getMonth()] + ' \u2013 ' + MN[endDate.getMonth()] + ' ' + endDate.getFullYear();
+
+  if (calendarSnapshots.length === 0) return;
+
+  // Merge calendar_data — keyed by (date, nights), latest snapshot wins
+  const sorted = calendarSnapshots.slice().sort((a, b) =>
+    new Date(a.captured_at) - new Date(b.captured_at));
+  // dateNightsMap: "YYYY-MM-DD|N" -> { perNight, entry }
+  const dateNightsMap = new Map();
+  const nightsSet = new Set();
+  for (const snap of sorted) {
+    if (!Array.isArray(snap.calendar_data)) continue;
+    for (const entry of snap.calendar_data) {
+      if (!entry || !entry.date) continue;
+      let nights = 1;
+      if (entry.offer && entry.offer.lengthOfStay && entry.offer.lengthOfStay.value) {
+        nights = parseInt(entry.offer.lengthOfStay.value) || 1;
+      }
+      const perNight = extractPerNight(entry);
+      if (perNight != null) {
+        const key = entry.date + '|' + nights;
+        const isBestPrice = !!(entry.bestRate && entry.bestRate.label);
+        dateNightsMap.set(key, { perNight, nights, date: entry.date, isBestPrice });
+        nightsSet.add(nights);
+      }
+    }
+  }
+
+  // Build date columns across 3 months
+  const DOW = ['U','M','T','W','R','F','S'];
+  const dateCols = [];
+  for (let mi = 0; mi < 4; mi++) {
+    const mDate = new Date(s.getFullYear(), s.getMonth() + mi, 1);
+    const year = mDate.getFullYear();
+    const month = mDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const dow = new Date(year, month, d).getDay(); // 0=Sun
+      dateCols.push({ day: d, monthIdx: mi, monthLabel: MN[month], dateStr, dow });
+    }
+  }
+
+  const nightsList = Array.from(nightsSet).sort((a, b) => a - b);
+  if (nightsList.length === 0) {
+    container.textContent = 'No pricing data in this range.';
+    return;
+  }
+
+  // Find global min/max per-night price for color scale
+  let minP = Infinity, maxP = 0;
+  for (const v of dateNightsMap.values()) {
+    if (v.perNight < minP) minP = v.perNight;
+    if (v.perNight > maxP) maxP = v.perNight;
+  }
+  const range = maxP - minP || 1;
+
+  // === Build DOM ===
+  // Day-of-week header row
+  const dowRow = document.createElement('div');
+  dowRow.className = 'cal-hm-row';
+  const dowLabel = document.createElement('span');
+  dowLabel.className = 'cal-hm-label';
+  dowRow.appendChild(dowLabel);
+  const dowCells = document.createElement('div');
+  dowCells.className = 'cal-hm-cells';
+  let lastMiDow = -1;
+  for (const col of dateCols) {
+    if (col.monthIdx !== lastMiDow && lastMiDow !== -1) {
+      const sep = document.createElement('span');
+      sep.className = 'cal-hm-sep';
+      dowCells.appendChild(sep);
+    }
+    lastMiDow = col.monthIdx;
+    const hdr = document.createElement('span');
+    hdr.className = 'cal-hm-hdr' + (col.dow === 0 || col.dow === 6 ? ' weekend' : '');
+    hdr.textContent = DOW[col.dow];
+    dowCells.appendChild(hdr);
+  }
+  dowRow.appendChild(dowCells);
+  container.appendChild(dowRow);
+
+  // Date number header row
+  const hdrRow = document.createElement('div');
+  hdrRow.className = 'cal-hm-row';
+  const hdrLabel = document.createElement('span');
+  hdrLabel.className = 'cal-hm-label';
+  hdrRow.appendChild(hdrLabel);
+  const hdrCells = document.createElement('div');
+  hdrCells.className = 'cal-hm-cells';
+  let lastMi = -1;
+  for (const col of dateCols) {
+    if (col.monthIdx !== lastMi && lastMi !== -1) {
+      const sep = document.createElement('span');
+      sep.className = 'cal-hm-sep';
+      hdrCells.appendChild(sep);
+    }
+    lastMi = col.monthIdx;
+    const hdr = document.createElement('span');
+    hdr.className = 'cal-hm-hdr' + (col.day === 1 ? ' month-start' : '');
+    hdr.textContent = col.day === 1 ? col.monthLabel : col.day;
+    hdrCells.appendChild(hdr);
+  }
+  hdrRow.appendChild(hdrCells);
+  container.appendChild(hdrRow);
+
+  // Data rows: one per nights value
+  for (const n of nightsList) {
+    const row = document.createElement('div');
+    row.className = 'cal-hm-row';
+    const label = document.createElement('span');
+    label.className = 'cal-hm-label';
+    label.textContent = n + 'N';
+    row.appendChild(label);
+    const cells = document.createElement('div');
+    cells.className = 'cal-hm-cells';
+    let lastMi2 = -1;
+    for (const col of dateCols) {
+      if (col.monthIdx !== lastMi2 && lastMi2 !== -1) {
+        const sep = document.createElement('span');
+        sep.className = 'cal-hm-sep';
+        cells.appendChild(sep);
+      }
+      lastMi2 = col.monthIdx;
+      const cell = document.createElement('span');
+      cell.className = 'cal-hm-cell';
+      const v = dateNightsMap.get(col.dateStr + '|' + n);
+      if (v) {
+        const norm = (v.perNight - minP) / range;
+        cell.style.background = priceColor(norm);
+        if (v.isBestPrice) {
+          cell.classList.add('cheapest');
+        }
+        const tip = document.createElement('span');
+        tip.className = 'cal-hm-tip';
+        tip.textContent = Math.round(v.perNight) + '/nt \u00d7' + n + (v.isBestPrice ? ' \u2605' : '');
+        cell.appendChild(tip);
+      } else {
+        cell.classList.add('no-data');
+      }
+      cells.appendChild(cell);
+    }
+    row.appendChild(cells);
+    container.appendChild(row);
+  }
 }
 
 // ==================== HELPERS ====================

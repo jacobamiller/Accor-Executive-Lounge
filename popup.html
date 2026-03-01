@@ -30,6 +30,24 @@ tr:hover td { background: #f5f8ff; }
 .expand-btn { cursor: pointer; color: #1a73e8; text-decoration: underline; }
 .lounge-yes { color: #e63946; font-weight: 600; }
 .breakfast-yes { color: #0e8a16; font-weight: 600; }
+.cal-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.cal-controls select { padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; max-width: 200px; }
+.cal-heatmap { overflow-x: auto; }
+.cal-hm-row { display: flex; align-items: center; }
+.cal-hm-label { width: 26px; flex-shrink: 0; font-size: 10px; font-weight: 600; color: #555; text-align: right; padding-right: 4px; }
+.cal-hm-cells { display: flex; gap: 1px; }
+.cal-hm-hdr { width: 14px; height: 14px; text-align: center; font-size: 8px; color: #999; line-height: 14px; flex-shrink: 0; }
+.cal-hm-hdr.month-start { font-weight: 600; color: #333; font-size: 7px; }
+.cal-hm-hdr.weekend { color: #e63946; }
+.cal-hm-sep { width: 1px; height: 14px; background: #ccc; flex-shrink: 0; margin: 0 1px; }
+.cal-hm-cell { width: 14px; height: 14px; border-radius: 2px; flex-shrink: 0; position: relative; cursor: default; }
+.cal-hm-cell.no-data { background: #eee; }
+.cal-hm-cell.cheapest { outline: 2px solid #0e8a16; outline-offset: -1px; z-index: 1; }
+.cal-hm-tip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #333; color: #fff; font-size: 9px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; display: none; z-index: 20; pointer-events: none; margin-bottom: 2px; }
+.cal-hm-cell:hover .cal-hm-tip { display: block; }
+.cal-legend { display: flex; gap: 10px; font-size: 10px; margin-top: 8px; color: #666; align-items: center; }
+.cal-legend-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 3px; }
+.cal-legend .cheapest-swatch { outline: 2px solid #0e8a16; outline-offset: -1px; }
 </style>
 </head>
 <body>
@@ -37,6 +55,7 @@ tr:hover td { background: #f5f8ff; }
 <div class="tabs">
   <div class="tab active" data-tab="prices">Prices</div>
   <div class="tab" data-tab="rates">Rates</div>
+  <div class="tab" data-tab="calendar">Calendar</div>
 </div>
 <div class="filters">
   <input type="text" id="filterHotel" placeholder="Hotel ID or name">
@@ -48,6 +67,23 @@ tr:hover td { background: #f5f8ff; }
   <div id="status" class="status">Loading...</div>
   <table id="dataTable" style="display:none"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
   <button class="btn btn-load" id="btnLoadMore" style="display:none">Load More</button>
+</div>
+<div id="calendarWrap" style="display:none; padding:10px;">
+  <div class="cal-controls">
+    <select id="calHotel"></select>
+    <button class="btn" id="calPrev">&#9664;</button>
+    <span id="calMonthLabel" style="font-weight:600;font-size:12px;min-width:140px;text-align:center;"></span>
+    <button class="btn" id="calNext">&#9654;</button>
+  </div>
+  <div id="calStatus" class="status" style="text-align:left;padding:4px 0;font-size:10px;color:#888;"></div>
+  <div id="calHeatmap" class="cal-heatmap"></div>
+  <div class="cal-legend">
+    <span><span class="cal-legend-swatch" style="background:hsl(120,70%,45%)"></span>Cheap</span>
+    <span><span class="cal-legend-swatch" style="background:hsl(60,70%,45%)"></span>Mid</span>
+    <span><span class="cal-legend-swatch" style="background:hsl(0,70%,45%)"></span>Expensive</span>
+    <span><span class="cal-legend-swatch cheapest-swatch" style="background:hsl(120,70%,45%)"></span>Best Price</span>
+    <span><span class="cal-legend-swatch" style="background:#eee"></span>No data</span>
+  </div>
 </div>
 <script src="config.js"></script>
 <script src="popup.js"></script>

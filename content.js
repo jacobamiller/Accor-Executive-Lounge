@@ -1535,6 +1535,7 @@ function sendRateSnapshots(offers, hotelId, nights) {
 document.addEventListener('exec-calendar-data', (e) => {
   try {
     const { variables, hotel, calendar } = JSON.parse(e.detail);
+    console.log('[AccorExt] content.js received calendar event, entries:', calendar ? calendar.length : 0, 'hotel:', variables && variables.hotelId);
     if (!calendar || !calendar.length) return;
     chrome.runtime.sendMessage({
       type: 'CALENDAR_SNAPSHOT',
@@ -1548,8 +1549,10 @@ document.addEventListener('exec-calendar-data', (e) => {
         calendar_data: calendar,
         page_url: location.href
       }
+    }, (resp) => {
+      console.log('[AccorExt] calendar snapshot sent to background, response:', resp);
     });
-  } catch (err) { dbg('calendar data error:', err); }
+  } catch (err) { console.warn('[AccorExt] calendar data error:', err); }
 });
 
 // ==================== DETAIL PAGE TAX-INCLUSIVE PRICE ====================
