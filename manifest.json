@@ -1,7 +1,7 @@
 {
               "manifest_version": 3,
               "name": "Accor Executive Lounge Highlighter",
-              "version": "2.3",
+              "version": "2.4",
               "description": "Highlights Accor hotels globally that have an Executive Lounge with a red border and badge on search results.",
               "incognito": "spanning",
               "host_permissions": [

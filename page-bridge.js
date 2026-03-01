@@ -1,6 +1,8 @@
 // page-bridge.js — Runs in the MAIN world (page JS context)
 // Has access to Vue/Apollo but NOT to chrome.* APIs
 // Communicates with content.js via CustomEvents on document
+const PB_DEBUG = false;
+function pbDbg(...args) { if (PB_DEBUG) pbDbg('', ...args); }
 
 // ==================== LOYALTY TIER DETECTION ====================
 const VALID_TIERS = ['CLASSIC', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'LIMITLESS'];
@@ -56,7 +58,7 @@ function searchApolloForTier() {
     const relevantKeys = Object.keys(cache).filter(k =>
       /user|member|loyalty|auth|profile|account|fidelity/i.test(k)
     );
-    console.log('[ExecLounge] Loyalty search - Apollo keys with user/member/loyalty:',
+    pbDbg('Loyalty search - Apollo keys with user/member/loyalty:',
       relevantKeys.slice(0, 20));
     for (const key of relevantKeys) {
       const result = deepSearchForTier(cache[key], 4);
@@ -69,7 +71,7 @@ function searchApolloForTier() {
       if (result) return { ...result, source: 'apollo', cacheKey: key };
     }
   } catch (e) {
-    console.log('[ExecLounge] Apollo loyalty search error:', e.message);
+    pbDbg(' Apollo loyalty search error:', e.message);
   }
   return null;
 }
@@ -85,7 +87,7 @@ function searchNuxtForTier() {
       if (result) return { ...result, source: 'nuxt' };
     }
   } catch (e) {
-    console.log('[ExecLounge] Nuxt loyalty search error:', e.message);
+    pbDbg(' Nuxt loyalty search error:', e.message);
   }
   return null;
 }
@@ -115,7 +117,7 @@ function searchAnalyticsForTier() {
       if (result) return { ...result, source: 'digitalData' };
     }
   } catch (e) {
-    console.log('[ExecLounge] Analytics loyalty search error:', e.message);
+    pbDbg(' Analytics loyalty search error:', e.message);
   }
   return null;
 }
@@ -187,7 +189,7 @@ function searchStorageForTier() {
         } catch { /* not JSON */ }
       }
     } catch (e) {
-      console.log('[ExecLounge] Storage loyalty search error:', e.message);
+      pbDbg(' Storage loyalty search error:', e.message);
     }
   }
   return null;
@@ -213,7 +215,7 @@ function searchCookiesForTier() {
       } catch { /* not JSON */ }
     }
   } catch (e) {
-    console.log('[ExecLounge] Cookie loyalty search error:', e.message);
+    pbDbg(' Cookie loyalty search error:', e.message);
   }
   return null;
 }
@@ -265,7 +267,7 @@ function searchVueComponentsForTier() {
       if (result) return { ...result, source: 'vue-root' };
     }
   } catch (e) {
-    console.log('[ExecLounge] Vue component loyalty search error:', e.message);
+    pbDbg(' Vue component loyalty search error:', e.message);
   }
   return null;
 }
@@ -322,7 +324,7 @@ function detectLoyaltyTier() {
 function tryExtractLoyalty(attemptsLeft) {
   const result = detectLoyaltyTier();
   if (result) {
-    console.log('[ExecLounge] Loyalty tier detected:', result.tierCode, 'via', result.source,
+    pbDbg(' Loyalty tier detected:', result.tierCode, 'via', result.source,
       result.field ? '(field: ' + result.field + ')' : '',
       result.cacheKey ? '(key: ' + result.cacheKey + ')' : '');
     document.dispatchEvent(new CustomEvent('exec-response-loyalty', {
@@ -334,11 +336,11 @@ function tryExtractLoyalty(attemptsLeft) {
     setTimeout(() => tryExtractLoyalty(attemptsLeft - 1), 500);
   } else {
     // Diagnostic dump on final failure — each section isolated
-    console.log('[ExecLounge] DIAG === Starting diagnostic dump ===');
+    pbDbg(' DIAG === Starting diagnostic dump ===');
 
     try {
       const vueApp = findVueApp();
-      console.log('[ExecLounge] DIAG - Vue app found:', !!vueApp);
+      pbDbg(' DIAG - Vue app found:', !!vueApp);
       if (vueApp) {
         let cache = null;
         const gp = vueApp.config && vueApp.config.globalProperties;
@@ -346,20 +348,20 @@ function tryExtractLoyalty(attemptsLeft) {
         if (!cache && gp && gp.$apollo) cache = gp.$apollo.provider.defaultClient.cache.extract();
         if (cache) {
           const allKeys = Object.keys(cache);
-          console.log('[ExecLounge] DIAG - Apollo cache keys (' + allKeys.length + '):', allKeys.slice(0, 50));
+          pbDbg(' DIAG - Apollo cache keys (' + allKeys.length + '):', allKeys.slice(0, 50));
           allKeys.slice(0, 5).forEach(function(k) {
-            try { console.log('[ExecLounge] DIAG - Cache[' + k + ']:', JSON.stringify(cache[k]).slice(0, 300)); } catch(x) {}
+            try { pbDbg(' DIAG - Cache[' + k + ']:', JSON.stringify(cache[k]).slice(0, 300)); } catch(x) {}
           });
         } else {
-          console.log('[ExecLounge] DIAG - Apollo cache: not found');
+          pbDbg(' DIAG - Apollo cache: not found');
         }
       }
-    } catch (e) { console.log('[ExecLounge] DIAG - Apollo error:', e.message); }
+    } catch (e) { pbDbg(' DIAG - Apollo error:', e.message); }
 
     // Vue component tree around account button
     try {
       var btn = document.querySelector('.button-logo__button--connected');
-      console.log('[ExecLounge] DIAG - Account button found:', !!btn);
+      pbDbg(' DIAG - Account button found:', !!btn);
       if (btn) {
         // Walk up to find Vue instances
         var el = btn;
@@ -373,7 +375,7 @@ function tryExtractLoyalty(attemptsLeft) {
             if (comp.props) try { dataKeys = dataKeys.concat(Object.keys(comp.props).slice(0, 20)); } catch(x) {}
             if (comp.ctx) try { dataKeys = dataKeys.concat(Object.keys(comp.ctx).filter(function(k) { return !k.startsWith('$') && !k.startsWith('_'); }).slice(0, 20)); } catch(x) {}
             if (comp.$data) try { dataKeys = dataKeys.concat(Object.keys(comp.$data).slice(0, 20)); } catch(x) {}
-            console.log('[ExecLounge] DIAG - Vue component at depth ' + vi + ': ' + compName + ' keys: ' + dataKeys.join(', '));
+            pbDbg(' DIAG - Vue component at depth ' + vi + ': ' + compName + ' keys: ' + dataKeys.join(', '));
             // Dump setupState/data for user-related keys
             var containers = [comp.setupState, comp.data, comp.ctx, comp.proxy, comp.$data];
             for (var ci = 0; ci < containers.length; ci++) {
@@ -384,7 +386,7 @@ function tryExtractLoyalty(attemptsLeft) {
                 if (userKeys.length > 0) {
                   userKeys.forEach(function(uk) {
                     try {
-                      console.log('[ExecLounge] DIAG - ' + compName + '.' + uk + ' =', JSON.stringify(containers[ci][uk]).slice(0, 500));
+                      pbDbg(' DIAG - ' + compName + '.' + uk + ' =', JSON.stringify(containers[ci][uk]).slice(0, 500));
                     } catch(x) {}
                   });
                 }
@@ -394,64 +396,64 @@ function tryExtractLoyalty(attemptsLeft) {
           el = el.parentElement;
         }
       }
-    } catch (e) { console.log('[ExecLounge] DIAG - Vue component error:', e.message); }
+    } catch (e) { pbDbg(' DIAG - Vue component error:', e.message); }
 
     try {
-      console.log('[ExecLounge] DIAG - __NUXT__:', window.__NUXT__ ? Object.keys(window.__NUXT__).slice(0, 20) : 'not found');
-    } catch (e) { console.log('[ExecLounge] DIAG - Nuxt error:', e.message); }
+      pbDbg(' DIAG - __NUXT__:', window.__NUXT__ ? Object.keys(window.__NUXT__).slice(0, 20) : 'not found');
+    } catch (e) { pbDbg(' DIAG - Nuxt error:', e.message); }
 
     try {
-      console.log('[ExecLounge] DIAG - dataLayer:', Array.isArray(window.dataLayer) ? window.dataLayer.length + ' entries' : 'not found');
+      pbDbg(' DIAG - dataLayer:', Array.isArray(window.dataLayer) ? window.dataLayer.length + ' entries' : 'not found');
       if (Array.isArray(window.dataLayer) && window.dataLayer.length > 0) {
         window.dataLayer.slice(-3).forEach(function(entry, i) {
-          try { console.log('[ExecLounge] DIAG - dataLayer[-' + (3 - i) + ']:', JSON.stringify(entry).slice(0, 500)); } catch(x) {}
+          try { pbDbg(' DIAG - dataLayer[-' + (3 - i) + ']:', JSON.stringify(entry).slice(0, 500)); } catch(x) {}
         });
       }
-    } catch (e) { console.log('[ExecLounge] DIAG - dataLayer error:', e.message); }
+    } catch (e) { pbDbg(' DIAG - dataLayer error:', e.message); }
 
     try {
-      console.log('[ExecLounge] DIAG - tc_vars:', window.tc_vars ? JSON.stringify(window.tc_vars).slice(0, 500) : 'not found');
-    } catch (e) { console.log('[ExecLounge] DIAG - tc_vars error:', e.message); }
+      pbDbg(' DIAG - tc_vars:', window.tc_vars ? JSON.stringify(window.tc_vars).slice(0, 500) : 'not found');
+    } catch (e) { pbDbg(' DIAG - tc_vars error:', e.message); }
 
     try {
-      console.log('[ExecLounge] DIAG - utag_data:', window.utag_data ? JSON.stringify(window.utag_data).slice(0, 500) : 'not found');
-    } catch (e) { console.log('[ExecLounge] DIAG - utag_data error:', e.message); }
+      pbDbg(' DIAG - utag_data:', window.utag_data ? JSON.stringify(window.utag_data).slice(0, 500) : 'not found');
+    } catch (e) { pbDbg(' DIAG - utag_data error:', e.message); }
 
     try {
-      console.log('[ExecLounge] DIAG - digitalData:', window.digitalData ? JSON.stringify(window.digitalData).slice(0, 500) : 'not found');
-    } catch (e) { console.log('[ExecLounge] DIAG - digitalData error:', e.message); }
+      pbDbg(' DIAG - digitalData:', window.digitalData ? JSON.stringify(window.digitalData).slice(0, 500) : 'not found');
+    } catch (e) { pbDbg(' DIAG - digitalData error:', e.message); }
 
     try {
       var lsKeys = []; for (var i = 0; i < localStorage.length; i++) lsKeys.push(localStorage.key(i));
-      console.log('[ExecLounge] DIAG - localStorage keys (' + lsKeys.length + '): ' + lsKeys.slice(0, 40).join(', '));
-    } catch (e) { console.log('[ExecLounge] DIAG - localStorage error:', e.message); }
+      pbDbg(' DIAG - localStorage keys (' + lsKeys.length + '): ' + lsKeys.slice(0, 40).join(', '));
+    } catch (e) { pbDbg(' DIAG - localStorage error:', e.message); }
 
     try {
       var ssKeys = []; for (var j = 0; j < sessionStorage.length; j++) ssKeys.push(sessionStorage.key(j));
-      console.log('[ExecLounge] DIAG - sessionStorage keys (' + ssKeys.length + '): ' + ssKeys.slice(0, 40).join(', '));
-    } catch (e) { console.log('[ExecLounge] DIAG - sessionStorage error:', e.message); }
+      pbDbg(' DIAG - sessionStorage keys (' + ssKeys.length + '): ' + ssKeys.slice(0, 40).join(', '));
+    } catch (e) { pbDbg(' DIAG - sessionStorage error:', e.message); }
 
     try {
       var cookieNames = document.cookie.split(';').map(function(c) { return c.trim().split('=')[0]; }).filter(Boolean);
-      console.log('[ExecLounge] DIAG - Cookie names (' + cookieNames.length + '): ' + cookieNames.slice(0, 40).join(', '));
-    } catch (e) { console.log('[ExecLounge] DIAG - cookies error:', e.message); }
+      pbDbg(' DIAG - Cookie names (' + cookieNames.length + '): ' + cookieNames.slice(0, 40).join(', '));
+    } catch (e) { pbDbg(' DIAG - cookies error:', e.message); }
 
     try {
       var windowKeys = Object.keys(window).filter(function(k) { return /user|member|loyalty|fidelity|tier|auth/i.test(k); });
-      console.log('[ExecLounge] DIAG - Window globals (' + windowKeys.length + '): ' + windowKeys.join(', '));
+      pbDbg(' DIAG - Window globals (' + windowKeys.length + '): ' + windowKeys.join(', '));
       // Dump values of each window global
       windowKeys.forEach(function(k) {
         try {
           var val = window[k];
           var type = typeof val;
           if (type === 'object' && val !== null) {
-            console.log('[ExecLounge] DIAG - window.' + k + ' =', JSON.stringify(val).slice(0, 500));
+            pbDbg(' DIAG - window.' + k + ' =', JSON.stringify(val).slice(0, 500));
           } else {
-            console.log('[ExecLounge] DIAG - window.' + k + ' = (' + type + ')', String(val).slice(0, 200));
+            pbDbg(' DIAG - window.' + k + ' = (' + type + ')', String(val).slice(0, 200));
           }
-        } catch(x) { console.log('[ExecLounge] DIAG - window.' + k + ' error:', x.message); }
+        } catch(x) { pbDbg(' DIAG - window.' + k + ' error:', x.message); }
       });
-    } catch (e) { console.log('[ExecLounge] DIAG - window keys error:', e.message); }
+    } catch (e) { pbDbg(' DIAG - window keys error:', e.message); }
 
     // Also log all dataLayer entries (not just last 3) looking for user data
     try {
@@ -459,11 +461,11 @@ function tryExtractLoyalty(attemptsLeft) {
         window.dataLayer.forEach(function(entry, idx) {
           var s = JSON.stringify(entry);
           if (/user|member|loyalty|tier|platinum|gold|silver|diamond|level|fidelity|status/i.test(s)) {
-            console.log('[ExecLounge] DIAG - dataLayer[' + idx + '] HAS USER DATA:', s.slice(0, 800));
+            pbDbg(' DIAG - dataLayer[' + idx + '] HAS USER DATA:', s.slice(0, 800));
           }
         });
       }
-    } catch (e) { console.log('[ExecLounge] DIAG - dataLayer scan error:', e.message); }
+    } catch (e) { pbDbg(' DIAG - dataLayer scan error:', e.message); }
 
     // Scan localStorage/sessionStorage values for tier keywords
     try {
@@ -473,14 +475,14 @@ function tryExtractLoyalty(attemptsLeft) {
           var sk = storage.key(x);
           var sv = storage.getItem(sk);
           if (/platinum|gold|silver|diamond|limitless|loyalty|tier|fidelity/i.test(sv)) {
-            console.log('[ExecLounge] DIAG - ' + sName + '[' + sk + '] HAS TIER DATA:', sv.slice(0, 500));
+            pbDbg(' DIAG - ' + sName + '[' + sk + '] HAS TIER DATA:', sv.slice(0, 500));
           }
         }
       });
-    } catch (e) { console.log('[ExecLounge] DIAG - storage scan error:', e.message); }
+    } catch (e) { pbDbg(' DIAG - storage scan error:', e.message); }
 
-    console.log('[ExecLounge] DIAG === End diagnostic dump ===');
-    console.log('[ExecLounge] Loyalty tier not found after all attempts');
+    pbDbg(' DIAG === End diagnostic dump ===');
+    pbDbg(' Loyalty tier not found after all attempts');
     document.dispatchEvent(new CustomEvent('exec-response-loyalty', {
       detail: JSON.stringify({ tier: null, tierCode: null, source: null })
     }));
@@ -567,4 +569,4 @@ document.addEventListener('exec-request-cache', () => {
   tryExtractCache(15); // retry up to 15 times (7.5 seconds)
 });
 
-console.log('[ExecLounge] page-bridge.js loaded in MAIN world');
+pbDbg(' page-bridge.js loaded in MAIN world');
