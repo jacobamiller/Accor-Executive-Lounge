@@ -36,6 +36,8 @@ const RATE_COLS = [
 
 // ==================== INIT ====================
 async function init() {
+  const manifest = chrome.runtime.getManifest();
+  document.getElementById('version').textContent = 'v' + manifest.version;
   const result = await chrome.storage.local.get('accorUserId');
   userId = result.accorUserId;
   if (!userId) {
