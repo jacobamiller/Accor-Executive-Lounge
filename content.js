@@ -1349,15 +1349,32 @@ function getNightsFromUrl() {
 // ==================== SUPABASE DATA COLLECTION ====================
 function getDatesFromUrl() {
   const params = new URLSearchParams(location.search);
-  return { checkin: params.get('dateIn') || null, checkout: params.get('dateOut') || null };
+  const checkin = params.get('dateIn') || null;
+  let checkout = params.get('dateOut') || null;
+  if (!checkout && checkin) {
+    const nights = parseInt(params.get('nights'), 10);
+    if (nights > 0) {
+      const d = new Date(checkin);
+      d.setDate(d.getDate() + nights);
+      checkout = d.toISOString().split('T')[0];
+    }
+  }
+  return { checkin, checkout };
 }
 
 function getCityFromUrl() {
   const params = new URLSearchParams(location.search);
-  const dest = params.get('destination');
-  if (dest) return dest;
+  // Try common query params
+  for (const key of ['destination', 'city', 'locationName']) {
+    const val = params.get(key);
+    if (val) return val;
+  }
+  // Try extracting from path: /booking/search/LANG/CITY/... or /booking/hotel/ID/CITY/...
   const parts = location.pathname.split('/').filter(Boolean);
-  if (parts.length >= 4 && parts[0] === 'booking' && parts[1] === 'search') return parts[3] || null;
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] === 'search' && parts[i + 2]) return decodeURIComponent(parts[i + 2]);
+    if (parts[i] === 'hotel' && parts[i + 2]) return decodeURIComponent(parts[i + 2]);
+  }
   return null;
 }
 
@@ -1368,12 +1385,18 @@ function sendPriceSnapshot(card, priceData) {
     const hotelName = nameEl ? nameEl.textContent.trim() : null;
     const dates = getDatesFromUrl();
     const total = priceData.basePrice + priceData.tax;
+    // Try city from URL, then from card address/location element
+    let city = getCityFromUrl();
+    if (!city) {
+      const addrEl = card.querySelector('[class*="address"]') || card.querySelector('[class*="location"]') || card.querySelector('[class*="city"]');
+      if (addrEl) city = addrEl.textContent.trim();
+    }
     chrome.runtime.sendMessage({
       type: 'PRICE_SNAPSHOT',
       data: {
         hotel_id: hotelId,
         hotel_name: hotelName,
-        city: getCityFromUrl(),
+        city: city,
         currency: priceData.currency,
         base_price: priceData.basePrice,
         tax_amount: priceData.tax,
