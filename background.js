@@ -174,4 +174,4 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 ensureUserId();
-syncIfNeeded();
+syncHotelData(); // Always sync on service worker startup (extension reload)
