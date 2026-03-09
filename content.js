@@ -2494,6 +2494,20 @@ try {
       FREE_BREAKFAST_HOTEL_IDS = new Set(response.breakfastIds);
       dbg('Loaded', FREE_BREAKFAST_HOTEL_IDS.size, 'breakfast IDs from Supabase cache');
     }
+    // Re-process cards with fresh data (fixes race condition with init())
+    document.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
+      card.removeAttribute('data-exec-lounge-highlighted');
+      card.classList.remove('exec-lounge-highlighted');
+      const oldBadge = card.querySelector('.exec-lounge-badge');
+      if (oldBadge) oldBadge.remove();
+      card.removeAttribute('data-breakfast-badge');
+      card.classList.remove('free-breakfast-only');
+      const oldBfBadge = card.querySelector('.free-breakfast-badge');
+      if (oldBfBadge) oldBfBadge.remove();
+      highlightCard(card);
+      addBreakfastBadge(card);
+    });
+    updateCounter();
   });
 } catch (e) { /* fallback to hardcoded Sets */ }
 
