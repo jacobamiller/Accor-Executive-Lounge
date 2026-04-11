@@ -693,6 +693,19 @@ async function autoFetchFullRange(fetchUrl, fetchOpts, reqBody) {
   _calFetchInFlight[key] = false;
 }
 
+// Suppress "Uncaught (in promise) TypeError: Failed to fetch" noise from the
+// Accor page's own unhandled rejections. These come from the page's code, not
+// ours — they happen when a request is cancelled by SPA navigation or fails
+// transiently. The page doesn't attach .catch() handlers to its async fetches,
+// so they bubble up as unhandled. We suppress only this specific message
+// pattern so real bugs still surface.
+window.addEventListener('unhandledrejection', function(e) {
+  if (e.reason && e.reason instanceof TypeError &&
+      /Failed to fetch/i.test(e.reason.message || '')) {
+    e.preventDefault();
+  }
+});
+
 // Intercept fetch
 const _origFetch = window.fetch;
 window.fetch = function(url, opts) {
