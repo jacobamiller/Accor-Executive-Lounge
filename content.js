@@ -1417,6 +1417,31 @@ function getNightsFromUrl() {
 }
 
 // ==================== SUPABASE DATA COLLECTION ====================
+// When the extension is reloaded/updated, content scripts on already-open tabs
+// lose their chrome.runtime link. sendMessage then throws "Extension context
+// invalidated" and the snapshot is dropped. Detect this once and log a clear
+// instruction, so silent data loss becomes obvious.
+let _extensionContextInvalidated = false;
+function safeSendMessage(msg, callback) {
+  if (_extensionContextInvalidated) return;
+  if (!chrome.runtime || !chrome.runtime.id) {
+    _extensionContextInvalidated = true;
+    console.warn('[AccorExt] Extension context invalidated — reload this tab to resume price capture.');
+    return;
+  }
+  try {
+    if (callback) chrome.runtime.sendMessage(msg, callback);
+    else chrome.runtime.sendMessage(msg);
+  } catch (e) {
+    if (e && /Extension context invalidated/i.test(e.message || '')) {
+      _extensionContextInvalidated = true;
+      console.warn('[AccorExt] Extension context invalidated — reload this tab to resume price capture.');
+    } else {
+      console.warn('[AccorExt] sendMessage error:', e);
+    }
+  }
+}
+
 function getDatesFromUrl() {
   const params = new URLSearchParams(location.search);
   const checkin = params.get('dateIn') || null;
@@ -1461,7 +1486,7 @@ function sendPriceSnapshot(card, priceData) {
       const addrEl = card.querySelector('[class*="address"]') || card.querySelector('[class*="location"]') || card.querySelector('[class*="city"]');
       if (addrEl) city = addrEl.textContent.trim();
     }
-    chrome.runtime.sendMessage({
+    safeSendMessage({
       type: 'PRICE_SNAPSHOT',
       data: {
         hotel_id: hotelId,
@@ -1514,7 +1539,7 @@ function sendRateSnapshots(offers, hotelId, nights) {
       });
     }
     if (rates.length > 0) {
-      chrome.runtime.sendMessage({
+      safeSendMessage({
         type: 'RATE_SNAPSHOT',
         data: {
           hotel_id: hotelId,
@@ -1537,7 +1562,7 @@ document.addEventListener('exec-calendar-data', (e) => {
     const { variables, hotel, calendar } = JSON.parse(e.detail);
     console.log('[AccorExt] content.js received calendar event, entries:', calendar ? calendar.length : 0, 'hotel:', variables && variables.hotelId);
     if (!calendar || !calendar.length) return;
-    chrome.runtime.sendMessage({
+    safeSendMessage({
       type: 'CALENDAR_SNAPSHOT',
       data: {
         hotel_id: variables.hotelId,
@@ -2197,14 +2222,19 @@ function isHotelDetailPage() {
   return _isDetailPageCached;
 }
 
+// Order matters: prefer narrow, offer-identifying selectors over broad ones.
+// Accor's markup has rotated through several class names; `hotel-offer-XXXX`
+// is the marker getOffersForRoom/getPageOfferIds key off of, so it must win.
+// `[class*="accommodation"]` is greedy (matches wrappers and nested elements)
+// and must come after anything more precise.
 const ROOM_SELECTORS = [
+  '[class*="hotel-offer-"]',
   '.hotel-accommodation',
   '[class*="hotel-accommodation"]',
   '[class*="room-card"]',
   '[class*="accommodation"]',
   '[class*="room-list"]',
   '[class*="offer-list"]',
-  '[class*="hotel-offer"]',
 ];
 
 let _cachedRoomSelector = null;
