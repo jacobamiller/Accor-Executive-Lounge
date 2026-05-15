@@ -20,7 +20,7 @@
                               {
                                                 "matches": ["https://all.accor.com/booking/*"],
                                                 "js": ["page-bridge.js"],
-                                                "run_at": "document_idle",
+                                                "run_at": "document_start",
                                                 "world": "MAIN"
                               },
                               {
