@@ -516,40 +516,69 @@ function findVueApp() {
   return null;
 }
 
+// Synthetic cache built from intercepted GraphQL responses. Accor moved
+// BestOfferInfo entries out of Apollo's normalized cache, so the raw extract
+// is empty for offer lookups. The same data still flows through HotelPageHot
+// and HotelPageCold GraphQL operations — we re-shape it into the cache layout
+// the content script's getOffersForRoom/buildOfferIndex already understand.
+window.__accorExtSyntheticCache = window.__accorExtSyntheticCache || {};
+window.__accorExtAccommodationByCode = window.__accorExtAccommodationByCode || {};
+
+function ingestHotelPageCold(json) {
+  const accs = json && json.data && json.data.hotel && json.data.hotel.accommodations;
+  if (!Array.isArray(accs)) return;
+  for (const acc of accs) {
+    if (acc && acc.code) window.__accorExtAccommodationByCode[acc.code] = acc;
+  }
+  // Re-enrich any synth offers that arrived before this Cold response.
+  for (const k of Object.keys(window.__accorExtSyntheticCache)) {
+    const offer = window.__accorExtSyntheticCache[k];
+    const code = offer.accommodation && offer.accommodation.code;
+    const acc = code && window.__accorExtAccommodationByCode[code];
+    if (acc && offer.accommodation && offer.accommodation.name !== acc.name) {
+      offer.accommodation = Object.assign({}, offer.accommodation, { name: acc.name });
+    }
+  }
+}
+
+function ingestHotelPageHot(json) {
+  const offers = json && json.data && json.data.hotelOffers
+    && json.data.hotelOffers.offersSelection && json.data.hotelOffers.offersSelection.offers;
+  if (!Array.isArray(offers)) return;
+  for (const offer of offers) {
+    if (!offer || !offer.id) continue;
+    const code = offer.accommodation && offer.accommodation.code;
+    const accFromCold = code && window.__accorExtAccommodationByCode[code];
+    const enrichedAccommodation = accFromCold
+      ? Object.assign({}, offer.accommodation, { name: accFromCold.name })
+      : offer.accommodation;
+    // buildOfferIndex in content.js resolves offer.rate via __ref and writes
+    // the result to entry.resolvedRate. Since GraphQL inlines rate here, we
+    // pre-set resolvedRate so the __ref dance is a harmless no-op.
+    window.__accorExtSyntheticCache['BestOfferInfo:' + offer.id] = Object.assign({}, offer, {
+      accommodation: enrichedAccommodation,
+      resolvedRate: offer.rate,
+    });
+  }
+  console.log('[AccorExt] ingested', offers.length, 'offers from HotelPageHot');
+}
+
 function tryExtractCache(attemptsLeft) {
   const vueApp = findVueApp();
+  let cache = null;
+  let apolloPath = null;
   if (vueApp) {
     try {
-      // Try standard Vue 3 Apollo path
-      let cache = null;
       const gp = vueApp.config && vueApp.config.globalProperties;
       if (gp && gp.$apolloProvider) {
         cache = gp.$apolloProvider.defaultClient.cache.extract();
-      }
-      // Try alternative Apollo paths
-      if (!cache && gp && gp.$apollo) {
+        apolloPath = '$apolloProvider';
+      } else if (gp && gp.$apollo) {
         cache = gp.$apollo.provider.defaultClient.cache.extract();
-      }
-      if (cache) {
-        // One-shot diagnostic so the console isn't flooded.
-        if (!window.__accorExtBridgeDiagLogged) {
-          window.__accorExtBridgeDiagLogged = true;
-          try {
-            const keys = Object.keys(cache);
-            const bestOffer = keys.filter(k => k.startsWith('BestOfferInfo:'));
-            console.log('[AccorExt bridge] cache extracted: totalKeys=', keys.length,
-              'BestOfferInfo=', bestOffer.length,
-              'sampleKeys=', keys.slice(0, 8),
-              'apolloPath=', gp && gp.$apolloProvider ? '$apolloProvider' : '$apollo');
-          } catch (e) { /* noop */ }
-        }
-        document.dispatchEvent(new CustomEvent('exec-response-cache', {
-          detail: JSON.stringify({ cache: cache })
-        }));
-        return;
+        apolloPath = '$apollo';
       }
     } catch (e) {
-      // If we found Vue but Apollo path failed, report the specific error
+      // Apollo path errored — fall through to synthetic-only or retry below.
       if (attemptsLeft <= 0) {
         document.dispatchEvent(new CustomEvent('exec-response-cache', {
           detail: JSON.stringify({ error: 'Apollo extract failed: ' + e.message })
@@ -559,19 +588,36 @@ function tryExtractCache(attemptsLeft) {
     }
   }
 
+  const synth = window.__accorExtSyntheticCache || {};
+  const synthKeys = Object.keys(synth);
+  const cacheKeys = cache ? Object.keys(cache) : [];
+
+  if (synthKeys.length > 0 || cacheKeys.length > 0) {
+    const merged = Object.assign({}, cache || {}, synth);
+    if (!window.__accorExtBridgeDiagLogged) {
+      window.__accorExtBridgeDiagLogged = true;
+      try {
+        const bestOffer = Object.keys(merged).filter(k => k.startsWith('BestOfferInfo:'));
+        console.log('[AccorExt bridge] cache merged: apolloKeys=', cacheKeys.length,
+          'synthKeys=', synthKeys.length,
+          'mergedBestOffer=', bestOffer.length,
+          'apolloPath=', apolloPath);
+      } catch (e) { /* noop */ }
+    }
+    document.dispatchEvent(new CustomEvent('exec-response-cache', {
+      detail: JSON.stringify({ cache: merged })
+    }));
+    return;
+  }
+
   if (attemptsLeft > 0) {
     setTimeout(() => tryExtractCache(attemptsLeft - 1), 500);
   } else {
-    // Final diagnostic: report what we found
     const appEl = document.querySelector('#app');
-    const hasApp = !!appEl;
-    const hasVue = hasApp && !!appEl.__vue_app__;
-    const bodyChildIds = [...document.body.children].map(el => el.id || el.tagName).slice(0, 10);
-    const vueEls = [...document.body.querySelectorAll('*')].filter(el => el.__vue_app__).map(el => el.id || el.tagName).slice(0, 5);
     document.dispatchEvent(new CustomEvent('exec-response-cache', {
       detail: JSON.stringify({
-        error: 'Vue/Apollo not found',
-        diag: { hasApp, hasVue, bodyChildIds, vueEls, hasNuxt: !!window.__NUXT__ }
+        error: 'No cache and no synthetic offers',
+        diag: { hasApp: !!appEl, hasNuxt: !!window.__NUXT__ }
       })
     }));
   }
@@ -738,46 +784,18 @@ window.fetch = function(url, opts) {
       }
     }
 
-    // One-shot HotelPage response shape probe — dumps top-level keys + a
-    // sample path so we can build the offer-index extractor. Remove once
-    // the extractor is wired up.
+    // Ingest HotelPageCold (room metadata: name, beds, photos) and
+    // HotelPageHot (live offers: prices, rates, policies) into the synthetic
+    // cache so getOffersForRoom in content.js can resolve BestOfferInfo:<id>
+    // lookups that Apollo's normalized cache no longer answers.
     if (opName === 'HotelPageCold' || opName === 'HotelPageHot') {
-      window.__accorExtHotelPageDumped = window.__accorExtHotelPageDumped || {};
-      if (!window.__accorExtHotelPageDumped[opName]) {
-        window.__accorExtHotelPageDumped[opName] = true;
-        result.then(res => res.clone().text().then(text => {
-          try {
-            const json = JSON.parse(text);
-            // Stash full response so user can copy() it with one command.
-            window.__accorExtLastResponses = window.__accorExtLastResponses || {};
-            window.__accorExtLastResponses[opName] = json;
-            const topKeys = Object.keys(json || {});
-            const dataKeys = json && json.data ? Object.keys(json.data) : [];
-            // Find the first array-of-objects deep in the response — likely offers
-            function findArrays(obj, path, depth, out) {
-              if (depth > 6 || !obj || typeof obj !== 'object' || out.length >= 5) return;
-              for (const k of Object.keys(obj)) {
-                const v = obj[k];
-                if (Array.isArray(v) && v.length > 0 && typeof v[0] === 'object') {
-                  out.push({ path: path + '.' + k, len: v.length, sampleKeys: Object.keys(v[0]).slice(0, 12) });
-                }
-                if (v && typeof v === 'object') findArrays(v, path + '.' + k, depth + 1, out);
-              }
-            }
-            const arrays = [];
-            findArrays(json, '', 0, arrays);
-            // Stringify so the full structure copy-pastes from the console
-            // (devtools otherwise collapses object arrays to Array(N)).
-            console.log('[AccorExt HotelPage probe]', JSON.stringify({
-              op: opName,
-              topKeys,
-              dataKeys,
-              arrays,
-            }, null, 2));
-          } catch (e) { console.warn('[AccorExt HotelPage probe] parse error:', e); }
-        }).catch(e => console.warn('[AccorExt HotelPage probe] clone error:', e)))
-          .catch(e => console.warn('[AccorExt HotelPage probe] result error:', e));
-      }
+      result.then(res => res.clone().text().then(text => {
+        try {
+          const json = JSON.parse(text);
+          if (opName === 'HotelPageCold') ingestHotelPageCold(json);
+          else ingestHotelPageHot(json);
+        } catch (e) { console.warn('[AccorExt] ' + opName + ' ingest error:', e); }
+      }).catch(() => {})).catch(() => {});
     }
     if (bodyStr && (bodyStr.includes('"PriceCalendar"') || bodyStr.includes('"priceCalendar"') || bodyStr.includes('"Calendar"'))) {
       console.log('[AccorExt] Calendar fetch intercepted, body length:', bodyStr.length);
