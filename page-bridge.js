@@ -531,6 +531,17 @@ function tryExtractCache(attemptsLeft) {
         cache = gp.$apollo.provider.defaultClient.cache.extract();
       }
       if (cache) {
+        // Diagnostic: surface cache shape so we can tell when the client is
+        // present but holds no offers (Accor may have moved off Apollo, or
+        // we're attached to the wrong client). Remove once stable.
+        try {
+          const keys = Object.keys(cache);
+          const bestOffer = keys.filter(k => k.startsWith('BestOfferInfo:'));
+          console.log('[AccorExt bridge] cache extracted: totalKeys=', keys.length,
+            'BestOfferInfo=', bestOffer.length,
+            'sampleKeys=', keys.slice(0, 8),
+            'apolloPath=', gp && gp.$apolloProvider ? '$apolloProvider' : '$apollo');
+        } catch (e) { /* noop */ }
         document.dispatchEvent(new CustomEvent('exec-response-cache', {
           detail: JSON.stringify({ cache: cache })
         }));

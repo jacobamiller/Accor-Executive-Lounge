@@ -2258,11 +2258,12 @@ const ROOM_SELECTORS = [
   '[class*="offer-list"]',
 ];
 
-let _cachedRoomSelector = null;
+// No caching — an early call (before offer elements render) used to lock a
+// broad fallback selector forever. The querySelector cost is negligible and
+// the iteration is short. Always pick the narrowest selector that matches now.
 function findRoomsSelector() {
-  if (_cachedRoomSelector && document.querySelector(_cachedRoomSelector)) return _cachedRoomSelector;
   for (const sel of ROOM_SELECTORS) {
-    if (document.querySelector(sel)) return (_cachedRoomSelector = sel);
+    if (document.querySelector(sel)) return sel;
   }
   return '.hotel-accommodation';
 }
