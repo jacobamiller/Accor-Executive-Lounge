@@ -748,6 +748,9 @@ window.fetch = function(url, opts) {
         result.then(res => res.clone().text().then(text => {
           try {
             const json = JSON.parse(text);
+            // Stash full response so user can copy() it with one command.
+            window.__accorExtLastResponses = window.__accorExtLastResponses || {};
+            window.__accorExtLastResponses[opName] = json;
             const topKeys = Object.keys(json || {});
             const dataKeys = json && json.data ? Object.keys(json.data) : [];
             // Find the first array-of-objects deep in the response — likely offers
