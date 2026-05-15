@@ -729,9 +729,47 @@ window.fetch = function(url, opts) {
       else if (opts.body instanceof Blob) { /* can't read sync */ }
     }
     // Log any GraphQL operation for debugging
+    let opName = null;
     if (bodyStr && bodyStr.includes('operationName')) {
       const opMatch = bodyStr.match(/"operationName"\s*:\s*"([^"]+)"/);
-      if (opMatch) console.log('[AccorExt] fetch GraphQL op:', opMatch[1]);
+      if (opMatch) {
+        opName = opMatch[1];
+        console.log('[AccorExt] fetch GraphQL op:', opName);
+      }
+    }
+
+    // One-shot HotelPage response shape probe — dumps top-level keys + a
+    // sample path so we can build the offer-index extractor. Remove once
+    // the extractor is wired up.
+    if (opName === 'HotelPageCold' || opName === 'HotelPageHot') {
+      if (!window.__accorExtHotelPageDumped) {
+        window.__accorExtHotelPageDumped = true;
+        result.then(res => res.clone().text().then(text => {
+          try {
+            const json = JSON.parse(text);
+            const topKeys = Object.keys(json || {});
+            const dataKeys = json && json.data ? Object.keys(json.data) : [];
+            // Find the first array-of-objects deep in the response — likely offers
+            function findArrays(obj, path, depth, out) {
+              if (depth > 6 || !obj || typeof obj !== 'object' || out.length >= 5) return;
+              for (const k of Object.keys(obj)) {
+                const v = obj[k];
+                if (Array.isArray(v) && v.length > 0 && typeof v[0] === 'object') {
+                  out.push({ path: path + '.' + k, len: v.length, sampleKeys: Object.keys(v[0]).slice(0, 12) });
+                }
+                if (v && typeof v === 'object') findArrays(v, path + '.' + k, depth + 1, out);
+              }
+            }
+            const arrays = [];
+            findArrays(json, '', 0, arrays);
+            console.log('[AccorExt HotelPage probe] op=', opName,
+              'topKeys=', topKeys,
+              'dataKeys=', dataKeys,
+              'arrays=', arrays);
+          } catch (e) { console.warn('[AccorExt HotelPage probe] parse error:', e); }
+        }).catch(e => console.warn('[AccorExt HotelPage probe] clone error:', e)))
+          .catch(e => console.warn('[AccorExt HotelPage probe] result error:', e));
+      }
     }
     if (bodyStr && (bodyStr.includes('"PriceCalendar"') || bodyStr.includes('"priceCalendar"') || bodyStr.includes('"Calendar"'))) {
       console.log('[AccorExt] Calendar fetch intercepted, body length:', bodyStr.length);
