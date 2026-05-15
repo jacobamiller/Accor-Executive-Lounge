@@ -2,7 +2,7 @@
 // Highlights hotel cards with an Executive Lounge with a thick red border.
 // Hotel IDs populated from monthly lounge extraction data.
 // Run the "Extract All Lounge Hotels" bookmarklet to get updated IDs.
-const DEBUG = false;
+const DEBUG = true;
 function dbg(...args) { if (DEBUG) console.log('[ExecLounge]', ...args); }
 dbg('content.js loaded on:', window.location.href);
 
@@ -2187,6 +2187,27 @@ async function injectAllRatePanels() {
   const nights = getNightsFromUrl();
   const roomSelector = findRoomsSelector();
   const rooms = document.querySelectorAll(roomSelector);
+
+  // Single-shot diagnostic summary so we don't have to grep scattered logs.
+  // Remove once detail-page processing is confirmed stable on current markup.
+  try {
+    const cacheKeys = Object.keys(cache);
+    const bestOfferKeys = cacheKeys.filter(k => k.startsWith('BestOfferInfo:'));
+    const firstRoom = rooms[0];
+    const firstOfferClass = firstRoom && [...firstRoom.classList].find(c => c.startsWith('hotel-offer-'));
+    const firstOfferId = firstOfferClass && firstOfferClass.replace('hotel-offer-', '');
+    const firstOfferInCache = firstOfferId ? !!cache['BestOfferInfo:' + firstOfferId] : null;
+    console.log('[AccorExt diag] roomSelector=', roomSelector,
+      'rooms=', rooms.length,
+      'visibleRooms=', [...rooms].filter(r => r.offsetHeight > 0).length,
+      'cacheKeys=', cacheKeys.length,
+      'bestOfferKeys=', bestOfferKeys.length,
+      'pageOfferIds=', validOfferIds.size,
+      'firstOfferId=', firstOfferId,
+      'firstOfferInCache=', firstOfferInCache,
+      'sampleCacheKey=', bestOfferKeys[0],
+      'firstRoomClasses=', firstRoom ? [...firstRoom.classList].slice(0, 8) : null);
+  } catch (e) { console.warn('[AccorExt diag] summary error:', e); }
 
   rooms.forEach((roomEl, i) => {
     if (roomEl.querySelector('.ext-all-rates-panel')) return;
