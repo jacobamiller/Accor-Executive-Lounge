@@ -742,8 +742,9 @@ window.fetch = function(url, opts) {
     // sample path so we can build the offer-index extractor. Remove once
     // the extractor is wired up.
     if (opName === 'HotelPageCold' || opName === 'HotelPageHot') {
-      if (!window.__accorExtHotelPageDumped) {
-        window.__accorExtHotelPageDumped = true;
+      window.__accorExtHotelPageDumped = window.__accorExtHotelPageDumped || {};
+      if (!window.__accorExtHotelPageDumped[opName]) {
+        window.__accorExtHotelPageDumped[opName] = true;
         result.then(res => res.clone().text().then(text => {
           try {
             const json = JSON.parse(text);
