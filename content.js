@@ -1358,8 +1358,27 @@ function addTaxInclusivePrice(card) {
   const data = parsePriceData(card);
   if (!data) {
     const hotelId = card.getAttribute('data-hotel-id') || 'unknown';
+    // One-shot diagnostic: report which sub-selector failed on the first card
+    // so we can tell if Accor renamed the price/tax/nights classes on search.
+    if (!window.__accorExtSearchDiagLogged) {
+      window.__accorExtSearchDiagLogged = true;
+      const has = sel => !!card.querySelector(sel);
+      console.log('[AccorExt search diag] parsePriceData returned null for', hotelId,
+        '— has(.offer-price__amount)=', has('span.offer-price__amount'),
+        'has(.stay-details__formatted-tax-type)=', has('span.stay-details__formatted-tax-type'),
+        'has(.pricing-type-label)=', has('span.pricing-type-label'),
+        'cardClasses=', [...card.classList].slice(0, 6));
+    }
     dbg('No tax data for hotel', hotelId, ', skipping');
     return;
+  }
+
+  // One-shot success log so we know capture is firing.
+  if (!window.__accorExtSearchOkLogged) {
+    window.__accorExtSearchOkLogged = true;
+    const hotelId = card.getAttribute('data-hotel-id') || 'unknown';
+    console.log('[AccorExt search diag] first capture OK: hotel=', hotelId,
+      'base=', data.basePrice, 'tax=', data.tax, 'nights=', data.nights, 'currency=', data.currency);
   }
 
   sendPriceSnapshot(card, data);
@@ -2188,26 +2207,26 @@ async function injectAllRatePanels() {
   const roomSelector = findRoomsSelector();
   const rooms = document.querySelectorAll(roomSelector);
 
-  // Single-shot diagnostic summary so we don't have to grep scattered logs.
-  // Remove once detail-page processing is confirmed stable on current markup.
-  try {
-    const cacheKeys = Object.keys(cache);
-    const bestOfferKeys = cacheKeys.filter(k => k.startsWith('BestOfferInfo:'));
-    const firstRoom = rooms[0];
-    const firstOfferClass = firstRoom && [...firstRoom.classList].find(c => c.startsWith('hotel-offer-'));
-    const firstOfferId = firstOfferClass && firstOfferClass.replace('hotel-offer-', '');
-    const firstOfferInCache = firstOfferId ? !!cache['BestOfferInfo:' + firstOfferId] : null;
-    console.log('[AccorExt diag] roomSelector=', roomSelector,
-      'rooms=', rooms.length,
-      'visibleRooms=', [...rooms].filter(r => r.offsetHeight > 0).length,
-      'cacheKeys=', cacheKeys.length,
-      'bestOfferKeys=', bestOfferKeys.length,
-      'pageOfferIds=', validOfferIds.size,
-      'firstOfferId=', firstOfferId,
-      'firstOfferInCache=', firstOfferInCache,
-      'sampleCacheKey=', bestOfferKeys[0],
-      'firstRoomClasses=', firstRoom ? [...firstRoom.classList].slice(0, 8) : null);
-  } catch (e) { console.warn('[AccorExt diag] summary error:', e); }
+  // One-shot diagnostic so the console isn't flooded on every mutation tick.
+  if (!window.__accorExtDiagLogged) {
+    window.__accorExtDiagLogged = true;
+    try {
+      const cacheKeys = Object.keys(cache);
+      const bestOfferKeys = cacheKeys.filter(k => k.startsWith('BestOfferInfo:'));
+      const firstRoom = rooms[0];
+      const firstOfferClass = firstRoom && [...firstRoom.classList].find(c => c.startsWith('hotel-offer-'));
+      const firstOfferId = firstOfferClass && firstOfferClass.replace('hotel-offer-', '');
+      const firstOfferInCache = firstOfferId ? !!cache['BestOfferInfo:' + firstOfferId] : null;
+      console.log('[AccorExt diag]',
+        'roomSelector=', roomSelector,
+        'rooms=', rooms.length,
+        'cacheKeys=', cacheKeys.length,
+        'bestOfferKeys=', bestOfferKeys.length,
+        'pageOfferIds=', validOfferIds.size,
+        'firstOfferId=', firstOfferId,
+        'firstOfferInCache=', firstOfferInCache);
+    } catch (e) { console.warn('[AccorExt diag] summary error:', e); }
+  }
 
   rooms.forEach((roomEl, i) => {
     if (roomEl.querySelector('.ext-all-rates-panel')) return;
