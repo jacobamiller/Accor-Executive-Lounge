@@ -762,10 +762,14 @@ window.fetch = function(url, opts) {
             }
             const arrays = [];
             findArrays(json, '', 0, arrays);
-            console.log('[AccorExt HotelPage probe] op=', opName,
-              'topKeys=', topKeys,
-              'dataKeys=', dataKeys,
-              'arrays=', arrays);
+            // Stringify so the full structure copy-pastes from the console
+            // (devtools otherwise collapses object arrays to Array(N)).
+            console.log('[AccorExt HotelPage probe]', JSON.stringify({
+              op: opName,
+              topKeys,
+              dataKeys,
+              arrays,
+            }, null, 2));
           } catch (e) { console.warn('[AccorExt HotelPage probe] parse error:', e); }
         }).catch(e => console.warn('[AccorExt HotelPage probe] clone error:', e)))
           .catch(e => console.warn('[AccorExt HotelPage probe] result error:', e));
