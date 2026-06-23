@@ -26,16 +26,25 @@ async function ensureUserId() {
 
 // ==================== SUPABASE REST API ====================
 async function postToSupabase(table, rows) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify(rows)
-  });
+  let res;
+  try {
+    res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(rows)
+    });
+  } catch (e) {
+    // Network failure — Supabase project paused/unreachable, or offline. Treat
+    // as a recoverable flush failure (callers buffer + retry) instead of letting
+    // it bubble up as an uncaught "Failed to fetch" rejection.
+    console.warn(`[Supabase] ${table} flush network error (project paused?):`, e && e.message ? e.message : e);
+    return false;
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     console.warn(`[Supabase] ${table} flush failed (${res.status}):`, text);
@@ -86,13 +95,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     ensureUserId().then(uid => {
       const row = { ...msg.data, user_id: uid };
       console.log('[AccorExt] bg: flushing calendar to Supabase now...');
-      postToSupabase('calendar_snapshots', [row]).then(ok => {
+      return postToSupabase('calendar_snapshots', [row]).then(ok => {
         console.log('[AccorExt] bg: calendar flush', ok ? 'OK' : 'FAILED');
         if (!ok) {
           calendarBuffer.push(msg.data);
           scheduleFlush();
         }
       });
+    }).catch(e => {
+      // Last-resort guard so a rejection here never surfaces as uncaught.
+      console.warn('[AccorExt] bg: calendar flush error, will retry:', e);
+      calendarBuffer.push(msg.data);
+      scheduleFlush();
     });
     sendResponse({ ok: true });
   }

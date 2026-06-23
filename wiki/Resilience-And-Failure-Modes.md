@@ -113,6 +113,7 @@ Implementation notes:
 | Symptom | Most likely cause | First place to check |
 |---------|-------------------|----------------------|
 | Popup shows "No data found" but you've been browsing | Supabase paused; or userId mismatch | Supabase dashboard for pause status; then `chrome.storage.local.get('accorUserId')` |
+| `Failed to fetch` at `background.js` (postToSupabase) + nothing collected | Supabase project paused — its `<ref>.supabase.co` host stops resolving (DNS NXDOMAIN) | Resume the project in the Supabase dashboard. Quick check: `curl https://<ref>.supabase.co/rest/v1/` fails to resolve while `supabase.com` works. `postToSupabase` now swallows the network error and buffers for retry instead of throwing |
 | Rate panels missing on detail page | Synthetic-cache ingestion isn't firing | Console for `[AccorExt] ingested N offers from HotelPageHot` |
 | Tax-inclusive prices missing on search cards | `parsePriceData()` sub-selectors broken | Re-enable `DEBUG=true` and look for `dbg('No tax data ...')` |
 | Calendar tab empty | Calendar response interception not firing, or rows missing in `calendar_snapshots` table | Console for `[AccorExt] Calendar response keys:` |
