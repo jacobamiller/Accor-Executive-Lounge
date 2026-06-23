@@ -696,13 +696,44 @@ function generateWeekStarts(rangeStart, rangeEnd) {
 async function fetchCalendarRange(fetchUrl, fetchOpts, reqBody, from, to) {
   const body = JSON.parse(JSON.stringify(reqBody));
   body.variables = { ...body.variables, from: from, to: to };
-  const opts = { ...fetchOpts, body: JSON.stringify(body) };
-  try {
-    const res = await _origFetch.call(window, fetchUrl, opts);
-    if (!res.ok) { console.warn('[AccorExt] auto-fetch failed:', res.status, from, to); return; }
-    const text = await res.text();
-    handleCalendarResponse(JSON.stringify(body), text);
-  } catch (e) { console.warn('[AccorExt] auto-fetch error:', e, from, to); }
+  // Preserve the page's auth context on the replayed request. Same-origin
+  // fetches default to 'same-origin' credentials, but explicitly carry the
+  // page's own credentials choice (defaulting to 'include') so the GraphQL
+  // endpoint still authenticates us — a missing session is what surfaces as 401.
+  const opts = {
+    ...fetchOpts,
+    body: JSON.stringify(body),
+    credentials: (fetchOpts && fetchOpts.credentials) || 'include',
+  };
+
+  // Up to 2 attempts. A 401/403/429 on a replayed background request is usually
+  // a transient session/token-refresh race or soft rate-limit, so one short
+  // backoff retry recovers most of them. Returns a status the caller uses to
+  // decide whether to remember the week and whether to keep going.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await _origFetch.call(window, fetchUrl, opts);
+      if (res.ok) {
+        const text = await res.text();
+        handleCalendarResponse(JSON.stringify(body), text);
+        return { ok: true };
+      }
+      const auth = res.status === 401 || res.status === 403 || res.status === 429;
+      // Re-firing a non-auth failure (e.g. 4xx/5xx) immediately won't help.
+      if (!auth) {
+        console.warn('[AccorExt] auto-fetch failed:', res.status, from, to);
+        return { ok: false, status: res.status };
+      }
+      console.warn('[AccorExt] auto-fetch failed:', res.status, from, to,
+        attempt < 2 ? '(retrying)' : '(giving up)');
+      if (attempt < 2) { await new Promise(r => setTimeout(r, 1500)); continue; }
+      return { ok: false, status: res.status, auth: true };
+    } catch (e) {
+      console.warn('[AccorExt] auto-fetch error:', e, from, to);
+      return { ok: false, error: e };
+    }
+  }
+  return { ok: false };
 }
 
 function calFetchKey(vars) {
@@ -737,11 +768,20 @@ async function autoFetchFullRange(fetchUrl, fetchOpts, reqBody) {
     console.log('[AccorExt] Auto-fetching', needed.length, 'week(s) for', key);
 
     for (const weekStart of needed) {
-      fetched.add(weekStart);
       const ws = new Date(weekStart);
       const we = new Date(ws);
       we.setDate(we.getDate() + 6);
-      await fetchCalendarRange(fetchUrl, fetchOpts, reqBody, weekStart, dateStr(we));
+      const result = await fetchCalendarRange(fetchUrl, fetchOpts, reqBody, weekStart, dateStr(we));
+      // Only remember weeks we actually retrieved. A failed week stays unmarked
+      // so it gets retried on the next calendar request instead of being lost.
+      if (result && result.ok) {
+        fetched.add(weekStart);
+      } else if (result && result.auth) {
+        // Auth/rate-limit failure: the remaining weeks will fail the same way,
+        // so stop hammering the endpoint and let them retry on next navigation.
+        console.warn('[AccorExt] auto-fetch aborted after auth failure; will retry later');
+        break;
+      }
       await new Promise(r => setTimeout(r, 300));
     }
     console.log('[AccorExt] Auto-fetch complete for', key);

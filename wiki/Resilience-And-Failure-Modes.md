@@ -34,6 +34,19 @@ Three independent issues compounded into a confusing "nothing works" state. Unta
 
 ---
 
+## Calendar auto-fetch — 401 on replayed requests
+
+**Symptom:** Console warning `[AccorExt] auto-fetch failed: 401 <from> <to>` and some calendar weeks never populate.
+
+**Cause:** `autoFetchFullRange()` replays the page's `Calendar` GraphQL request for surrounding weeks (`fetchCalendarRange`, `page-bridge.js`). A replayed week can come back `401` when the page's session/auth token is mid-refresh or the rapid batch trips a soft rate-limit. Two compounding bugs made this worse:
+
+- Weeks were added to the `fetched` set **before** the request ran, so a 401'd week was marked done and never retried — even on later navigation.
+- The loop kept firing the remaining ~20 weeks after a 401, all failing the same way and risking harder rate-limiting.
+
+**Fix:** `fetchCalendarRange` now returns a status, retries `401/403/429` once after a 1.5s backoff, and explicitly carries the page's credentials (`include`). The loop only marks a week `fetched` on success and aborts the batch on a persistent auth failure so the unfetched weeks retry on the next calendar request.
+
+---
+
 ## What survived vs. what broke
 
 | Layer | Stability |
@@ -93,5 +106,6 @@ Implementation notes:
 | Rate panels missing on detail page | Synthetic-cache ingestion isn't firing | Console for `[AccorExt] ingested N offers from HotelPageHot` |
 | Tax-inclusive prices missing on search cards | `parsePriceData()` sub-selectors broken | Re-enable `DEBUG=true` and look for `dbg('No tax data ...')` |
 | Calendar tab empty | Calendar response interception not firing, or rows missing in `calendar_snapshots` table | Console for `[AccorExt] Calendar response keys:` |
+| Some calendar weeks missing / `auto-fetch failed: 401` | Replayed calendar request hit a session/token refresh or soft rate-limit | `fetchCalendarRange`/`autoFetchFullRange` in `page-bridge.js`; weeks now retry on next navigation |
 | Everything broken on already-open tabs after extension reload | Content scripts orphaned ("Extension context invalidated") | Close tab and reopen; `safeSendMessage` warns once when this happens |
 | GraphQL ops still firing but synth cache empty | Response shape changed (`data.hotelOffers.offersSelection.offers` moved) | Add a one-shot `console.log(json)` to `ingestHotelPageHot` and inspect |
