@@ -1422,11 +1422,21 @@ function getNightsFromUrl() {
 // invalidated" and the snapshot is dropped. Detect this once and log a clear
 // instruction, so silent data loss becomes obvious.
 let _extensionContextInvalidated = false;
+// Called once when we detect the content script has been orphaned (extension
+// reloaded/updated under an open tab). Warns the user and shuts down all
+// recurring work — the route-watch interval and the mutation observer — so the
+// dead script goes quiet instead of re-running init()/injectAllRatePanels() on
+// every poll and re-hitting these warnings forever. See shutdownExtension().
+function markContextInvalidated() {
+  if (_extensionContextInvalidated) return;
+  _extensionContextInvalidated = true;
+  console.warn('[AccorExt] Extension context invalidated — reload this tab to resume price capture.');
+  try { shutdownExtension(); } catch (e) { /* shutdown is best-effort */ }
+}
 function safeSendMessage(msg, callback) {
   if (_extensionContextInvalidated) return;
   if (!chrome.runtime || !chrome.runtime.id) {
-    _extensionContextInvalidated = true;
-    console.warn('[AccorExt] Extension context invalidated — reload this tab to resume price capture.');
+    markContextInvalidated();
     return;
   }
   try {
@@ -1434,8 +1444,7 @@ function safeSendMessage(msg, callback) {
     else chrome.runtime.sendMessage(msg);
   } catch (e) {
     if (e && /Extension context invalidated/i.test(e.message || '')) {
-      _extensionContextInvalidated = true;
-      console.warn('[AccorExt] Extension context invalidated — reload this tab to resume price capture.');
+      markContextInvalidated();
     } else {
       console.warn('[AccorExt] sendMessage error:', e);
     }
@@ -2165,6 +2174,7 @@ let showAllRatesRetryCount = 0;
 const SHOW_ALL_RATES_MAX_RETRIES = 3;
 
 async function injectAllRatePanels() {
+  if (_extensionContextInvalidated) return; // orphaned script; stop the retry chain
   dbg('injectAllRatePanels() called');
   const cache = await extractApolloCacheViaPageScript();
   if (!cache) {
@@ -2411,6 +2421,7 @@ function injectToggleButton() {
 let observer = null;
 let observerDebounceTimer = null;
 let pendingMutations = [];
+let routeWatchTimer = null;
 
 function processMutations() {
   // The extension was reloaded out from under this tab, orphaning this content
@@ -2495,8 +2506,21 @@ function stopObserver() {
   }
 }
 
+// Stop every recurring driver this content script owns. Called once from
+// markContextInvalidated() so an orphaned script (extension reloaded under an
+// open tab) stops doing work entirely until the tab is reloaded.
+function shutdownExtension() {
+  stopObserver();
+  if (routeWatchTimer) {
+    clearInterval(routeWatchTimer);
+    routeWatchTimer = null;
+  }
+}
+
 // ==================== INIT ====================
 function init() {
+  // Orphaned content script (extension reloaded under this tab) — do nothing.
+  if (_extensionContextInvalidated) return;
   // Only run on booking pages
   if (!/\/booking\//i.test(location.pathname)) return;
   dbg('init() running - found booking page');
@@ -2556,7 +2580,8 @@ init();
   // Only watch for route changes if we started on a booking page
   if (!/\/booking\//i.test(location.pathname)) return;
   let lastUrl = location.href;
-  setInterval(() => {
+  routeWatchTimer = setInterval(() => {
+    if (_extensionContextInvalidated) return;
     if (location.href === lastUrl) return;
     lastUrl = location.href;
     // Clear tax-processed flags so prices recompute on date/currency changes
