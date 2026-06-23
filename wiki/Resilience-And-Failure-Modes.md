@@ -45,6 +45,16 @@ Three independent issues compounded into a confusing "nothing works" state. Unta
 
 **Fix:** `fetchCalendarRange` now returns a status, retries `401/403/429` once after a 1.5s backoff, and explicitly carries the page's credentials (`include`). The loop only marks a week `fetched` on success and aborts the batch on a persistent auth failure so the unfetched weeks retry on the next calendar request.
 
+## Calendar auto-fetch — Imperva IP ban (Error 15)
+
+**Symptom:** Accor serves an "Access denied / Error 15" page with a *Proxy IP* and *Incident ID* (Imperva/Incapsula). The whole site is unreachable, not just the extension's requests.
+
+**Cause:** The auto-fetch batch fired ~17–20 `Calendar` GraphQL POSTs spaced 300ms apart — a ~6s burst of machine-paced identical requests. To Imperva that's a scraper signature, so it hard-blocks the client IP. Datacenter/VPN/proxy IPs trip this much faster than residential ones.
+
+**Mitigation (current):** The batch is throttled in `page-bridge.js` — a randomized 4–10s gap between requests plus an initial randomized pre-roll (`CAL_FETCH_*` constants, `calFetchDelay()`), so it no longer looks like a burst. This is deliberately slow; there's a `TODO(perf)` to speed it back up with a smarter strategy (fetch only weeks near the viewed date, gate behind tab idle, adaptive backoff on soft rate-limit signals).
+
+**If already banned:** the block is on the IP/session, not the account. Drop the VPN/proxy (use residential), stop hitting the site, and it usually clears within minutes–hours.
+
 ---
 
 ## What survived vs. what broke
@@ -107,5 +117,6 @@ Implementation notes:
 | Tax-inclusive prices missing on search cards | `parsePriceData()` sub-selectors broken | Re-enable `DEBUG=true` and look for `dbg('No tax data ...')` |
 | Calendar tab empty | Calendar response interception not firing, or rows missing in `calendar_snapshots` table | Console for `[AccorExt] Calendar response keys:` |
 | Some calendar weeks missing / `auto-fetch failed: 401` | Replayed calendar request hit a session/token refresh or soft rate-limit | `fetchCalendarRange`/`autoFetchFullRange` in `page-bridge.js`; weeks now retry on next navigation |
+| `Access denied / Error 15` from Accor (Imperva) | Auto-fetch burst tripped bot protection; worse on VPN/proxy IPs | Drop VPN/proxy and wait it out; auto-fetch is now throttled (`CAL_FETCH_*` in `page-bridge.js`) |
 | Everything broken on already-open tabs after extension reload | Content scripts orphaned ("Extension context invalidated") | Close tab and reopen; `safeSendMessage` warns once and `processMutations` then disconnects the observer so the dead script goes quiet |
 | GraphQL ops still firing but synth cache empty | Response shape changed (`data.hotelOffers.offersSelection.offers` moved) | Add a one-shot `console.log(json)` to `ingestHotelPageHot` and inspect |

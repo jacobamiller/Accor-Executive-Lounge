@@ -678,6 +678,24 @@ function findKey(obj, key) {
 let _calFetchedRanges = {}; // key -> Set of "YYYY-MM-DD" week starts already fetched
 let _calFetchInFlight = {}; // key -> boolean
 
+// Throttle config. The old 300ms pacing fired ~20 GraphQL POSTs in ~6s, which
+// reads as scraping to Accor's Imperva bot-protection and got users IP-banned
+// (Error 15). We now pace requests with a long, randomized gap plus an initial
+// jittered delay so the traffic looks far less machine-like.
+//
+// TODO(perf): this is deliberately slow to dodge the ban. Once we have a safer
+// strategy (e.g. fetch only weeks near the viewed date, gate behind tab idle,
+// or watch for soft rate-limit signals and back off adaptively) we can tighten
+// these delays back down. Tracking issue: speed up calendar auto-fetch.
+const CAL_FETCH_MIN_DELAY_MS = 4000;   // floor between requests
+const CAL_FETCH_MAX_DELAY_MS = 10000;  // ceiling between requests
+const CAL_FETCH_START_JITTER_MS = 5000; // random pre-roll before the first one
+
+function calFetchDelay() {
+  return CAL_FETCH_MIN_DELAY_MS +
+    Math.random() * (CAL_FETCH_MAX_DELAY_MS - CAL_FETCH_MIN_DELAY_MS);
+}
+
 function dateStr(d) {
   return d.toISOString().slice(0, 10);
 }
@@ -765,7 +783,12 @@ async function autoFetchFullRange(fetchUrl, fetchOpts, reqBody) {
     const needed = weeks.filter(w => !fetched.has(w));
     if (needed.length === 0) { _calFetchInFlight[key] = false; return; }
 
-    console.log('[AccorExt] Auto-fetching', needed.length, 'week(s) for', key);
+    console.log('[AccorExt] Auto-fetching', needed.length, 'week(s) for', key,
+      '(throttled, this is slow on purpose)');
+
+    // Don't fire immediately on the heels of the user's real request — let the
+    // page settle and add randomized spacing so the batch isn't a tight burst.
+    await new Promise(r => setTimeout(r, Math.random() * CAL_FETCH_START_JITTER_MS));
 
     for (const weekStart of needed) {
       const ws = new Date(weekStart);
@@ -782,7 +805,7 @@ async function autoFetchFullRange(fetchUrl, fetchOpts, reqBody) {
         console.warn('[AccorExt] auto-fetch aborted after auth failure; will retry later');
         break;
       }
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, calFetchDelay()));
     }
     console.log('[AccorExt] Auto-fetch complete for', key);
   } catch (e) {
