@@ -107,5 +107,5 @@ Implementation notes:
 | Tax-inclusive prices missing on search cards | `parsePriceData()` sub-selectors broken | Re-enable `DEBUG=true` and look for `dbg('No tax data ...')` |
 | Calendar tab empty | Calendar response interception not firing, or rows missing in `calendar_snapshots` table | Console for `[AccorExt] Calendar response keys:` |
 | Some calendar weeks missing / `auto-fetch failed: 401` | Replayed calendar request hit a session/token refresh or soft rate-limit | `fetchCalendarRange`/`autoFetchFullRange` in `page-bridge.js`; weeks now retry on next navigation |
-| Everything broken on already-open tabs after extension reload | Content scripts orphaned ("Extension context invalidated") | Close tab and reopen; `safeSendMessage` warns once when this happens |
+| Everything broken on already-open tabs after extension reload | Content scripts orphaned ("Extension context invalidated") | Close tab and reopen; `safeSendMessage` warns once and `processMutations` then disconnects the observer so the dead script goes quiet |
 | GraphQL ops still firing but synth cache empty | Response shape changed (`data.hotelOffers.offersSelection.offers` moved) | Add a one-shot `console.log(json)` to `ingestHotelPageHot` and inspect |

@@ -2413,6 +2413,12 @@ let observerDebounceTimer = null;
 let pendingMutations = [];
 
 function processMutations() {
+  // The extension was reloaded out from under this tab, orphaning this content
+  // script. Stop all DOM work so it goes quiet instead of re-processing every
+  // SPA mutation forever (each batch otherwise re-arms the observer below and
+  // re-enters safeSendMessage). The one-time invalidation warning has already
+  // told the user to reload the tab.
+  if (_extensionContextInvalidated) { stopObserver(); pendingMutations = []; return; }
   observer.disconnect();
   // Process accumulated mutations for new hotel cards
   for (const mutation of pendingMutations) {
