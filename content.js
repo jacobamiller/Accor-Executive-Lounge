@@ -860,7 +860,7 @@ function injectStyles() {
     }
     .ext-rate-card {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      grid-template-columns: 1.5fr 1fr 1fr 0.7fr 1fr;
       align-items: center;
       gap: 8px;
       padding: 6px 8px;
@@ -901,6 +901,17 @@ function injectStyles() {
     }
     .ext-rate-policy.non-refundable {
       color: #d32f2f;
+    }
+    .ext-rate-points {
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .ext-rate-points.points-ok {
+      color: #6a1b9a;
+    }
+    .ext-rate-points.points-no {
+      color: #999;
+      font-weight: 400;
     }
     .ext-rate-price {
       text-align: right;
@@ -2122,17 +2133,46 @@ function buildRatePanel(offers, nights) {
     mealCol.className = 'ext-rate-meal';
     mealCol.textContent = mealPlan;
 
-    // Column 3: Cancellation policy
+    // Column 3: Cancellation policy. NO_CANCELLATION is the code Accor actually
+    // sends for non-refundable rates; matching only on the label's "non" left
+    // the colour at the mercy of Accor's wording (and of the page language).
     const policyCol = document.createElement('div');
     policyCol.className = 'ext-rate-policy';
-    if (cancellationCode === 'FREE_CANCELLATION' || cancellation.toLowerCase().includes('free')) {
+    const freeCancel = cancellationCode === 'FREE_CANCELLATION'
+      || (!cancellationCode && cancellation.toLowerCase().includes('free'));
+    const noCancel = cancellationCode === 'NO_CANCELLATION'
+      || cancellationCode === 'NON_REFUNDABLE'
+      || (!cancellationCode && cancellation.toLowerCase().includes('non'));
+    if (freeCancel) {
       policyCol.classList.add('free-cancel');
-    } else if (cancellationCode === 'NON_REFUNDABLE' || cancellation.toLowerCase().includes('non')) {
+    } else if (noCancel) {
       policyCol.classList.add('non-refundable');
     }
-    policyCol.textContent = cancellation;
+    // Fall back to the code's meaning when Accor sends one with no label.
+    policyCol.textContent = cancellation
+      || (freeCancel ? 'Free cancellation' : (noCancel ? 'Non-refundable' : ''));
 
-    // Column 4: Prices with tax-inclusive total
+    // Column 4: Can you put points against this rate?
+    // Accor ships a per-offer ladder of point amounts it will convert into a
+    // discount (loyaltyRewardPoint.thresholds). No ladder = cash only. This is
+    // Accor's own per-rate answer, so it beats guessing from the price or the
+    // cancellation policy — non-refundable room rates accept points just fine;
+    // it's the package/promo rates that are usually excluded.
+    const pointsThresholds = (offer.loyaltyRewardPoint && offer.loyaltyRewardPoint.thresholds) || [];
+    const pointsCol = document.createElement('div');
+    pointsCol.className = 'ext-rate-points ' + (pointsThresholds.length ? 'points-ok' : 'points-no');
+    if (pointsThresholds.length) {
+      const maxPoints = pointsThresholds[pointsThresholds.length - 1].points;
+      pointsCol.textContent = '✓ Points';
+      pointsCol.title = 'Points accepted on this rate, in steps of '
+        + pointsThresholds.map(t => t.points).slice(0, 2).join(' / ')
+        + ' up to ' + maxPoints.toLocaleString() + ' points';
+    } else {
+      pointsCol.textContent = 'Cash only';
+      pointsCol.title = 'Accor offers no points conversion on this rate';
+    }
+
+    // Column 5: Prices with tax-inclusive total
     const priceCol = document.createElement('div');
     priceCol.className = 'ext-rate-price';
 
@@ -2178,6 +2218,7 @@ function buildRatePanel(offers, nights) {
     card.appendChild(nameCol);
     card.appendChild(mealCol);
     card.appendChild(policyCol);
+    card.appendChild(pointsCol);
     card.appendChild(priceCol);
     panel.appendChild(card);
   });
