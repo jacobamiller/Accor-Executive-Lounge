@@ -1977,6 +1977,17 @@ function getPageOfferIds() {
   return ids;
 }
 
+// The room code an offer belongs to. Accor used to inline the accommodation on
+// every offer; newer payloads carry only `product.id`, which holds the same
+// room code. Read both so either version groups correctly. page-bridge.js
+// normalizes this too — this is the second line of defence, for offers that
+// reach us straight from Apollo's cache.
+function getOfferRoomCode(offer) {
+  return (offer.accommodation && offer.accommodation.code)
+    || (offer.product && offer.product.id)
+    || null;
+}
+
 // Pre-index all BestOfferInfo entries by accommodation ref, code, and name (called once per cache)
 function buildOfferIndex(cache) {
   const byRef = new Map();   // accommodation.__ref → [offers]
@@ -1985,15 +1996,19 @@ function buildOfferIndex(cache) {
   for (const k of Object.keys(cache)) {
     if (!k.startsWith('BestOfferInfo:')) continue;
     const v = cache[k];
-    if (!v.accommodation) continue;
+    const code = getOfferRoomCode(v);
+    // No room identity at all — nothing to group this offer under.
+    if (!v.accommodation && !code) continue;
     const rateRef = (v.rate && v.rate.__ref) || '';
-    const rateInfo = cache[rateRef] || {};
+    // Apollo normalizes rate behind a __ref; GraphQL inlines it and
+    // page-bridge.js pre-sets resolvedRate. Only the __ref path needs a
+    // lookup — overwriting unconditionally used to blank out every rate label.
+    const rateInfo = cache[rateRef] || v.resolvedRate || v.rate || {};
     const entry = Object.assign({}, v, { resolvedRate: rateInfo, cacheKey: k });
-    const ref = v.accommodation.__ref;
+    const ref = v.accommodation && v.accommodation.__ref;
     if (ref) { if (!byRef.has(ref)) byRef.set(ref, []); byRef.get(ref).push(entry); }
-    const code = v.accommodation.code;
     if (code) { if (!byCode.has(code)) byCode.set(code, []); byCode.get(code).push(entry); }
-    const name = v.accommodation.name;
+    const name = v.accommodation && v.accommodation.name;
     if (name) { if (!byName.has(name)) byName.set(name, []); byName.get(name).push(entry); }
   }
   return { byRef, byCode, byName };
@@ -2007,14 +2022,14 @@ function getOffersForRoom(roomEl, cache, validOfferIds, offerIndex) {
   }
   const bestOfferId = offerClass.replace('hotel-offer-', '');
   const bestOffer = cache['BestOfferInfo:' + bestOfferId];
-  if (!bestOffer || !bestOffer.accommodation) {
+  if (!bestOffer) {
     dbg('No BestOfferInfo:' + bestOfferId, 'in cache');
     return [];
   }
 
   const accommRef = (bestOffer.accommodation && bestOffer.accommodation.__ref) || null;
-  const accommCode = (bestOffer.accommodation && bestOffer.accommodation.code) || null;
-  const roomName = bestOffer.accommodation.name;
+  const accommCode = getOfferRoomCode(bestOffer);
+  const roomName = bestOffer.accommodation && bestOffer.accommodation.name;
 
   dbg('Room match criteria — ref:', accommRef, 'code:', accommCode, 'name:', roomName);
 

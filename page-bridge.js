@@ -524,6 +524,17 @@ function findVueApp() {
 window.__accorExtSyntheticCache = window.__accorExtSyntheticCache || {};
 window.__accorExtAccommodationByCode = window.__accorExtAccommodationByCode || {};
 
+// The room a HotelPageHot offer belongs to. Accor used to inline the whole
+// accommodation on the offer (`offer.accommodation.code`); it now ships only a
+// product reference (`offer.product.id`) whose value is the same room code
+// HotelPageCold keys its accommodations by. Read both so either payload
+// version resolves.
+function offerRoomCode(offer) {
+  return (offer.accommodation && offer.accommodation.code)
+    || (offer.product && offer.product.id)
+    || null;
+}
+
 function ingestHotelPageCold(json) {
   const accs = json && json.data && json.data.hotel && json.data.hotel.accommodations;
   if (!Array.isArray(accs)) return;
@@ -547,11 +558,16 @@ function ingestHotelPageHot(json) {
   if (!Array.isArray(offers)) return;
   for (const offer of offers) {
     if (!offer || !offer.id) continue;
-    const code = offer.accommodation && offer.accommodation.code;
+    const code = offerRoomCode(offer);
     const accFromCold = code && window.__accorExtAccommodationByCode[code];
-    const enrichedAccommodation = accFromCold
-      ? Object.assign({}, offer.accommodation, { name: accFromCold.name })
-      : offer.accommodation;
+    // Always hand content.js a populated `accommodation` — it groups the rates
+    // of one room by this code, so a missing one drops every rate panel.
+    const enrichedAccommodation = Object.assign(
+      {},
+      offer.accommodation || null,
+      code ? { code } : null,
+      accFromCold ? { name: accFromCold.name } : null
+    );
     // buildOfferIndex in content.js resolves offer.rate via __ref and writes
     // the result to entry.resolvedRate. Since GraphQL inlines rate here, we
     // pre-set resolvedRate so the __ref dance is a harmless no-op.
