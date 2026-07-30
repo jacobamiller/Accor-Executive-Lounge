@@ -2446,8 +2446,28 @@ function processMutations() {
   // told the user to reload the tab.
   if (_extensionContextInvalidated) { stopObserver(); pendingMutations = []; return; }
   observer.disconnect();
+  // Everything below runs between a disconnect and a re-observe. Any throw in
+  // here used to skip the re-observe at the bottom, permanently switching off
+  // every feature on the page (silently — no badges, no panels, no prices)
+  // until the tab was reloaded. Re-observe in a finally so one bad DOM shape
+  // costs us a single batch instead of the whole session.
+  try {
+    processMutationBatch();
+  } catch (e) {
+    console.error('[AccorExt] processMutations error:', e);
+  } finally {
+    // stopObserver() may have run inside the batch (context invalidated).
+    if (observer) observer.observe(document.body, { subtree: true, childList: true });
+  }
+}
+
+function processMutationBatch() {
+  // Drain first: a throw mid-batch must not leave these queued for the next
+  // batch to re-process forever.
+  const batch = pendingMutations;
+  pendingMutations = [];
   // Process accumulated mutations for new hotel cards
-  for (const mutation of pendingMutations) {
+  for (const mutation of batch) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
       if (node.classList && node.classList.contains('result-list-item') && node.hasAttribute('data-hotel-id')) {
@@ -2468,7 +2488,6 @@ function processMutations() {
       }
     }
   }
-  pendingMutations = [];
   // Update counter when new cards are added
   updateCounter();
   // Try to inject toggle button if it hasn't been placed yet
@@ -2497,8 +2516,6 @@ function processMutations() {
   }
   // Benefits box on both search and detail pages
   injectBenefitsBox();
-  // Resume observing
-  observer.observe(document.body, { subtree: true, childList: true });
 }
 
 function startObserver() {
@@ -2506,15 +2523,26 @@ function startObserver() {
   observer = new MutationObserver((mutations) => {
     pendingMutations.push(...mutations);
     if (observerDebounceTimer) return;
-    observerDebounceTimer = requestAnimationFrame(() => {
+    // setTimeout, not requestAnimationFrame: rAF callbacks do not fire while a
+    // tab is hidden, so the first mutation in a background tab latched this
+    // debounce flag and never cleared it — every later mutation then hit the
+    // early return above and no observer-driven injection ever ran again.
+    // Open a hotel page in a background tab (cmd+click from the results list)
+    // and the detail page stayed bare: no rate panels, no badges, no prices.
+    // Background timers are throttled to ~1s, which is fine for batching here.
+    observerDebounceTimer = setTimeout(() => {
       observerDebounceTimer = null;
       processMutations();
-    });
+    }, 100);
   });
   observer.observe(document.body, { subtree: true, childList: true });
 }
 
 function stopObserver() {
+  if (observerDebounceTimer) {
+    clearTimeout(observerDebounceTimer);
+    observerDebounceTimer = null;
+  }
   if (observer) {
     observer.disconnect();
     observer = null;
@@ -2533,6 +2561,14 @@ function shutdownExtension() {
 }
 
 // ==================== INIT ====================
+// Run one startup step in isolation. init() drives every feature plus the
+// MutationObserver that keeps them alive on this SPA, so a throw in an early
+// step used to abort all the later ones — including startObserver(), which
+// left the page with nothing but our stylesheet.
+function step(name, fn) {
+  try { fn(); } catch (e) { console.error('[AccorExt] init step "' + name + '" failed:', e); }
+}
+
 function init() {
   // Orphaned content script (extension reloaded under this tab) — do nothing.
   if (_extensionContextInvalidated) return;
@@ -2541,22 +2577,26 @@ function init() {
   dbg('init() running - found booking page');
   loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
   showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') !== 'false';
-  injectStyles();
-  highlightCards();
-  injectToggleButton();
-  applyFilterToAllCards();
-  injectDetailPageBadges();
-  injectShowAllRatesButton();
+  step('injectStyles', injectStyles);
+  step('highlightCards', () => highlightCards());
+  step('injectToggleButton', injectToggleButton);
+  step('applyFilterToAllCards', applyFilterToAllCards);
+  step('injectDetailPageBadges', injectDetailPageBadges);
+  step('injectShowAllRatesButton', injectShowAllRatesButton);
   if (showAllRatesActive) {
     showAllRatesRetryCount = 0;
-    injectAllRatePanels();
+    step('injectAllRatePanels', injectAllRatePanels);
   }
-  addTaxToDetailPageRooms();
-  startObserver();
+  step('addTaxToDetailPageRooms', addTaxToDetailPageRooms);
+  // Not only from processMutations/detectAndCacheLoyaltyTier: with a tier
+  // already cached in sessionStorage, detection early-returns and the box
+  // would wait on a mutation that may never come.
+  step('injectBenefitsBox', injectBenefitsBox);
+  step('startObserver', startObserver);
   // Loyalty detection: restore cached tier or detect async
   detectedLoyaltyTier = sessionStorage.getItem('execLoyaltyTier') || null;
   loyaltyDetectionDone = detectedLoyaltyTier !== null;
-  detectAndCacheLoyaltyTier(); // async, non-blocking
+  step('detectAndCacheLoyaltyTier', detectAndCacheLoyaltyTier); // async, non-blocking
 }
 
 // Load fresh hotel data from background.js cache (synced from Supabase)
@@ -2605,7 +2645,6 @@ init();
     });
     // Invalidate caches on route change
     _isDetailPageCached = null;
-    _cachedRoomSelector = null;
     // Clean up injected panels on route change
     removeAllRatePanels();
     document.querySelectorAll('.exec-detail-tax').forEach(el => el.remove());
