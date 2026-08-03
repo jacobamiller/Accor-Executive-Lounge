@@ -1,15 +1,27 @@
 {
   "schema_version": 1,
-  "description": "Cities with researched lounge-benefit coverage. The extension uses this to tell an unresearched city from a city with genuinely no benefits.",
+  "description": "Cities with researched lounge-benefit coverage. The extension uses this to tell an unresearched city from a city with genuinely no benefits. researched_in_depth vs properties shows coverage depth honestly.",
   "researched_cities": [
+    {
+      "city_slug": "bangkok",
+      "city": "Bangkok",
+      "country": "Thailand",
+      "properties": 41,
+      "researched_in_depth": 14,
+      "on_official_lounge_list": 13,
+      "unofficial_finds": 1,
+      "not_yet_researched": 10,
+      "last_verified": "2026-08-03"
+    },
     {
       "city_slug": "phnom-penh",
       "city": "Phnom Penh",
       "country": "Cambodia",
       "properties": 5,
+      "researched_in_depth": 4,
       "on_official_lounge_list": 2,
-      "with_benefit": 4,
-      "unknown": 1,
+      "unofficial_finds": 2,
+      "not_yet_researched": 0,
       "last_verified": "2026-08-03"
     }
   ]
