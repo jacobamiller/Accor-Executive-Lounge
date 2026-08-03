@@ -1,0 +1,66 @@
+# Supabase free-tier projects pause after 7 consecutive days with no database
+# activity. A paused project does not error — the extension just silently falls
+# back to the hardcoded Sets in content.js, so nobody notices until the data is
+# stale. This job issues one trivial read a day to keep the project counted as
+# active.
+#
+# IMPORTANT: this PREVENTS a pause, it cannot undo one. Supabase requires a
+# manual restore from the dashboard once a project has actually paused.
+#
+# The key below is the publishable/anon key already shipped inside the extension
+# (see config.js) and scoped by RLS, so committing it here exposes nothing new.
+# To use a repo secret instead, set SUPABASE_URL / SUPABASE_ANON_KEY under
+# Settings > Secrets and variables > Actions; the step prefers them when present.
+
+name: Supabase keep-alive
+
+on:
+  schedule:
+    # 06:17 UTC daily. Deliberately not on the hour — GitHub's scheduler is
+    # heavily contended at :00 and jobs get delayed or dropped.
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+# Stop overlapping runs if a previous one is queued behind a delayed schedule.
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Supabase
+        env:
+          URL: ${{ secrets.SUPABASE_URL || 'https://nkikqvujmhiahryrdgxr.supabase.co' }}
+          KEY: ${{ secrets.SUPABASE_ANON_KEY || 'sb_publishable_hGaIbHuTdlBiVU1kvZ-sjQ_AvtRwDUR' }}
+        run: |
+          set -euo pipefail
+
+          # Retry a few times so one transient network blip doesn't raise a
+          # false alarm — a real pause fails consistently, not once.
+          for attempt in 1 2 3; do
+            code=$(curl -sS -o /tmp/body.txt -w '%{http_code}' \
+              "$URL/rest/v1/lounge_hotels?select=hotel_id&limit=1" \
+              -H "apikey: $KEY" \
+              -H "Authorization: Bearer $KEY" \
+              --max-time 30 || echo "000")
+
+            if [ "$code" = "200" ]; then
+              echo "OK - Supabase responded 200 on attempt $attempt"
+              echo "Response: $(head -c 200 /tmp/body.txt)"
+              exit 0
+            fi
+
+            echo "Attempt $attempt failed with HTTP $code"
+            head -c 300 /tmp/body.txt || true
+            echo
+            [ "$attempt" -lt 3 ] && sleep 20
+          done
+
+          echo
+          echo "::error::Supabase did not respond 200 after 3 attempts (last: HTTP $code)."
+          echo "If the project has paused, restore it from the Supabase dashboard —"
+          echo "this workflow can prevent a pause but cannot undo one."
+          exit 1
