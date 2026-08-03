@@ -1,0 +1,6 @@
+# macOS
+.DS_Store
+
+# Locally downloaded GitHub CLI (~55MB) — tooling, not part of the extension
+gh_*.zip
+gh_extracted/
