@@ -736,8 +736,40 @@ let FREE_BREAKFAST_HOTEL_IDS = new Set([
   'C6S2', 'C6U2', 'C6U4', 'C6U9', 'C7B4', 'C7F0'
 ]);
 
+// ==================== BENEFIT DATA ====================
+// Researched lounge / lounge-like benefits, keyed by Accor hotel code. Synced
+// from the hotel_benefits Supabase table; empty until a city is researched.
+// Source of truth is data/benefits/<city>.json in this repo.
+let HOTEL_BENEFITS = {};
+// city_slug -> count of researched properties. Lets the UI distinguish
+// "this city has no perks" from "nobody has researched this city yet".
+let BENEFIT_CITIES = {};
+
+// A property is worth surfacing if it is on Accor's official lounge list OR we
+// found any lounge-like benefit. Paid offers still count as findable, but the
+// panel labels them clearly so a discount never reads as a status perk.
+function hasAnyBenefit(hotelId) {
+  if (EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId)) return true;
+  const b = HOTEL_BENEFITS[hotelId];
+  if (!b) return false;
+  const t = b.benefit_type;
+  return Array.isArray(t) ? t.length > 0 : (t && t !== 'unknown');
+}
+
+// True only for perks we found that Accor does not publish on its lounge list.
+function isUnofficialBenefit(hotelId) {
+  return !EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId) && hasAnyBenefit(hotelId);
+}
+
 // ==================== TOGGLE STATE ====================
-let loungeFilterActive = sessionStorage.getItem('execLoungeToggleActive') === 'true';
+// Three states: off -> official lounges only -> official + researched perks.
+// Migrates the old boolean key so existing sessions keep working.
+const FILTER_MODES = ['off', 'official', 'all'];
+let loungeFilterMode = sessionStorage.getItem('execLoungeFilterMode')
+  || (sessionStorage.getItem('execLoungeToggleActive') === 'true' ? 'official' : 'off');
+if (!FILTER_MODES.includes(loungeFilterMode)) loungeFilterMode = 'off';
+// Kept as a derived alias so existing call sites reading it still behave.
+let loungeFilterActive = loungeFilterMode !== 'off';
 let showAllRatesActive = sessionStorage.getItem('execShowAllRatesActive') !== 'false';
 let detectedLoyaltyTier = sessionStorage.getItem('execLoyaltyTier') || null;
 let loyaltyDetectionDone = detectedLoyaltyTier !== null;
@@ -771,6 +803,61 @@ function injectStyles() {
       min-width: 126px;
       text-align: center;
       box-sizing: border-box;
+    }
+    .exec-benefit-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: #6b4fbb;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      padding: 2px 6px;
+      border-radius: 0 0 0 4px;
+      z-index: 12;
+      cursor: pointer;
+    }
+    .exec-lounge-badge--clickable { cursor: pointer; }
+    .exec-benefit-panel {
+      position: relative;
+      margin: 6px 8px 8px;
+      padding: 8px 10px;
+      background: #f6f4fc;
+      border: 1px solid #d9d1f0;
+      border-radius: 6px;
+      font-size: 11px;
+      line-height: 1.45;
+      color: #1a1a4e;
+      z-index: 13;
+    }
+    .exec-benefit-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 1px 0;
+    }
+    .exec-benefit-row span:first-child {
+      color: #6a6a8a;
+      text-transform: capitalize;
+      flex: 0 0 auto;
+    }
+    .exec-benefit-row span:last-child { text-align: right; }
+    .exec-benefit-warn {
+      background: #fff3cd;
+      border: 1px solid #ffe08a;
+      color: #6b5200;
+      border-radius: 4px;
+      padding: 4px 6px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .exec-benefit-notes {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #d9d1f0;
+      color: #4a4a6a;
+      font-size: 10px;
     }
     .free-breakfast-badge {
       position: absolute;
@@ -1198,6 +1285,127 @@ function addBreakfastBadge(card) {
   card.appendChild(badge);
 }
 
+// ==================== BENEFIT BADGE + DETAIL PANEL ====================
+const BENEFIT_LABELS = {
+  club_lounge: 'Club lounge',
+  undeclared_club_lounge: 'Undeclared club lounge',
+  happy_hour: 'Happy hour',
+  discounted_happy_hour: 'Happy hour (paid)',
+  afternoon_tea: 'Afternoon tea',
+  evening_canapes: 'Evening canapés',
+  chocolate_hour: 'Chocolate hour',
+  rooftop_drinks: 'Rooftop drinks',
+  snacks_soft_drinks: 'Snacks & soft drinks',
+  welcome_drink: 'Welcome drink'
+};
+
+const ACCESS_LABELS = {
+  room_category_only: 'Club room / suite guests only',
+  room_category_or_platinum: 'Club room — Platinum reported, unconfirmed',
+  platinum_only: 'ALL Platinum',
+  platinum_discretionary: 'Platinum, at hotel discretion',
+  all_guests: 'All guests',
+  unknown: 'Unknown'
+};
+
+const CONFIDENCE_LABELS = {
+  verified_primary: 'Verified on hotel’s own page',
+  multiple_reports: 'Multiple independent reports',
+  single_report: 'Single report — treat as weak',
+  unknown: 'No evidence found'
+};
+
+function benefitPanelHtml(b) {
+  const rows = [];
+  if (b.lounge_name) rows.push(['Lounge', b.lounge_name]);
+
+  const types = Array.isArray(b.benefit_type) ? b.benefit_type : [];
+  if (types.length) {
+    rows.push(['Benefits', types.map(t => BENEFIT_LABELS[t] || t).join(' · ')]);
+  }
+
+  const hours = b.hours && typeof b.hours === 'object' ? b.hours : null;
+  if (hours) {
+    for (const [k, v] of Object.entries(hours)) {
+      if (!v || v === 'unknown') continue;
+      rows.push([k.replace(/_/g, ' '), String(v)]);
+    }
+  }
+
+  if (b.alcohol_detail) rows.push(['Alcohol', b.alcohol_detail]);
+  else if (b.alcohol) rows.push(['Alcohol', String(b.alcohol) === 'true' ? 'Yes' : String(b.alcohol)]);
+
+  rows.push(['Access', ACCESS_LABELS[b.access_basis] || b.access_basis || 'Unknown']);
+  rows.push(['Official list', b.on_official_lounge_list === true ? 'Yes' : 'No']);
+  rows.push(['Confidence', CONFIDENCE_LABELS[b.confidence] || b.confidence || 'Unknown']);
+  if (b.last_verified) rows.push(['Verified', b.last_verified]);
+
+  const esc = s => String(s).replace(/[&<>"]/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  // A paid benefit must never read as a free perk.
+  const paid = String(b.complimentary) === 'false';
+  const warn = paid
+    ? '<div class="exec-benefit-warn">Paid offer — not a complimentary status perk.</div>'
+    : (b.confidence === 'single_report'
+        ? '<div class="exec-benefit-warn">Based on a single report — confirm with the hotel.</div>'
+        : '');
+
+  return warn + rows.map(([k, v]) =>
+    `<div class="exec-benefit-row"><span>${esc(k)}</span><span>${esc(v)}</span></div>`
+  ).join('') + (b.notes ? `<div class="exec-benefit-notes">${esc(b.notes)}</div>` : '');
+}
+
+function toggleBenefitPanel(card, hotelId) {
+  const existing = card.querySelector('.exec-benefit-panel');
+  if (existing) { existing.remove(); return; }
+  const b = HOTEL_BENEFITS[hotelId];
+  if (!b) return;
+  const panel = document.createElement('div');
+  panel.className = 'exec-benefit-panel';
+  panel.innerHTML = benefitPanelHtml(b);
+  panel.addEventListener('click', e => e.stopPropagation());
+  card.appendChild(panel);
+}
+
+function addBenefitBadge(card) {
+  const hotelId = card.getAttribute('data-hotel-id');
+  if (!hotelId) return;
+  if (card.getAttribute('data-benefit-badge') === 'true') return;
+  const b = HOTEL_BENEFITS[hotelId];
+  if (!b) return;
+  card.setAttribute('data-benefit-badge', 'true');
+
+  // Only badge as a "perk" when it is NOT already on the official lounge list —
+  // otherwise the existing lounge badge covers it and we'd double up.
+  if (isUnofficialBenefit(hotelId)) {
+    if (!EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId) && !FREE_BREAKFAST_HOTEL_IDS.has(hotelId)) {
+      card.classList.add('free-breakfast-only');
+    }
+    const badge = document.createElement('div');
+    badge.className = 'exec-benefit-badge';
+    badge.textContent = String(b.complimentary) === 'false' ? 'Perk (paid)' : 'Perk ◇';
+    badge.title = 'Researched benefit — click for detail';
+    badge.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      toggleBenefitPanel(card, hotelId);
+    });
+    card.appendChild(badge);
+    return;
+  }
+
+  // On the official list and we have detail: make the lounge badge clickable.
+  const loungeBadge = card.querySelector('.exec-lounge-badge');
+  if (loungeBadge) {
+    loungeBadge.classList.add('exec-lounge-badge--clickable');
+    loungeBadge.title = 'Researched detail available — click';
+    loungeBadge.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      toggleBenefitPanel(card, hotelId);
+    });
+  }
+}
+
 function addPromoBadge(card) {
   if (card.getAttribute('data-exec-promo-processed') === 'true') return;
   card.setAttribute('data-exec-promo-processed', 'true');
@@ -1228,6 +1436,7 @@ function highlightCards(root) {
   cards.forEach(card => {
     highlightCard(card);
     addBreakfastBadge(card);
+    addBenefitBadge(card);
     addPromoBadge(card);
     addTaxInclusivePrice(card);
   });
@@ -2408,10 +2617,16 @@ function toggleShowAllRates() {
 }
 
 // ==================== TOGGLE FEATURE ====================
+function cardPassesFilter(hotelId) {
+  if (loungeFilterMode === 'off') return true;
+  if (loungeFilterMode === 'official') return EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId);
+  return hasAnyBenefit(hotelId); // 'all'
+}
+
 function applyFilterToCard(card) {
   const hotelId = card.getAttribute('data-hotel-id');
   if (!hotelId) return;
-  if (loungeFilterActive && !EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId)) {
+  if (!cardPassesFilter(hotelId)) {
     card.classList.add('exec-lounge-hidden');
   } else {
     card.classList.remove('exec-lounge-hidden');
@@ -2430,12 +2645,23 @@ function updateCounter() {
   const allCards = document.querySelectorAll('div.result-list-item[data-hotel-id]');
   const totalCards = allCards.length;
   let loungeCount = 0;
+  let perkCount = 0;
   allCards.forEach(card => {
     const hotelId = card.getAttribute('data-hotel-id');
     if (EXECUTIVE_LOUNGE_HOTEL_IDS.has(hotelId)) loungeCount++;
+    else if (isUnofficialBenefit(hotelId)) perkCount++;
   });
-  if (loungeFilterActive) {
+
+  const researched = Object.keys(HOTEL_BENEFITS).length > 0;
+  if (loungeFilterMode === 'all') {
+    counter.textContent = `Showing ${loungeCount + perkCount} of ${totalCards} \u2014 ${loungeCount} official lounge, ${perkCount} researched perk`;
+  } else if (loungeFilterMode === 'official') {
     counter.textContent = `Showing ${loungeCount} of ${totalCards} hotels with Executive Lounge`;
+  } else if (perkCount > 0) {
+    counter.textContent = `${loungeCount} of ${totalCards} have an Executive Lounge \u00b7 ${perkCount} more with researched perks`;
+  } else if (!researched) {
+    // Don't imply "no perks here" when the truth is "nobody has looked yet".
+    counter.textContent = `${loungeCount} of ${totalCards} hotels have an Executive Lounge \u00b7 perks not yet researched for this city`;
   } else {
     counter.textContent = `${loungeCount} of ${totalCards} hotels have an Executive Lounge`;
   }
@@ -2444,17 +2670,24 @@ function updateCounter() {
 function updateToggleButton() {
   const btn = document.getElementById('exec-lounge-toggle-btn');
   if (!btn) return;
-  if (loungeFilterActive) {
-    btn.classList.add('active');
+  btn.classList.toggle('active', loungeFilterMode !== 'off');
+  if (loungeFilterMode === 'official') {
     btn.textContent = '\u2713 Lounge Only';
+    btn.title = 'Showing Accor\u2019s official Executive Lounge list. Click for lounges + researched perks.';
+  } else if (loungeFilterMode === 'all') {
+    btn.textContent = '\u2713 Lounges + Perks';
+    btn.title = 'Showing official lounges plus researched unofficial perks. Click to clear.';
   } else {
-    btn.classList.remove('active');
     btn.textContent = 'Lounge Only';
+    btn.title = 'Click to filter to Accor\u2019s official Executive Lounge list.';
   }
 }
 
 function toggleFilter() {
-  loungeFilterActive = !loungeFilterActive;
+  const next = (FILTER_MODES.indexOf(loungeFilterMode) + 1) % FILTER_MODES.length;
+  loungeFilterMode = FILTER_MODES[next];
+  loungeFilterActive = loungeFilterMode !== 'off';
+  sessionStorage.setItem('execLoungeFilterMode', loungeFilterMode);
   sessionStorage.setItem('execLoungeToggleActive', loungeFilterActive.toString());
   updateToggleButton();
   applyFilterToAllCards();
@@ -2554,6 +2787,7 @@ function processMutationBatch() {
         node.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
           highlightCard(card);
           addBreakfastBadge(card);
+          addBenefitBadge(card);
           addPromoBadge(card);
           applyFilterToCard(card);
           addTaxInclusivePrice(card);
@@ -2684,6 +2918,11 @@ try {
       FREE_BREAKFAST_HOTEL_IDS = new Set(response.breakfastIds);
       dbg('Loaded', FREE_BREAKFAST_HOTEL_IDS.size, 'breakfast IDs from Supabase cache');
     }
+    if (response.benefits) {
+      HOTEL_BENEFITS = response.benefits;
+      BENEFIT_CITIES = response.benefitCities || {};
+      dbg('Loaded', Object.keys(HOTEL_BENEFITS).length, 'benefit records from Supabase cache');
+    }
     // Re-process cards with fresh data (fixes race condition with init())
     document.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
       card.removeAttribute('data-exec-lounge-highlighted');
@@ -2694,10 +2933,22 @@ try {
       card.classList.remove('free-breakfast-only');
       const oldBfBadge = card.querySelector('.free-breakfast-badge');
       if (oldBfBadge) oldBfBadge.remove();
+      // Benefits arrive in this same response, so clear their badge/panel too —
+      // otherwise data-benefit-badge blocks the re-render and cards keep the
+      // pre-sync state.
+      card.removeAttribute('data-benefit-badge');
+      const oldPerkBadge = card.querySelector('.exec-benefit-badge');
+      if (oldPerkBadge) oldPerkBadge.remove();
+      const oldPanel = card.querySelector('.exec-benefit-panel');
+      if (oldPanel) oldPanel.remove();
       highlightCard(card);
       addBreakfastBadge(card);
+      addBenefitBadge(card);
     });
-    updateCounter();
+    // 'all' mode filters on benefit data that only just arrived, so re-apply
+    // rather than only refreshing the count.
+    applyFilterToAllCards();
+    updateToggleButton();
   });
 } catch (e) { /* fallback to hardcoded Sets */ }
 

@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "description": "Lounge and lounge-like benefit records for Accor properties, researched per city. One file per city at data/benefits/<city-slug>.json containing a JSON array of these records. Git history is the audit trail; last_verified marks staleness per record.",
+  "join_key": "accor_hotel_code",
+  "note_on_join_key": "accor_hotel_code is the only reliable join to the extension runtime. Hotel names differ between Accor's lounge page, the catalog API and third-party sites (e.g. 'Novotel Phnom Penh BKK1' vs 'BKK 1'). Never join on name.",
+
+  "required_fields": [
+    "hotel_name", "brand", "city", "country", "accor_hotel_code",
+    "status", "on_official_lounge_list", "confidence", "last_verified", "evidence_source"
+  ],
+
+  "fields": {
+    "hotel_name": "string — display name as shown on all.accor.com",
+    "brand": "string — Sofitel, Novotel, TRIBE, ibis budget, Raffles, ...",
+    "city": "string — human-readable city name",
+    "country": "string",
+    "accor_hotel_code": "string — Accor hotel ID, the join key to the extension",
+
+    "status": {
+      "type": "enum",
+      "values": {
+        "verified": "Key claims confirmed against a first-party source (hotel or Accor page)",
+        "partially_verified": "Some claims first-party, others rest on third-party reports",
+        "verified_absent": "Confirmed the property has no lounge and no club room tier",
+        "unverified": "Not yet checked against any source"
+      }
+    },
+
+    "on_official_lounge_list": {
+      "type": "boolean | \"unverified\"",
+      "note": "Resolve from the newest data/lounge/YYYY-MM.json rather than guessing. Only use \"unverified\" if no extraction is available."
+    },
+
+    "sells_club_room_category": "boolean — strong proxy for a physical lounge existing",
+    "club_room_categories": "string[] — e.g. [\"Executive Room\", \"Superior Club Room\"]",
+    "has_physical_lounge": "boolean | \"unknown\"",
+    "lounge_name": "string | null — include floor/location if known, e.g. \"Club Millesime (ground floor as of Feb 2026)\"",
+
+    "benefit_type": {
+      "type": "string[] | \"unknown\"",
+      "values": [
+        "club_lounge",
+        "undeclared_club_lounge",
+        "happy_hour",
+        "discounted_happy_hour",
+        "afternoon_tea",
+        "evening_canapes",
+        "chocolate_hour",
+        "rooftop_drinks",
+        "snacks_soft_drinks",
+        "welcome_drink"
+      ],
+      "note": "discounted_happy_hour is NOT a free perk — the UI must not badge it as one."
+    },
+
+    "access_basis": {
+      "type": "enum",
+      "values": {
+        "room_category_only": "Hotel states club-room/suite guests only, no loyalty route",
+        "room_category_or_platinum": "Room category published; Platinum access reported but not hotel-published",
+        "platinum_only": "Status-based access, no room category involved",
+        "platinum_discretionary": "Granted case by case, e.g. at check-in discretion",
+        "all_guests": "Open to every guest",
+        "unknown": "No evidence either way — use this rather than guessing"
+      }
+    },
+
+    "hours": "object | \"unknown\" — free-form keys such as lounge_open, afternoon_tea, evening_cocktails, happy_hour, rooftop_bar. State the source inline when windows conflict.",
+
+    "alcohol": "boolean | \"unknown\"",
+    "alcohol_detail": "string — what is served and whether it is included or paid",
+    "complimentary": "boolean | \"unknown\" — false means the benefit exists but costs money",
+
+    "confidence": {
+      "type": "enum",
+      "values": {
+        "verified_primary": "Confirmed on a hotel-owned or Accor-owned page",
+        "multiple_reports": "Two or more independent third-party reports agree",
+        "single_report": "One review or forum post only — treat as weak",
+        "unknown": "No evidence found either way"
+      }
+    },
+
+    "last_verified": "string — ISO date YYYY-MM-DD",
+    "evidence_source": "string[] — URLs, plus repo paths like 'data/lounge/2026-08.json' for official-list facts",
+    "notes": "string — free text. Record what could NOT be verified, not just what could."
+  },
+
+  "research_rules": [
+    "Say \"unknown\" rather than \"none\" where no evidence was found either way. Absence of a review mentioning a perk is not evidence the perk is absent.",
+    "Resolve on_official_lounge_list from the newest data/lounge extraction — it is authoritative and free.",
+    "Do not attribute wording to a source without reading that source. If a claim rests on a search summary rather than the page itself, say so in notes.",
+    "Mark discounted or paid offers with complimentary:false — never let a paid happy hour read as a status perk.",
+    "Prefer first-party hours over aggregator hours when they conflict, and say which was chosen.",
+    "Note relocations and rebrands (e.g. a lounge moving floors) so stale reviews can be discounted."
+  ]
+}
