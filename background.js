@@ -209,7 +209,8 @@ async function syncHotelData() {
     if (Object.keys(byHotel).length > 0) {
       await chrome.storage.local.set({
         accorBenefits: byHotel,
-        accorBenefitCities: cities
+        accorBenefitCities: cities,
+        accorBenefitVersion: await fetchBenefitVersion()
       });
     }
   } catch (e) {
@@ -217,23 +218,67 @@ async function syncHotelData() {
   }
 }
 
+// A ~200 byte fingerprint of the benefits table: row count plus the newest
+// updated_at. Researching a new city changes both, so comparing this is enough
+// to know a full pull is needed without doing one.
+async function fetchBenefitVersion() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/hotel_benefits?select=updated_at&order=updated_at.desc&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        Prefer: 'count=exact',
+        Range: '0-0'
+      }
+    }
+  );
+  if (!res.ok) throw new Error(`benefit version ${res.status}`);
+  const total = (res.headers.get('content-range') || '').split('/')[1] || '?';
+  const rows = await res.json();
+  return `${total}:${rows[0] ? rows[0].updated_at : 'none'}`;
+}
+
+// How often to spend ~200 bytes checking whether the benefits table changed.
+// Low enough that newly researched cities appear within minutes, high enough
+// that rapid service worker restarts don't hammer the API.
+const VERSION_CHECK_MS = 10 * 60 * 1000;
+
 async function syncIfNeeded() {
   const result = await chrome.storage.local.get([
-    'accorHotelSyncTime', 'accorLoungeIds', 'accorBreakfastIds', 'accorBenefits'
+    'accorHotelSyncTime', 'accorLoungeIds', 'accorBreakfastIds', 'accorBenefits',
+    'accorBenefitVersion', 'accorVersionCheckTime'
   ]);
   const lastSync = result.accorHotelSyncTime || 0;
   const stale = Date.now() - lastSync > SYNC_INTERVAL_MS;
 
   // A dataset can be missing while the timestamp is fresh: the benefit sync is
   // caught separately, so if hotel_benefits didn't exist (or failed) on an
-  // earlier run, the lounge/breakfast half still stamped the clock. Time alone
-  // would then suppress the fetch for a full day and every city would report
-  // "perks not yet researched" while the data sat there. Never let the interval
-  // gate a first successful fetch of any dataset.
+  // earlier run, the lounge/breakfast half still stamped the clock. Never let
+  // the interval gate a first successful fetch of any dataset.
   const missing = !result.accorLoungeIds || !result.accorBreakfastIds || !result.accorBenefits;
 
   if (stale || missing) {
     syncHotelData();
+    return;
+  }
+
+  // Present and fresh — but "fresh" only means recently fetched, not current.
+  // Researching a new city adds rows that clients would otherwise not see for a
+  // full day. Checking a cheap fingerprint closes that gap for ~200 bytes
+  // instead of the ~65KB a full pull costs.
+  const lastCheck = result.accorVersionCheckTime || 0;
+  if (Date.now() - lastCheck < VERSION_CHECK_MS) return;
+
+  try {
+    const version = await fetchBenefitVersion();
+    await chrome.storage.local.set({ accorVersionCheckTime: Date.now() });
+    if (version !== result.accorBenefitVersion) {
+      console.log('[Supabase] Benefit data changed, re-syncing:', result.accorBenefitVersion, '->', version);
+      syncHotelData();
+    }
+  } catch (e) {
+    console.warn('[Supabase] Benefit version check failed:', e);
   }
 }
 
