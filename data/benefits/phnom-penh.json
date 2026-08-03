@@ -1,0 +1,154 @@
+[
+  {
+    "hotel_name": "Novotel Phnom Penh BKK 1",
+    "brand": "Novotel",
+    "city": "Phnom Penh",
+    "country": "Cambodia",
+    "accor_hotel_code": "B2E8",
+    "status": "verified",
+    "on_official_lounge_list": true,
+    "sells_club_room_category": true,
+    "club_room_categories": ["Executive Room", "Executive Suite"],
+    "has_physical_lounge": true,
+    "lounge_name": "Executive Lounge (20th floor)",
+    "benefit_type": ["club_lounge", "afternoon_tea", "happy_hour"],
+    "access_basis": "room_category_or_platinum",
+    "hours": {
+      "lounge_open": "11:00-20:00 daily (confirmed on hotel's own F&B page)",
+      "afternoon_tea": "14:00-16:00 (confirmed on hotel's own F&B page)",
+      "evening_cocktails": "17:30-19:30 (confirmed on hotel's own F&B page)"
+    },
+    "alcohol": true,
+    "alcohol_detail": "Evening cocktails 17:30-19:30. Accor's official lounge-list policy independently confirms alcohol service by barring under-21s from happy hour.",
+    "complimentary": true,
+    "confidence": "verified_primary",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (Accor official lounge list, extracted 2026-08-03)",
+      "https://www.novotelphnompenhbkk1.com/restaurants-bars/executive-lounge/",
+      "https://theshutterwhale.com/blog/2025/8/17/hotel-review-novotel-phnom-penh-bkk-1-deluxe-room",
+      "https://www.frequenttraveller.com.au/novotel-phnom-penh-bkk-1/",
+      "https://www.tripadvisor.com/ShowUserReviews-g293940-d27160669-r1046433978-Novotel_Phnom_Penh_BKK_1-Phnom_Penh.html"
+    ],
+    "notes": "ON the official Accor lounge list — confirmed against today's extraction, not inferred. Accor's verbatim policy text: 'Child policy: no minimum age if with adult., except for happy hour. Kid and under age of 21 guests are not allowed for happy hour.' That under-21 bar is useful in two ways: it corroborates that alcohol is served, and it means children are admitted to the lounge generally but NOT during the evening cocktail window. Hours, afternoon tea and evening cocktail windows all verified verbatim on the hotel's own page. The 20th-floor location is NOT on that page but is corroborated by independent reviews. ACCESS IS THE OPEN QUESTION: the hotel's page ties the lounge strictly to 'guests staying in Executive Rooms & Suites' with no mention of loyalty tiers, while third-party reviews report it being complimentary for ALL Platinum and above. Whether a Platinum in a base room is admitted without an upgrade remains unconfirmed by any primary source — confirm by email before booking a Superior/Deluxe. Name note: the official lounge list spells this 'Novotel Phnom Penh BKK1' (no space); the catalog API uses 'BKK 1'."
+  },
+  {
+    "hotel_name": "Sofitel Phnom Penh Phokeethra",
+    "brand": "Sofitel",
+    "city": "Phnom Penh",
+    "country": "Cambodia",
+    "accor_hotel_code": "6526",
+    "status": "verified",
+    "on_official_lounge_list": true,
+    "sells_club_room_category": true,
+    "club_room_categories": ["Superior Club Room", "Luxury Club Room", "Junior Suite", "Prestige Suite", "Opera Suite"],
+    "has_physical_lounge": true,
+    "lounge_name": "Club Millesime (ground floor as of Feb 2026)",
+    "benefit_type": ["club_lounge", "happy_hour"],
+    "access_basis": "room_category_or_platinum",
+    "hours": {
+      "lounge_open": "11:00-22:00 daily (confirmed on hotel's own F&B page)",
+      "evening_cocktails": "unknown — no published window found; FlyerTalk references evening cocktails without stating times"
+    },
+    "alcohol": true,
+    "alcohol_detail": "Free-flow sparkling wine, stated as complimentary on the hotel's own page. FlyerTalk additionally reports wine, cocktails and canapes in the evening plus a drink voucher for Platinum.",
+    "complimentary": true,
+    "confidence": "verified_primary",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (Accor official lounge list, extracted 2026-08-03)",
+      "https://www.sofitel-phnompenh-phokeethra.com/restaurants-bars/clubmillesime/",
+      "https://sofitel.accor.com/en/hotels/6526/Club-Millesime.html",
+      "https://sofitel.accor.com/en/club-lounge.html",
+      "https://www.flyertalk.com/forum/accor-all-accor-live-limitless/1183253-review-sofitel-phokeetra-phnom-penh-2.html"
+    ],
+    "notes": "ON the official Accor lounge list — confirmed against today's extraction. Accor's policy text is permissive: 'Child policy: no minimum age if with adult.' Hours (11:00-22:00) and complimentary free-flow sparkling wine both verified verbatim on the hotel's own page. CORRECTION to an earlier draft: the Accor-hosted page at sofitel.accor.com/en/hotels/6526/Club-Millesime.html does NOT contain the wording 'Club and Suite guests, as well as VIP members', nor does it label the venue 'our Executive Lounge' — it says only 'Book a room or suite with Club Millésime access'. The Executive-Lounge framing comes from the brand-level page (sofitel.accor.com/en/club-lounge.html), not the property page. Both property pages state access as Club and Suite guests only. Platinum access is supported by FlyerTalk reports (most recent Feb 2026: upgrade, lounge access, drink voucher) rather than by any hotel-published policy. RELOCATION CONFIRMED: the lounge moved from the 12th floor to the ground floor — reviews praising the 12th-floor view are stale. Le Bar's weekend free-flow session and 'Sparkling Hour' are PAID promotions, not status perks."
+  },
+  {
+    "hotel_name": "Raffles Hotel Le Royal Phnom Penh",
+    "brand": "Raffles",
+    "city": "Phnom Penh",
+    "country": "Cambodia",
+    "accor_hotel_code": "A5E0",
+    "status": "verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": "unknown",
+    "lounge_name": null,
+    "benefit_type": ["discounted_happy_hour"],
+    "access_basis": "unknown",
+    "hours": {
+      "happy_hour": "18:00-20:00 daily (confirmed verbatim on Raffles' own page: 'between 6.00pm and 8.00pm')"
+    },
+    "alcohol": true,
+    "alcohol_detail": "40% off selected drinks at The Elephant Bar. Raffles' own page says 'selected drinks' — it does NOT itemise cocktails, beers and spirits.",
+    "complimentary": false,
+    "confidence": "verified_primary",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (absent from Accor official lounge list, extracted 2026-08-03)",
+      "https://www.raffles.com/phnom-penh/experiences/happy-hour-at-the-elephant-bar/",
+      "https://www.forbestravelguide.com/hotels/phnom-penh-cambodia/raffles-hotel-le-royal",
+      "https://all.accor.com/hotel/A5E0/index.en.shtml"
+    ],
+    "notes": "NOT a free perk — flag clearly in the app. CONFIRMED ABSENT from the official Accor lounge list (Cambodia has exactly three entries: Novotel BKK1, Sofitel Phokeethra, and Sofitel Angkor in Siem Reap). The Elephant Bar happy hour is a discount, not a lounge substitute. Times verified verbatim at 18:00-20:00; an earlier draft cited a conflicting 16:00-21:00 from Forbes Travel Guide — prefer the 18:00-20:00 figure as it comes from Raffles directly. ACCESS BASIS DOWNGRADED to unknown: the Raffles page does not state whether the happy hour is open to the public or restricted to hotel guests, so the earlier 'all_guests' claim was an inference, not a sourced fact. No Executive/Club/Privilege room category found. Whether Raffles Le Royal grants any lounge-equivalent to ALL Platinum is UNKNOWN, not none. The traditional Raffles afternoon tea is a paid F&B outlet."
+  },
+  {
+    "hotel_name": "TRIBE Phnom Penh Post Office Square",
+    "brand": "TRIBE",
+    "city": "Phnom Penh",
+    "country": "Cambodia",
+    "accor_hotel_code": "B5M5",
+    "status": "partially_verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": false,
+    "lounge_name": null,
+    "benefit_type": ["welcome_drink"],
+    "access_basis": "platinum_discretionary",
+    "hours": {
+      "rooftop_bar": "Khmer Funk Sky Bar, 17:00 until late daily (paid outlet)"
+    },
+    "alcohol": "unknown",
+    "alcohol_detail": "One Platinum review refers to 'my complimentary drinks' at the rooftop bar without specifying whether alcohol was included",
+    "complimentary": true,
+    "confidence": "single_report",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (absent from Accor official lounge list, extracted 2026-08-03)",
+      "https://www.tripadvisor.com/ShowUserReviews-g293940-d24193192-r856957866-Tribe_Phnom_Penh_Post_Office_Square-Phnom_Penh.html",
+      "https://all.accor.com/hotel/B5M5/index.en.shtml",
+      "https://www.flyertalk.com/forum/accor-all-accor-live-limitless/2147935-tribe-phnom-penh-post-office-square.html"
+    ],
+    "notes": "CONFIRMED ABSENT from the official Accor lounge list. No lounge and no Executive/Club room tier — inventory is Comfy/Comfort rooms, Comfort Suite, Junior Suite. Appears on Accor's complimentary-breakfast list (verified in today's extraction), so breakfast is a real benefit here even though lounge access is not. The single TripAdvisor report of 'complimentary drinks' at the rooftop bar most likely describes the standard ALL welcome-drink benefit rather than a recurring happy-hour window — treat as a voucher, not a lounge substitute. A separate FlyerTalk Platinum stay report mentions only a room upgrade, no drinks perk. I could not independently open the cited TripAdvisor review to re-confirm its wording, so the 'complimentary drinks' quote rests on the earlier draft rather than on my own reading. Rooftop outlet was rebranded from Hemisphere to Khmer Funk Sky Bar — older reviews use the old name."
+  },
+  {
+    "hotel_name": "ibis budget Phnom Penh Riverside",
+    "brand": "ibis budget",
+    "city": "Phnom Penh",
+    "country": "Cambodia",
+    "accor_hotel_code": "B9Q9",
+    "status": "verified_absent",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": false,
+    "lounge_name": null,
+    "benefit_type": "unknown",
+    "access_basis": "unknown",
+    "hours": "unknown",
+    "alcohol": "unknown",
+    "complimentary": "unknown",
+    "confidence": "unknown",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (absent from Accor official lounge list, extracted 2026-08-03)",
+      "data/breakfast/2026-08.json (present on Accor complimentary-breakfast list)",
+      "https://all.accor.com/hotel/B9Q9/index.en.shtml",
+      "https://www.tripadvisor.com/Hotel_Review-g293940-d25164294-Reviews-Ibis_budget_Phnom_Penh_Riverside-Phnom_Penh.html"
+    ],
+    "notes": "CONFIRMED ABSENT from the official Accor lounge list. 315 rooms, single standard tier, no lounge and no Executive/Club category — absent from the brand's product structure, so these two fields are genuinely false rather than unknown. Does appear on Accor's complimentary-breakfast list (verified today), which is the only confirmed benefit here. Everything else remains UNKNOWN: keyword searches surfaced no mention of happy hour, free drinks, canapes or evening snacks, but absence of a review mentioning it is not evidence it does not exist. Aggregator data on this property is unreliable — several listings conflate it with a nearby Toyoko Inn."
+  }
+]

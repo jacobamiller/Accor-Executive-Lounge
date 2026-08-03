@@ -150,6 +150,33 @@ async function fetchHotelIds(table, idColumn) {
   return ids;
 }
 
+// Full benefit records, keyed by hotel_id. Unlike the ID lists these carry
+// detail (hours, access basis, confidence) that the detail panel renders.
+async function fetchBenefits() {
+  const rows = [];
+  const limit = 1000;
+  let offset = 0;
+  while (true) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/hotel_benefits?select=*&order=id&offset=${offset}&limit=${limit}`,
+      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    if (!res.ok) throw new Error(`hotel_benefits ${res.status}`);
+    const page = await res.json();
+    if (page.length === 0) break;
+    rows.push(...page);
+    offset += limit;
+    if (page.length < limit) break;
+  }
+  const byHotel = {};
+  const cities = {};
+  for (const r of rows) {
+    if (r.hotel_id) byHotel[r.hotel_id] = r;
+    if (r.city_slug) cities[r.city_slug] = (cities[r.city_slug] || 0) + 1;
+  }
+  return { byHotel, cities };
+}
+
 async function syncHotelData() {
   try {
     const loungeIds = await fetchHotelIds('lounge_hotels', 'hotel_id');
@@ -164,6 +191,20 @@ async function syncHotelData() {
   } catch (e) {
     console.warn('[Supabase] Hotel data sync failed:', e);
   }
+
+  // Benefits are optional — the table may not exist yet. A failure here must
+  // not take down the lounge/breakfast sync above, which is the core feature.
+  try {
+    const { byHotel, cities } = await fetchBenefits();
+    if (Object.keys(byHotel).length > 0) {
+      await chrome.storage.local.set({
+        accorBenefits: byHotel,
+        accorBenefitCities: cities
+      });
+    }
+  } catch (e) {
+    console.warn('[Supabase] Benefit data sync failed (table may not exist yet):', e);
+  }
 }
 
 async function syncIfNeeded() {
@@ -177,10 +218,14 @@ async function syncIfNeeded() {
 // Respond to content.js requesting hotel data
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'GET_HOTEL_DATA') {
-    chrome.storage.local.get(['accorLoungeIds', 'accorBreakfastIds']).then(result => {
+    chrome.storage.local.get([
+      'accorLoungeIds', 'accorBreakfastIds', 'accorBenefits', 'accorBenefitCities'
+    ]).then(result => {
       sendResponse({
         loungeIds: result.accorLoungeIds || null,
-        breakfastIds: result.accorBreakfastIds || null
+        breakfastIds: result.accorBreakfastIds || null,
+        benefits: result.accorBenefits || null,
+        benefitCities: result.accorBenefitCities || null
       });
     });
     return true; // async response
