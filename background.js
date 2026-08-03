@@ -152,13 +152,23 @@ async function fetchHotelIds(table, idColumn) {
 
 // Full benefit records, keyed by hotel_id. Unlike the ID lists these carry
 // detail (hours, access basis, confidence) that the detail panel renders.
+// Only the columns the badge and detail panel actually render. SELECT * also
+// pulls hotel_name, brand, city, country, status and the research bookkeeping
+// fields, which nothing on the page reads — about 23% of the payload wasted on
+// every sync.
+const BENEFIT_COLUMNS = [
+  'hotel_id', 'city_slug', 'lounge_name', 'benefit_type', 'access_basis',
+  'hours', 'alcohol', 'alcohol_detail', 'complimentary', 'confidence',
+  'on_official_lounge_list', 'last_verified', 'notes'
+].join(',');
+
 async function fetchBenefits() {
   const rows = [];
   const limit = 1000;
   let offset = 0;
   while (true) {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/hotel_benefits?select=*&order=id&offset=${offset}&limit=${limit}`,
+      `${SUPABASE_URL}/rest/v1/hotel_benefits?select=${BENEFIT_COLUMNS}&order=hotel_id&offset=${offset}&limit=${limit}`,
       { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
     );
     if (!res.ok) throw new Error(`hotel_benefits ${res.status}`);
@@ -233,4 +243,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 ensureUserId();
-syncHotelData(); // Always sync on service worker startup (extension reload)
+
+// Was syncHotelData() — an unconditional full pull on every service worker
+// startup. Under MV3 the worker spins down after ~30s idle and restarts on the
+// next event, so that fired dozens of times a day rather than once per reload,
+// and syncIfNeeded()'s 24h guard was dead code. The hotel lists change monthly,
+// so a day-old cache is fine and this cuts Supabase egress by roughly 20x.
+// To force a refresh, clear accorHotelSyncTime from chrome.storage.local.
+syncIfNeeded();
