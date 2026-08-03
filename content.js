@@ -745,6 +745,31 @@ let HOTEL_BENEFITS = {};
 // "this city has no perks" from "nobody has researched this city yet".
 let BENEFIT_CITIES = {};
 
+// Normalise a display city ("Phnom Penh", "PHU QUOC") to the slug used by the
+// data files ("phnom-penh", "phu-quoc").
+function citySlugify(name) {
+  if (!name) return null;
+  return name.normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || null;
+}
+
+// Has anyone researched perks for the city currently being viewed?
+// This must be answered PER CITY, not globally: with several cities loaded,
+// a global "do we have any benefit data" check is always true, so an
+// unresearched city would silently render as "no perks here" — which is
+// exactly the false-negative this layer exists to avoid.
+// Returns true / false / null, where null means we can't tell what city
+// we're on and shouldn't claim anything either way.
+function isCityResearched() {
+  if (!BENEFIT_CITIES || Object.keys(BENEFIT_CITIES).length === 0) return false;
+  const slug = citySlugify(getCityFromUrl());
+  if (!slug) return null;
+  if (BENEFIT_CITIES[slug]) return true;
+  // Accor's URLs aren't always the bare city ("phu-quoc-island", "bangkok-thailand"),
+  // so accept a slug that contains or is contained by a researched one.
+  return Object.keys(BENEFIT_CITIES).some(c => slug.includes(c) || c.includes(slug));
+}
+
 // A property is worth surfacing if it is on Accor's official lounge list OR we
 // found any lounge-like benefit. Paid offers still count as findable, but the
 // panel labels them clearly so a discount never reads as a status perk.
@@ -2652,18 +2677,30 @@ function updateCounter() {
     else if (isUnofficialBenefit(hotelId)) perkCount++;
   });
 
-  const researched = Object.keys(HOTEL_BENEFITS).length > 0;
+  // Per-city, so an unresearched city never reads as "no perks here".
+  const researched = isCityResearched();
+  const notResearched = researched === false || researched === null;
+  const gap = notResearched ? ' \u00b7 perks not yet researched for this city' : '';
+
   if (loungeFilterMode === 'all') {
-    counter.textContent = `Showing ${loungeCount + perkCount} of ${totalCards} \u2014 ${loungeCount} official lounge, ${perkCount} researched perk`;
+    counter.textContent = notResearched
+      ? `Showing ${loungeCount + perkCount} of ${totalCards} \u2014 ${loungeCount} official lounge${gap}`
+      : `Showing ${loungeCount + perkCount} of ${totalCards} \u2014 ${loungeCount} official lounge, ${perkCount} researched perk`;
   } else if (loungeFilterMode === 'official') {
     counter.textContent = `Showing ${loungeCount} of ${totalCards} hotels with Executive Lounge`;
   } else if (perkCount > 0) {
     counter.textContent = `${loungeCount} of ${totalCards} have an Executive Lounge \u00b7 ${perkCount} more with researched perks`;
-  } else if (!researched) {
-    // Don't imply "no perks here" when the truth is "nobody has looked yet".
-    counter.textContent = `${loungeCount} of ${totalCards} hotels have an Executive Lounge \u00b7 perks not yet researched for this city`;
   } else {
-    counter.textContent = `${loungeCount} of ${totalCards} hotels have an Executive Lounge`;
+    counter.textContent = `${loungeCount} of ${totalCards} hotels have an Executive Lounge${gap}`;
+  }
+
+  // Make the gap visible on the button too \u2014 the counter is easy to miss, and
+  // an empty "Lounges + Perks" result is otherwise indistinguishable from
+  // "we looked and there is nothing here".
+  const btn = document.getElementById('exec-lounge-toggle-btn');
+  if (btn && loungeFilterMode === 'all' && notResearched) {
+    btn.textContent = '\u2713 Lounges + Perks (city not researched)';
+    btn.title = 'No perk research exists for this city yet, so only official lounges are shown.';
   }
 }
 
