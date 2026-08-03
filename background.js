@@ -218,9 +218,21 @@ async function syncHotelData() {
 }
 
 async function syncIfNeeded() {
-  const result = await chrome.storage.local.get('accorHotelSyncTime');
+  const result = await chrome.storage.local.get([
+    'accorHotelSyncTime', 'accorLoungeIds', 'accorBreakfastIds', 'accorBenefits'
+  ]);
   const lastSync = result.accorHotelSyncTime || 0;
-  if (Date.now() - lastSync > SYNC_INTERVAL_MS) {
+  const stale = Date.now() - lastSync > SYNC_INTERVAL_MS;
+
+  // A dataset can be missing while the timestamp is fresh: the benefit sync is
+  // caught separately, so if hotel_benefits didn't exist (or failed) on an
+  // earlier run, the lounge/breakfast half still stamped the clock. Time alone
+  // would then suppress the fetch for a full day and every city would report
+  // "perks not yet researched" while the data sat there. Never let the interval
+  // gate a first successful fetch of any dataset.
+  const missing = !result.accorLoungeIds || !result.accorBreakfastIds || !result.accorBenefits;
+
+  if (stale || missing) {
     syncHotelData();
   }
 }
