@@ -92,6 +92,34 @@ If any hotels were added or removed, update the `EXECUTIVE_LOUNGE_HOTEL_IDS` Set
 
 The hotel IDs are included in the extracted data (5th element of each array) — use those directly.
 
+### Step 6: Refresh the Supabase Tables
+
+The `content.js` Sets are only a **fallback**. At runtime the extension prefers the
+`lounge_hotels` / `breakfast_hotels` tables in Supabase (see `background.js`), so an
+update that stops at `content.js` does not reach users. Refresh both tables with:
+
+```
+node scripts/import-hotels.js          # defaults to the newest month in data/
+node scripts/import-hotels.js 2026-08  # or name the month explicitly
+```
+
+**Important — clear the tables first.** The publishable key shipped in `config.js` is
+granted `SELECT` and `INSERT` under RLS, but **not** `DELETE`. A delete it isn't allowed
+to perform still returns HTTP 200 having removed nothing, so an import that assumes the
+clear worked will *append* a second copy of every row instead of replacing it.
+
+`import-hotels.js` guards against this — it re-counts after the delete and aborts before
+inserting if any rows survive. When it aborts, clear the tables from the Supabase SQL
+editor and re-run:
+
+```sql
+TRUNCATE lounge_hotels RESTART IDENTITY;
+TRUNCATE breakfast_hotels RESTART IDENTITY;
+```
+
+Duplicate rows are not fatal at runtime (the extension builds a `Set`), but they
+accumulate every month and make the tables progressively harder to reason about.
+
 ---
 
 ## Process B: Complimentary Breakfast Hotels (Monthly)
