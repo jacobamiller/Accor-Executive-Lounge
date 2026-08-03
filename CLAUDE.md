@@ -25,6 +25,12 @@ Read `MONTHLY_UPDATE_GUIDE.md` before starting. Its **Before You Start** section
 lists the two setup steps (Supabase sign-in, accept-edits mode) that otherwise
 strand a run partway through.
 
+## Open follow-ups
+
+See `TODO.md`. Read it when picking work back up — the top item is that two
+properties are invisible to the extension because they appear on neither of
+Accor's benefit lists, which the monthly extraction does not currently catch.
+
 ## Things that have bitten us
 
 - **The Accor lounge page renders empty for several seconds.** `.js-table-1-tbody`
