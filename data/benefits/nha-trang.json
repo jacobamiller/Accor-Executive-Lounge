@@ -1,0 +1,163 @@
+[
+  {
+    "city": "Nha Trang",
+    "country": "Vietnam",
+    "status": "verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": true,
+    "club_room_categories": [
+      "Executive Room"
+    ],
+    "has_physical_lounge": false,
+    "lounge_name": null,
+    "benefit_type": [
+      "discounted_happy_hour"
+    ],
+    "access_basis": "all_guests",
+    "hours": {
+      "le_bar_happy_hour": "Reported as both 15:00-20:00 buy-1-get-1 and 17:00-20:00 50% off — conflicting, verify on arrival",
+      "pool_bar_happy_hour": "17:00-20:00 buy 1 get 1 free"
+    },
+    "alcohol": true,
+    "alcohol_detail": "Discounted drinks at Le Bar and the Pool Bar. Nothing complimentary — these are public promotions.",
+    "complimentary": false,
+    "confidence": "verified_primary",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "data/breakfast/2026-08.json (present on complimentary-breakfast list)",
+      "https://www.novotelnhatrang.com/the-rooms/executive-room/",
+      "https://www.novotelnhatrang.com/offers/le-bar/",
+      "https://www.novotelnhatrang.com/restaurant-and-bars/"
+    ],
+    "notes": "IMPORTANT NEGATIVE RESULT, and an unusually confident one. This hotel SELLS Executive Rooms but has NO executive lounge — the hotel's own Executive Room page lists breakfast (on the balcony or at The Square), late checkout to 14:00, laundry, turndown and in-room amenities, and makes no mention of a lounge, evening cocktails or club facilities. This is the clearest case in the dataset of a club room category NOT implying a lounge, which is the proxy the schema warns about. Both happy hours are paid public promotions, not status perks, and their advertised times conflict across the hotel's own pages (15:00-20:00 buy-1-get-1 vs 17:00-20:00 50% off) — verify on arrival.",
+    "hotel_name": "Novotel Nha Trang",
+    "brand": "Novotel",
+    "accor_hotel_code": "6033"
+  },
+  {
+    "city": "Nha Trang",
+    "country": "Vietnam",
+    "status": "partially_verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": "unknown",
+    "lounge_name": "Lobby Lounge (chocolate hour)",
+    "benefit_type": [
+      "chocolate_hour"
+    ],
+    "access_basis": "all_guests",
+    "hours": {
+      "chocolate_hour": "16:00-17:00 daily at the Lobby Lounge",
+      "tropicana_beach_club": "Buy 1 Get 1 Free on drinks (PAID, no times published)"
+    },
+    "alcohol": false,
+    "alcohol_detail": "The complimentary element is the chocolate hour, which is non-alcoholic. Tropicana Beach Club's buy-1-get-1 involves alcohol but is paid.",
+    "complimentary": true,
+    "confidence": "multiple_reports",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "data/breakfast/2026-08.json (present on complimentary-breakfast list)",
+      "https://movenpickresortcamranh.com/",
+      "https://movenpickresortcamranh.com/dining-new/",
+      "https://movenpick.accor.com/en/asia/vietnam/cam-ranh/resort-cam-ranh.html"
+    ],
+    "notes": "Mövenpick's signature Chocolate Hour, complimentary at the Lobby Lounge 16:00-17:00 daily — the same 16:00-17:00 slot as the BDMS property in Bangkok, so the brand appears to run this consistently. Real but modest: chocolate, not a lounge and not alcohol. Tropicana Beach Club's buy-1-get-1 is SEPARATE and PAID. GEOGRAPHY CAVEAT: Cam Ranh is roughly 30km south of Nha Trang near the airport, not in the city. Accor files it under Nha Trang and so does this record, but do not treat it as walkable from the city beach.",
+    "hotel_name": "Movenpick Resort Cam Ranh",
+    "brand": "Movenpick",
+    "accor_hotel_code": "B4G8"
+  },
+  {
+    "city": "Nha Trang",
+    "country": "Vietnam",
+    "status": "partially_verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": false,
+    "lounge_name": null,
+    "benefit_type": [
+      "snacks_soft_drinks"
+    ],
+    "access_basis": "all_guests",
+    "hours": {
+      "mocktail_hour": "16:00-17:00 daily (in-stay perk)",
+      "everglow_rooftop": "21st-floor infinity pool bar, cocktails and light bites (PAID)"
+    },
+    "alcohol": false,
+    "alcohol_detail": "Mocktail Hour is explicitly non-alcoholic. The 21st-floor Everglow rooftop bar serves alcohol but is a paid outlet.",
+    "complimentary": true,
+    "confidence": "multiple_reports",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "data/breakfast/2026-08.json (ABSENT from complimentary-breakfast list)",
+      "https://all.accor.com/hotel/C561/index.en.shtml"
+    ],
+    "notes": "SECOND COVERAGE GAP CAUGHT THIS WAY: absent from BOTH Accor benefit lists, so the extension could not see it at all. Found only by enumerating Accor's Nha Trang destination page, which lists 5 properties against the 4 our datasets knew about — the same failure mode as Movenpick Waverly in Phu Quoc. Worth treating as a systematic gap rather than two coincidences. The perk is a complimentary Mocktail Hour 16:00-17:00 plus kids' ice cream, described as an in-stay perk for guests. Genuinely free but non-alcoholic and modest. Everglow rooftop infinity pool bar on the 21st floor is a paid outlet. No club room tier and no lounge.",
+    "hotel_name": "The Morning Glow - Handwritten Collection",
+    "brand": "Handwritten Collection",
+    "accor_hotel_code": "C561"
+  },
+  {
+    "city": "Nha Trang",
+    "country": "Vietnam",
+    "status": "unverified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": true,
+    "club_room_categories": [
+      "Privilege Room Sea View",
+      "Privilege Luxe Sea View"
+    ],
+    "has_physical_lounge": "unknown",
+    "lounge_name": null,
+    "benefit_type": "unknown",
+    "access_basis": "unknown",
+    "hours": "unknown",
+    "alcohol": "unknown",
+    "alcohol_detail": "Bay View bar serves cocktails; no evidence found either way on complimentary service",
+    "complimentary": "unknown",
+    "confidence": "unknown",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "data/breakfast/2026-08.json (present on complimentary-breakfast list)",
+      "https://www.mercurenhatrangbeach.com/our-rooms/privilege-room-sea-view/",
+      "https://all.accor.com/hotel/C3J0/index.en.shtml"
+    ],
+    "notes": "SELLS Privilege rooms (Mercure's club tier), which elsewhere — Mercure Bangkok Makkasan, for instance — comes with lounge access. Here the published Privilege benefits are only priority early check-in and late check-out, with no lounge mentioned. Given Novotel Nha Trang in the same city sells Executive rooms with no lounge, do NOT infer one from the room tier. This is a recently opened property (Accor announced the signing and opening in 2026), so thin coverage is expected and may improve. Recorded as UNKNOWN throughout rather than none — the absence of evidence here is genuinely uninformative.",
+    "hotel_name": "Mercure Nha Trang Beach",
+    "brand": "Mercure",
+    "accor_hotel_code": "C3J0"
+  },
+  {
+    "city": "Nha Trang",
+    "country": "Vietnam",
+    "status": "verified_absent",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": false,
+    "lounge_name": null,
+    "benefit_type": "unknown",
+    "access_basis": "unknown",
+    "hours": "unknown",
+    "alcohol": "unknown",
+    "alcohol_detail": null,
+    "complimentary": "unknown",
+    "confidence": "unknown",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "data/breakfast/2026-08.json (present on complimentary-breakfast list)",
+      "https://ibisstylesnhatrang.com/eat-drink/",
+      "https://all.accor.com/hotel/9578/index.en.shtml"
+    ],
+    "notes": "Budget/select-service brand with no club room tier in its product structure, so lounge and club category are genuinely absent rather than unknown. Two paid bars: StrEATS Pool Bar on the 3rd floor and StrEATS Bar & Grill on the ground floor. Free breakfast is confirmed via Accor's complimentary-breakfast list and is the only verified benefit here. No happy hour, canape or evening-snack evidence found EITHER WAY, so those stay unknown.",
+    "hotel_name": "ibis Styles Nha Trang",
+    "brand": "ibis Styles",
+    "accor_hotel_code": "9578"
+  }
+]
