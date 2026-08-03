@@ -1,0 +1,259 @@
+[
+  {
+    "city": "Phu Quoc",
+    "country": "Vietnam",
+    "status": "verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": true,
+    "club_room_categories": [
+      "Premium rooms with Connectivity Lounge access",
+      "Suites",
+      "Cabanas"
+    ],
+    "has_physical_lounge": true,
+    "lounge_name": "Connectivity Lounge",
+    "benefit_type": [
+      "undeclared_club_lounge",
+      "evening_canapes",
+      "happy_hour"
+    ],
+    "access_basis": "room_category_only",
+    "hours": {
+      "lounge_open": "08:00-23:00 daily",
+      "connectivity_social_hour": "17:30-18:30 daily"
+    },
+    "alcohol": true,
+    "alcohol_detail": "Alcohol is complimentary ONLY during Connectivity Social Hour 17:30-18:30; outside that window drinks are charged.",
+    "complimentary": true,
+    "confidence": "verified_primary",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "https://familytravelgenie.com/pullman-phu-quoc-beach-resort-executive-club-lounge/",
+      "https://pullmanphuquoc.com/offers/social-hours/",
+      "https://all.accor.com/hotel/A248/index.en.shtml"
+    ],
+    "notes": "THE HEADLINE FIND FOR PHU QUOC. A genuine club lounge — the Connectivity Lounge, 08:00-23:00 daily with one buffet-style F&B presentation — at a resort that is ABSENT from Accor's official Executive Lounge list, verified against today's extraction. AGE RESTRICTION: children are welcome in the lounge generally when supervised, but under-16s are NOT permitted during Connectivity Social Hour; families are directed to Lighthouse restaurant instead. ALCOHOL IS WINDOWED: complimentary during the 17:30-18:30 social hour only, charged at all other times — do not read the 08:00-23:00 opening as all-day free drinks. DO NOT CONFUSE WITH THE PAID OFFER: Beach House runs a separate buy-1-get-1 promotion 19:00-22:00 daily which is public and paid, carries a 15% ALL Accor+ Explorer discount, and is explicitly 'Not eligible for Executive Privilege Pass' — i.e. the lounge pass does not stack with it.",
+    "hotel_name": "Pullman Phu Quoc Beach Resort",
+    "brand": "Pullman",
+    "accor_hotel_code": "A248"
+  },
+  {
+    "city": "Phu Quoc",
+    "country": "Vietnam",
+    "status": "partially_verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": "unknown",
+    "lounge_name": "Lobby lounge (chocolate hour)",
+    "benefit_type": [
+      "chocolate_hour"
+    ],
+    "access_basis": "all_guests",
+    "hours": {
+      "chocolate_hour": "15:00-16:00 daily at the lobby lounge",
+      "beach_club_happy_hour": "17:00-19:00 daily, buy 1 get 1 free (PAID)"
+    },
+    "alcohol": false,
+    "alcohol_detail": "The complimentary element is the chocolate hour, which is not alcoholic. The 17:00-19:00 Beach Club happy hour involves alcohol but is a paid buy-1-get-1.",
+    "complimentary": true,
+    "confidence": "multiple_reports",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "data/breakfast/2026-08.json (present on complimentary-breakfast list)",
+      "https://www.tripadvisor.com/ShowUserReviews-g23779430-d20224467-r962193057-Movenpick_Villas_Residences_Phu_Quoc-Cua_Duong_Phu_Quoc_Island_Kien_Giang_Pro.html",
+      "https://all.accor.com/hotel/B6Q0/index.en.shtml"
+    ],
+    "notes": "Mövenpick's signature Chocolate Hour, reported as complimentary and open to all guests at the lobby lounge 15:00-16:00. This is a real free perk but a modest one — chocolate, not a lounge and not alcohol. The Aura Beach Club buy-1-get-1 cocktail happy hour 17:00-19:00 is SEPARATE and PAID. Chocolate hour timing comes from guest reviews rather than a hotel-published page, so the window may drift. Distinct property from Mövenpick Resort Waverly Phu Quoc despite the similar name.",
+    "hotel_name": "Movenpick Villas & Residences Phu Quoc",
+    "brand": "Movenpick",
+    "accor_hotel_code": "B6Q0"
+  },
+  {
+    "city": "Phu Quoc",
+    "country": "Vietnam",
+    "status": "partially_verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": "unknown",
+    "lounge_name": "Waverly Lounge",
+    "benefit_type": [
+      "chocolate_hour"
+    ],
+    "access_basis": "all_guests",
+    "hours": {
+      "chocolate_hour": "Daily at Waverly Lounge, one hour — exact time not published in sources found"
+    },
+    "alcohol": false,
+    "alcohol_detail": "Chocolate hour is non-alcoholic. No complimentary evening cocktail service found.",
+    "complimentary": true,
+    "confidence": "single_report",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "data/breakfast/2026-08.json (ABSENT from complimentary-breakfast list)",
+      "https://movenpick.accor.com/en/asia/vietnam/phu-quoc/resort-waverly-phu-quoc.html"
+    ],
+    "notes": "COVERAGE GAP CAUGHT: this property appears on neither Accor benefit list — not the lounge list and not the breakfast list — so it would have been invisible to the extension entirely. Found only by enumerating Accor's Phu Quoc destination page, which lists 8 properties against the 7 our datasets knew about. Hotel code B4V5 derived from the property contact address (HB4V5@movenpick.com), NOT from the catalog API — treat the join key as probable rather than confirmed until verified against a booking URL. Mövenpick Chocolate Hour runs daily at Waverly Lounge but no published time was found. No formal club lounge or evening cocktail service documented.",
+    "hotel_name": "Movenpick Resort Waverly Phu Quoc",
+    "brand": "Movenpick",
+    "accor_hotel_code": "B4V5"
+  },
+  {
+    "city": "Phu Quoc",
+    "country": "Vietnam",
+    "status": "partially_verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": "unknown",
+    "lounge_name": "ClubHouse (F&B outlet, not a club lounge)",
+    "benefit_type": [
+      "discounted_happy_hour"
+    ],
+    "access_basis": "all_guests",
+    "hours": {
+      "happy_hour": "15:00-17:00 daily at the beachside Clubhouse Restaurant"
+    },
+    "alcohol": true,
+    "alcohol_detail": "50% off draught beer, cocktails and wine by the glass — a discount, not complimentary",
+    "complimentary": false,
+    "confidence": "multiple_reports",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "https://premierresidencesphuquoc.com/offers/happy-hour/",
+      "https://premierresidencesphuquoc.com/restaurants-bars/clubhouse/"
+    ],
+    "notes": "NOT a free perk — the ClubHouse is a beachside restaurant, not an executive lounge, and its 15:00-17:00 happy hour is a public 50%-off discount. The name 'ClubHouse' is a trap here: it reads like a club lounge in listings and is not one. No evidence of any lounge or club room tier. Whether ALL Platinum receives anything at this property is UNKNOWN, not none.",
+    "hotel_name": "Premier Residences Phu Quoc Emerald Bay Managed by Accor",
+    "brand": "Premier Residences",
+    "accor_hotel_code": "B2Q9"
+  },
+  {
+    "city": "Phu Quoc",
+    "country": "Vietnam",
+    "status": "unverified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": "unknown",
+    "lounge_name": null,
+    "benefit_type": [
+      "discounted_happy_hour"
+    ],
+    "access_basis": "unknown",
+    "hours": {
+      "happy_hour": "Sunset swing bar advertises happy hours — no times published in sources found"
+    },
+    "alcohol": true,
+    "alcohol_detail": "Cocktails at the sunset swing bar; whether discounted or complimentary is unconfirmed",
+    "complimentary": "unknown",
+    "confidence": "single_report",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "https://www.premiervillage-phuquoc.com/restaurants-bars/",
+      "https://all.accor.com/hotel/B2R4/index.en.shtml"
+    ],
+    "notes": "Thin. Marketing copy references a sunset swing bar 'with happy hours and lovely cocktails' but publishes no times and does not say whether anything is complimentary. Villa resort at An Thoi with theMarket, Corallo and a swim-up pool bar. No club lounge or club room tier found. Recorded as a weak single report — needs a dedicated pass.",
+    "hotel_name": "Premier Village Phu Quoc Resort - Managed by Accor",
+    "brand": "Premier Village",
+    "accor_hotel_code": "B2R4"
+  },
+  {
+    "city": "Phu Quoc",
+    "country": "Vietnam",
+    "status": "partially_verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": "unknown",
+    "lounge_name": "Lounge Bar (paid outlet)",
+    "benefit_type": [
+      "discounted_happy_hour"
+    ],
+    "access_basis": "all_guests",
+    "hours": {
+      "lounge_bar": "06:30-23:00 daily, last order 22:30, daily happy hour — times not published",
+      "ocean_bar": "Daily happy hour — times not published"
+    },
+    "alcohol": true,
+    "alcohol_detail": "Cocktails and spirits at two bars, each advertising a daily happy hour. No evidence any of it is complimentary.",
+    "complimentary": false,
+    "confidence": "multiple_reports",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "https://www.novotelphuquoc.com/restaurants-bars/lounge-bar/",
+      "https://www.novotelphuquoc.com/restaurants-bars/"
+    ],
+    "notes": "The 'Lounge Bar' here is a poolside PAID bar, not an executive lounge — another naming trap. Two outlets (Lounge Bar and Ocean Bar) each advertise a daily happy hour but neither publishes times or terms. No club lounge, no Executive room tier found, and this Novotel is absent from the official lounge list despite many Novotels in Vietnam being on it. Whether ALL Platinum gets anything is UNKNOWN.",
+    "hotel_name": "Novotel Phu Quoc Resort",
+    "brand": "Novotel",
+    "accor_hotel_code": "9770"
+  },
+  {
+    "city": "Phu Quoc",
+    "country": "Vietnam",
+    "status": "unverified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": "unknown",
+    "lounge_name": "Le Bar / Lounge Bar (paid outlets)",
+    "benefit_type": "unknown",
+    "access_basis": "unknown",
+    "hours": "unknown",
+    "alcohol": "unknown",
+    "alcohol_detail": "Le Bar serves signature cocktails and wines; no evidence found either way on complimentary service",
+    "complimentary": "unknown",
+    "confidence": "unknown",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "https://mgallery.accor.com/en/hotels/6479/B001.bar.html",
+      "https://all.accor.com/hotel/6479/index.en.shtml"
+    ],
+    "notes": "French-colonial MGallery beach resort. Two bar outlets (Le Bar, Lounge Bar) both appearing to be ordinary paid F&B. No club lounge, no club room tier, and no happy hour, canape or evening-drinks evidence found EITHER WAY — recorded as unknown, not none. MGallery properties elsewhere sometimes extend informal Platinum recognition, so absence of published evidence here is genuinely uninformative.",
+    "hotel_name": "La Veranda Resort Phu Quoc - MGallery Collection",
+    "brand": "MGallery",
+    "accor_hotel_code": "6479"
+  },
+  {
+    "city": "Phu Quoc",
+    "country": "Vietnam",
+    "status": "verified",
+    "on_official_lounge_list": false,
+    "sells_club_room_category": false,
+    "club_room_categories": [],
+    "has_physical_lounge": "unknown",
+    "lounge_name": null,
+    "benefit_type": [
+      "snacks_soft_drinks",
+      "happy_hour"
+    ],
+    "access_basis": "all_guests",
+    "hours": {
+      "all_inclusive": "Premium beverages included with every stay across 27 restaurants and bars"
+    },
+    "alcohol": true,
+    "alcohol_detail": "Premium alcoholic beverages included in the room rate as part of the Ultra All Inclusive model",
+    "complimentary": true,
+    "confidence": "verified_primary",
+    "last_verified": "2026-08-03",
+    "evidence_source": [
+      "data/lounge/2026-08.json (ABSENT from Accor official lounge list)",
+      "https://all.accor.com/hotel/C428/index.en.shtml",
+      "https://www.rixos.com/hotel-resort/rixos-phu-quoc",
+      "https://group.accor.com/en/brands-and-experiences/our-hotel-brands/rixos"
+    ],
+    "notes": "EDGE CASE — READ THE FLAG, NOT THE FIELDS. Free-flow premium drinks are included here, so alcohol:true and complimentary:true are literally correct, but this is the ULTRA ALL INCLUSIVE RATE, not a lounge and not a status benefit. Every guest gets it because they paid for it; ALL Platinum confers no additional drinks perk that I could find. Ranking this alongside a genuine club lounge would be misleading — the UI should treat all-inclusive resorts as their own category. First Rixos all-inclusive in Southeast Asia, on Hon Thom island, 1,700+ rooms, 27 F&B outlets. Whether Platinum receives anything beyond the rate is UNKNOWN.",
+    "hotel_name": "Rixos Phu Quoc Vietnam - Ultra All Inclusive",
+    "brand": "Rixos",
+    "accor_hotel_code": "C428"
+  }
+]

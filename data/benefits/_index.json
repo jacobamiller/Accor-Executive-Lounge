@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "description": "Cities with researched lounge-benefit coverage. The extension uses this to tell an unresearched city from a city with genuinely no benefits. researched_in_depth vs properties shows coverage depth honestly.",
+  "description": "Cities with researched lounge-benefit coverage. The extension uses this to tell an unresearched city from a city with genuinely no benefits. unofficial_finds counts complimentary benefits at properties absent from Accor's official lounge list.",
   "researched_cities": [
     {
       "city_slug": "bangkok",
@@ -20,8 +20,19 @@
       "properties": 5,
       "researched_in_depth": 4,
       "on_official_lounge_list": 2,
-      "unofficial_finds": 2,
+      "unofficial_finds": 1,
       "not_yet_researched": 0,
+      "last_verified": "2026-08-03"
+    },
+    {
+      "city_slug": "phu-quoc",
+      "city": "Phu Quoc",
+      "country": "Vietnam",
+      "properties": 8,
+      "researched_in_depth": 7,
+      "on_official_lounge_list": 0,
+      "unofficial_finds": 4,
+      "not_yet_researched": 2,
       "last_verified": "2026-08-03"
     }
   ]
