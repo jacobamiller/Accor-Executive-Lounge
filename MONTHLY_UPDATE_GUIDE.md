@@ -8,6 +8,27 @@ Two separate processes are maintained:
 - **Process A:** Executive Lounge Hotels (~309 hotels across all continents)
 - **Process B:** Complimentary Breakfast Hotels (~7,400+ hotels across all continents)
 
+## The Shorthand: "update"
+
+If the operator just says **"update"**, **"do the update"**, or **"monthly update"**
+with no other detail, Claude should not guess at the scope. Ask this first:
+
+> Do you want the full monthly update?
+>
+> > Do the monthly update per MONTHLY_UPDATE_GUIDE.md — full scope including the
+> > Supabase refresh and a commit. Make the judgment calls yourself; only stop if
+> > you're genuinely blocked.
+>
+> Or something narrower — data files and the diff only?
+
+A "yes" means run the whole thing end to end: extract both lists, diff against the
+previous month, update the `content.js` Sets, truncate and reload the Supabase tables,
+commit. Don't check in again along the way; report at the end.
+
+Ask this **once**, at the start. It's the one question worth asking, because the two
+plausible readings of "update" differ a lot in blast radius — one writes to the
+production database, the other only touches local files.
+
 ## Before You Start (Pre-Flight)
 
 Do these three things **first**. Each one exists because skipping it stops the run
