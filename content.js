@@ -845,22 +845,24 @@ function injectStyles() {
     }
     .exec-lounge-badge--clickable { cursor: pointer; }
     .exec-benefit-panel {
-      position: relative;
-      margin: 6px 8px 8px;
+      /* Fixed, on document.body — deliberately outside the result card so it
+         cannot stretch the card or leave white space beside the photo. */
+      position: fixed;
+      width: 320px;
+      max-width: calc(100vw - 16px);
       background: #f6f4fc;
       border: 1px solid #d9d1f0;
       border-radius: 6px;
       font-size: 11px;
       line-height: 1.45;
       color: #1a1a4e;
-      z-index: 13;
-      /* Cap the height instead of letting a long notes field push the card
-         to several screens tall. */
-      max-height: 260px;
+      z-index: 2147483000;
+      /* Cap the height instead of letting a long notes field run off screen. */
+      max-height: 280px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(26,26,78,.12);
+      box-shadow: 0 6px 24px rgba(26,26,78,.28);
     }
     .exec-benefit-head {
       display: flex;
@@ -1460,8 +1462,50 @@ function benefitPanelHtml(b) {
   );
 }
 
+// Panels live on document.body, not inside the card. Appending into the card
+// stretched it: the result row is a horizontal layout with a fixed photo
+// column, so an extra block child grew the whole row and left dead white space
+// beside the image. As a fixed-position popover it sits outside layout flow and
+// the card keeps its natural height.
+let benefitAnchor = null;
+
+function positionBenefitPanel(panel, anchor) {
+  const a = anchor.getBoundingClientRect();
+  const vw = document.documentElement.clientWidth;
+  const vh = document.documentElement.clientHeight;
+  const w = panel.offsetWidth || 320;
+  const h = panel.offsetHeight || 260;
+  const GAP = 6;
+
+  // Prefer below the badge; flip above when there isn't room.
+  let top = a.bottom + GAP;
+  if (top + h > vh - 8 && a.top - GAP - h > 8) top = a.top - GAP - h;
+  top = Math.max(8, Math.min(top, vh - h - 8));
+
+  // Right-align to the badge, then clamp into the viewport.
+  let left = a.right - w;
+  left = Math.max(8, Math.min(left, vw - w - 8));
+
+  panel.style.top = top + 'px';
+  panel.style.left = left + 'px';
+}
+
+function repositionBenefitPanel() {
+  const panel = document.querySelector('.exec-benefit-panel');
+  if (!panel || !benefitAnchor) return;
+  // Anchor scrolled out of view — close rather than leave the panel floating
+  // over unrelated hotels.
+  const a = benefitAnchor.getBoundingClientRect();
+  if (a.bottom < 0 || a.top > document.documentElement.clientHeight) {
+    closeBenefitPanels();
+    return;
+  }
+  positionBenefitPanel(panel, benefitAnchor);
+}
+
 function closeBenefitPanels() {
   document.querySelectorAll('.exec-benefit-panel').forEach(p => p.remove());
+  benefitAnchor = null;
 }
 
 // One panel at a time, closable by: the ✕, clicking the badge again, Escape,
@@ -1480,12 +1524,15 @@ function wireBenefitDismiss() {
     if (e.target.closest('.exec-lounge-badge--clickable')) return;
     closeBenefitPanels();
   }, true);
+  // Keep the popover glued to its badge while the results list scrolls.
+  window.addEventListener('scroll', repositionBenefitPanel, true);
+  window.addEventListener('resize', repositionBenefitPanel, { passive: true });
 }
 
-function toggleBenefitPanel(card, hotelId) {
-  const existing = card.querySelector('.exec-benefit-panel');
+function toggleBenefitPanel(card, hotelId, anchor) {
+  const wasOpenForThis = benefitAnchor === anchor;
   closeBenefitPanels();              // never leave several open at once
-  if (existing) return;              // second click on the same badge = close
+  if (wasOpenForThis) return;        // second click on the same badge = close
   const b = HOTEL_BENEFITS[hotelId];
   if (!b) return;
 
@@ -1503,12 +1550,15 @@ function toggleBenefitPanel(card, hotelId) {
       const n = panel.querySelector('.exec-benefit-notes');
       const nowClamped = n.classList.toggle('is-clamped');
       more.textContent = nowClamped ? 'Show more' : 'Show less';
+      positionBenefitPanel(panel, anchor); // height changed — re-anchor
       return;
     }
     e.stopPropagation();
   });
 
-  card.appendChild(panel);
+  document.body.appendChild(panel);
+  benefitAnchor = anchor;
+  positionBenefitPanel(panel, anchor);
 }
 
 function addBenefitBadge(card) {
@@ -1531,7 +1581,7 @@ function addBenefitBadge(card) {
     badge.title = 'Researched benefit — click for detail';
     badge.addEventListener('click', e => {
       e.preventDefault(); e.stopPropagation();
-      toggleBenefitPanel(card, hotelId);
+      toggleBenefitPanel(card, hotelId, badge);
     });
     card.appendChild(badge);
     return;
@@ -1544,7 +1594,7 @@ function addBenefitBadge(card) {
     loungeBadge.title = 'Researched detail available — click';
     loungeBadge.addEventListener('click', e => {
       e.preventDefault(); e.stopPropagation();
-      toggleBenefitPanel(card, hotelId);
+      toggleBenefitPanel(card, hotelId, loungeBadge);
     });
   }
 }
@@ -3078,6 +3128,9 @@ try {
       BENEFIT_CITIES = response.benefitCities || {};
       dbg('Loaded', Object.keys(HOTEL_BENEFITS).length, 'benefit records from Supabase cache');
     }
+    // Panels now live on document.body, so clear any open one here rather than
+    // per-card — its anchor badge is about to be removed and re-created.
+    closeBenefitPanels();
     // Re-process cards with fresh data (fixes race condition with init())
     document.querySelectorAll('div.result-list-item[data-hotel-id]').forEach(card => {
       card.removeAttribute('data-exec-lounge-highlighted');
@@ -3094,8 +3147,6 @@ try {
       card.removeAttribute('data-benefit-badge');
       const oldPerkBadge = card.querySelector('.exec-benefit-badge');
       if (oldPerkBadge) oldPerkBadge.remove();
-      const oldPanel = card.querySelector('.exec-benefit-panel');
-      if (oldPanel) oldPanel.remove();
       highlightCard(card);
       addBreakfastBadge(card);
       addBenefitBadge(card);
