@@ -761,7 +761,21 @@ function citySlugify(name) {
 // Returns true / false / null, where null means we can't tell what city
 // we're on and shouldn't claim anything either way.
 function isCityResearched() {
-  if (!BENEFIT_CITIES || Object.keys(BENEFIT_CITIES).length === 0) return false;
+  // No data at all — nothing has synced, so nothing is researched as far as
+  // this client can tell.
+  if (!HOTEL_BENEFITS || Object.keys(HOTEL_BENEFITS).length === 0) return false;
+
+  // Strongest signal, and it needs no URL parsing: if any hotel on this page
+  // has a benefit record, we demonstrably have data for where we are. URL
+  // shapes vary across Accor's search, SSR and detail pages, so deriving
+  // coverage from the cards is far more reliable than parsing the address bar.
+  const cards = document.querySelectorAll('div.result-list-item[data-hotel-id]');
+  for (const card of cards) {
+    if (HOTEL_BENEFITS[card.getAttribute('data-hotel-id')]) return true;
+  }
+
+  // No card matched. Fall back to the URL to tell "researched city, but none of
+  // these particular hotels have perks" from "nobody has researched here".
   const slug = citySlugify(getCityFromUrl());
   if (!slug) return null;
   if (BENEFIT_CITIES[slug]) return true;
@@ -2846,8 +2860,10 @@ function updateCounter() {
   });
 
   // Per-city, so an unresearched city never reads as "no perks here".
+  // null means we could not work out which city this is \u2014 say nothing rather
+  // than asserting a gap we cannot actually confirm.
   const researched = isCityResearched();
-  const notResearched = researched === false || researched === null;
+  const notResearched = researched === false;
   const gap = notResearched ? ' \u00b7 perks not yet researched for this city' : '';
 
   if (loungeFilterMode === 'all') {
@@ -3126,8 +3142,15 @@ try {
     if (response.benefits) {
       HOTEL_BENEFITS = response.benefits;
       BENEFIT_CITIES = response.benefitCities || {};
-      dbg('Loaded', Object.keys(HOTEL_BENEFITS).length, 'benefit records from Supabase cache');
     }
+    // Always on, not behind dbg(): when perks don't appear the first question
+    // is whether any data reached the page at all, and that should be
+    // answerable from the console without rebuilding with DEBUG on.
+    console.info(
+      '[ExecLounge] benefits:', Object.keys(HOTEL_BENEFITS).length, 'records ·',
+      'cities:', Object.keys(BENEFIT_CITIES).join(', ') || '(none)', '·',
+      'lounge ids:', EXECUTIVE_LOUNGE_HOTEL_IDS.size
+    );
     // Panels now live on document.body, so clear any open one here rather than
     // per-card — its anchor badge is about to be removed and re-created.
     closeBenefitPanels();
