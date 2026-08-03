@@ -230,18 +230,31 @@ Unmatched hotels (~17%) must be resolved manually or via Bookmarklet 4.
 ## Monthly Update Checklist
 
 ```
+   Pre-flight (see MONTHLY_UPDATE_GUIDE.md → "Before You Start")
+□ 0a. Sign in to Supabase in Chrome — Step 12 needs the SQL editor
+□ 0b. Shift+Tab in Claude Code → accept-edits mode
+
 □ 1. Open https://all.accor.com/loyalty-program/user/hotels-lounge/index.en.shtml
-□ 2. Run "Extract All Lounge Hotels" bookmarklet (~3 min)
-□ 3. Save clipboard → data/lounge/YYYY-MM.json
-□ 4. Run "Extract All Breakfast Hotels" bookmarklet (~2 min)
-□ 5. Save clipboard → data/breakfast/YYYY-MM.json
-□ 6. Diff lounge with previous month (use Claude)
-□ 7. Diff breakfast with previous month (use Claude)
-□ 8. Update EXECUTIVE_LOUNGE_HOTEL_IDS Set if changed
-□ 9. Update FREE_BREAKFAST_HOTEL_IDS Set if changed
-□ 10. git commit & push
-□ 11. Reload extension in chrome://extensions/
+□ 2. Wait for the table to populate — it renders empty for several seconds
+□ 3. Run "Extract All Lounge Hotels" bookmarklet (~3 min)
+□ 4. Save clipboard → data/lounge/YYYY-MM.json
+□ 5. Run "Extract All Breakfast Hotels" bookmarklet (~2 min)
+□ 6. Save clipboard → data/breakfast/YYYY-MM.json
+□ 7. Diff lounge with previous month (use Claude)
+□ 8. Diff breakfast with previous month (use Claude)
+□ 9. Update EXECUTIVE_LOUNGE_HOTEL_IDS Set if changed
+□ 10. Update FREE_BREAKFAST_HOTEL_IDS Set if changed
+□ 11. TRUNCATE both tables in the Supabase SQL editor
+□ 12. node scripts/import-hotels.js   (aborts if step 11 was skipped)
+□ 13. git commit & push
+□ 14. Reload extension in chrome://extensions/
 ```
+
+**Steps 11–12 are not optional.** The extension prefers the Supabase tables over the
+hardcoded Sets at runtime, so an update that stops at `content.js` never reaches users.
+The publishable key has INSERT but not DELETE under RLS — and a forbidden DELETE still
+returns HTTP 200 having deleted nothing, so importing without truncating first appends
+a second copy of every row.
 
 ## Data Flow: From JSON to Runtime
 

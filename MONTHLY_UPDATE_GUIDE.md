@@ -8,6 +8,44 @@ Two separate processes are maintained:
 - **Process A:** Executive Lounge Hotels (~309 hotels across all continents)
 - **Process B:** Complimentary Breakfast Hotels (~7,400+ hotels across all continents)
 
+## Before You Start (Pre-Flight)
+
+Do these three things **first**. Each one exists because skipping it stops the run
+partway through and forces a round trip.
+
+**1. Sign in to Supabase in Chrome.**
+Open https://supabase.com/dashboard/project/nkikqvujmhiahryrdgxr and log in.
+
+The final step clears and reloads the `lounge_hotels` / `breakfast_hotels` tables,
+which needs the SQL editor (see Step 6). Claude cannot sign in for you — entering
+credentials is off-limits to it — so an expired session means the update stalls at
+the last step with everything else already done.
+
+**2. Switch Claude Code to accept-edits mode.**
+Press `Shift+Tab` until the mode indicator reads *accept edits*.
+
+Without it, every file write pauses for approval. A single run touches `content.js`,
+both data files, and this guide, plus a few dozen `curl` / `node` / `python3` calls.
+Optionally run `/fewer-permission-prompts` once to allowlist the recurring commands
+in `.claude/settings.json` — this repo hits the same handful every month.
+
+**3. Give Claude the whole job in one line.**
+
+> Do the monthly update per MONTHLY_UPDATE_GUIDE.md — full scope including the
+> Supabase refresh and a commit. Make the judgment calls yourself; only stop if
+> you're genuinely blocked.
+
+Naming the full scope up front avoids the mid-run "how far should this go?" check-in.
+Claude will still stop for anything genuinely destructive or credential-related, but
+routine decisions get made rather than asked.
+
+### Expect these to need a human
+
+- **Signing in** to Supabase (or anywhere else) — always.
+- **A `TRUNCATE` confirmation** in the Supabase SQL editor. Claude can click through
+  it once you've authorized the refresh, but it will say so rather than doing it silently.
+- **Pushing** the commit, if you want it on the remote.
+
 ## Source
 
 - **URL:** https://all.accor.com/loyalty-program/user/hotels-lounge/index.en.shtml
