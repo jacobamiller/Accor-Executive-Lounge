@@ -847,7 +847,6 @@ function injectStyles() {
     .exec-benefit-panel {
       position: relative;
       margin: 6px 8px 8px;
-      padding: 8px 10px;
       background: #f6f4fc;
       border: 1px solid #d9d1f0;
       border-radius: 6px;
@@ -855,6 +854,65 @@ function injectStyles() {
       line-height: 1.45;
       color: #1a1a4e;
       z-index: 13;
+      /* Cap the height instead of letting a long notes field push the card
+         to several screens tall. */
+      max-height: 260px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(26,26,78,.12);
+    }
+    .exec-benefit-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 8px 6px 10px;
+      border-bottom: 1px solid #d9d1f0;
+      background: #ece7f8;
+      border-radius: 6px 6px 0 0;
+      flex: 0 0 auto;
+    }
+    .exec-benefit-title {
+      font-weight: 700;
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .exec-benefit-close {
+      flex: 0 0 auto;
+      border: 0;
+      background: transparent;
+      color: #4a4a6a;
+      font-size: 13px;
+      line-height: 1;
+      padding: 3px 5px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .exec-benefit-close:hover { background: #d9d1f0; color: #1a1a4e; }
+    .exec-benefit-body {
+      padding: 8px 10px;
+      overflow-y: auto;
+      flex: 1 1 auto;
+    }
+    .exec-benefit-notes.is-clamped {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .exec-benefit-more {
+      margin-top: 4px;
+      border: 0;
+      background: transparent;
+      color: #6b4fbb;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 0;
+      cursor: pointer;
+      text-decoration: underline;
     }
     .exec-benefit-row {
       display: flex;
@@ -1376,20 +1434,80 @@ function benefitPanelHtml(b) {
         ? '<div class="exec-benefit-warn">Based on a single report — confirm with the hotel.</div>'
         : '');
 
-  return warn + rows.map(([k, v]) =>
-    `<div class="exec-benefit-row"><span>${esc(k)}</span><span>${esc(v)}</span></div>`
-  ).join('') + (b.notes ? `<div class="exec-benefit-notes">${esc(b.notes)}</div>` : '');
+  // Notes run to a paragraph or more (median ~260 chars, up to ~1,100), which
+  // is what made this panel open as a wall of text. Collapse by default.
+  let notes = '';
+  if (b.notes) {
+    const long = b.notes.length > 180;
+    notes =
+      `<div class="exec-benefit-notes${long ? ' is-clamped' : ''}">${esc(b.notes)}</div>` +
+      (long ? '<button type="button" class="exec-benefit-more">Show more</button>' : '');
+  }
+
+  const title = esc(b.lounge_name || (paid ? 'Paid offer' : 'Researched perk'));
+  return (
+    `<div class="exec-benefit-head">` +
+      `<span class="exec-benefit-title">${title}</span>` +
+      `<button type="button" class="exec-benefit-close" aria-label="Close">✕</button>` +
+    `</div>` +
+    `<div class="exec-benefit-body">` +
+      warn +
+      rows.map(([k, v]) =>
+        `<div class="exec-benefit-row"><span>${esc(k)}</span><span>${esc(v)}</span></div>`
+      ).join('') +
+      notes +
+    `</div>`
+  );
+}
+
+function closeBenefitPanels() {
+  document.querySelectorAll('.exec-benefit-panel').forEach(p => p.remove());
+}
+
+// One panel at a time, closable by: the ✕, clicking the badge again, Escape,
+// or clicking anywhere outside. Previously the only way out was hitting the
+// small badge a second time, which is not discoverable.
+let benefitDismissWired = false;
+function wireBenefitDismiss() {
+  if (benefitDismissWired) return;
+  benefitDismissWired = true;
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeBenefitPanels();
+  }, true);
+  document.addEventListener('click', e => {
+    if (e.target.closest('.exec-benefit-panel')) return;   // inside the panel
+    if (e.target.closest('.exec-benefit-badge')) return;   // its own toggle
+    if (e.target.closest('.exec-lounge-badge--clickable')) return;
+    closeBenefitPanels();
+  }, true);
 }
 
 function toggleBenefitPanel(card, hotelId) {
   const existing = card.querySelector('.exec-benefit-panel');
-  if (existing) { existing.remove(); return; }
+  closeBenefitPanels();              // never leave several open at once
+  if (existing) return;              // second click on the same badge = close
   const b = HOTEL_BENEFITS[hotelId];
   if (!b) return;
+
+  wireBenefitDismiss();
   const panel = document.createElement('div');
   panel.className = 'exec-benefit-panel';
   panel.innerHTML = benefitPanelHtml(b);
-  panel.addEventListener('click', e => e.stopPropagation());
+
+  panel.addEventListener('click', e => {
+    const close = e.target.closest('.exec-benefit-close');
+    const more = e.target.closest('.exec-benefit-more');
+    if (close) { e.preventDefault(); e.stopPropagation(); panel.remove(); return; }
+    if (more) {
+      e.preventDefault(); e.stopPropagation();
+      const n = panel.querySelector('.exec-benefit-notes');
+      const nowClamped = n.classList.toggle('is-clamped');
+      more.textContent = nowClamped ? 'Show more' : 'Show less';
+      return;
+    }
+    e.stopPropagation();
+  });
+
   card.appendChild(panel);
 }
 
